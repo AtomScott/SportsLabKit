@@ -1,6 +1,6 @@
 output-format: grouped
 
-strictness: 
+strictness: medium
 doc-warnings: true
 
 ignore-paths:
