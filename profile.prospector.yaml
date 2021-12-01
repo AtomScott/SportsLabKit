@@ -1,0 +1,41 @@
+output-format: grouped
+
+strictness: 
+doc-warnings: true
+
+ignore-paths:
+  - docs
+
+dodgy:
+  run: true
+
+pep257:
+  run: true
+  
+mypy:
+  run: true
+  options:
+    ignore-missing-imports: true
+    follow-imports: skip
+    allow:
+      - untyped-globals
+    disallow:
+      - untyped_defs
+
+pep8:
+  run:
+    true
+  disable:
+    - W602
+    - W603
+  enable:
+    - W601
+  options:
+    max-line-length: 88
+    
+
+mccabe:
+  run: true
+
+pyroma:
+  run: true
