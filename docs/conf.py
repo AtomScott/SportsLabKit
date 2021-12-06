@@ -109,7 +109,6 @@ html_theme_options = {
             "icon": "fab fa-twitter-square",
         },
     ],
-    "show_nav_level": 2,
     "use_edit_page_button": False,
 }
 

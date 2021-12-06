@@ -1,24 +1,11 @@
-.. SoccerTrack documentation master file, created by
-   sphinx-quickstart.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
-SoccerTrack documentation!
-==============================================
-
-Contents:
-
-.. toctree::
-   :maxdepth: 2
-
-   getting-started
-   commands
+.. mdinclude:: ../README.md
 
 
+.. Indices and tables
+.. ==================
 
-Indices and tables
-==================
+..  toctree::
+        :maxdepth: 2
+        :hidden:
 
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+        API Reference <source/modules>
