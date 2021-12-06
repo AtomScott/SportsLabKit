@@ -257,7 +257,9 @@ texinfo_documents = [
 
 # -- Options for autodoc -------------------------------------------------------
 autoclass_content = 'both'
-autodoc_mock_imports = [
+autodoc_mock_imports = [ 
+    # I think the imports should be `as imported`. For example, `sklean` instead
+    # of `scikit-learn`. 
     'joblib',
     'numpy',
     'matplotlib',

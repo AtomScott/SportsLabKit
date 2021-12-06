@@ -1,6 +1,3 @@
-# local package
--e ..
-
 # package dependencies
 
 # external requirements
