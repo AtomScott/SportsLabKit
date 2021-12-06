@@ -257,3 +257,17 @@ texinfo_documents = [
 
 # -- Options for autodoc -------------------------------------------------------
 autoclass_content = 'both'
+autodoc_mock_imports = [
+    'joblib',
+    'numpy',
+    'matplotlib',
+    'mplsoccer',
+    'opencv_python',
+    'pandas',
+    'Pillow',
+    'podm',
+    'scikit-learn',
+    'setuptools',
+    'tqdm',
+    'vidgear'
+]
