@@ -270,5 +270,7 @@ autodoc_mock_imports = [
     'setuptools',
     'tqdm',
     'vidgear',
-    'cv2'
+    'cv2',
+    'torch',
+    'omegaconf'
 ]
