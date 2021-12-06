@@ -1,6 +1,6 @@
 output-format: grouped
 
-strictness: low
+strictness: medium
 doc-warnings: true
 
 ignore-paths:
@@ -9,16 +9,67 @@ ignore-paths:
 dodgy:
   run: true
 
+pylint:
+  disable:
+    - missing-docstring
+    - line-too-long
+    - E1103
+    - duplicate-code
+    - too-many-branches
+    - too-many-arguments
+    - too-many-locals
+    - too-many-statements
+    - R0924
+    - unnecessary-pass
+    - unnecessary-lambda
+    - duplicate-key
+    - eval-used
+    - lost-exception
+    - bad-staticmethod-argument
+    - protected-access
+    - signature-differs
+    - lowercase-l-suffix
+    - deprecated-module
+    - global-variable-not-assigned
+    - unused-import
+    - unused-variable
+    - unused-argument
+    - unused-wildcard-import
+    - redefined-builtin
+    - redefine-in-handler
+    - bare-except
+    - logging-not-lazy
+    - bad-format-string-key
+    - anomalous-unicode-escape-in-string
+    - W5101
+
 pep257:
   run: true
-  
+  enable:
+    - D100
+    - D102
+    - D103
+  disable:
+    - D101
+    - D411
+    - D213
+    - D413
+    - D406
+    - D407
+
 mypy:
   run: true
   options:
+    strict: true
     ignore-missing-imports: true
     follow-imports: skip
-    strict: true
-    strict-optional: true
+    allow:
+      - untyped-calls
+      - untyped-globals
+    disallow:
+      - untyped-defs
+      - redundant-expr
+      - return-any
 
 pep8:
   run:
@@ -26,6 +77,12 @@ pep8:
   disable:
     - W602
     - W603
+    - E501
+    - E501
+    - E711
+    - E712
+    - E721
+    - W503
   enable:
     - W601
   options:
@@ -37,3 +94,6 @@ mccabe:
 
 pyroma:
   run: true
+  disable:
+    - PYR06
+    - PYR09
