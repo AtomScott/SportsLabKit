@@ -80,7 +80,7 @@ class MovieIterator:
     def __init__(self, path):
         vcInput = cv.VideoCapture(path)
         self.vcInput = vcInput
-        self.video_fps = int(vcInput.get(cv.CAP_PROP_FPS))
+        self.video_fps: int = int(vcInput.get(cv.CAP_PROP_FPS))
         self.video_frame_count = int(vcInput.get(cv.CAP_PROP_FRAME_COUNT))
         self.img_width = int(vcInput.get(cv.CAP_PROP_FRAME_WIDTH))
         self.img_height = int(vcInput.get(cv.CAP_PROP_FRAME_HEIGHT))

@@ -1,16 +1,18 @@
+"""Create a camera object that can be used to read frames from a video file."""
+
 import math
 import os
 import warnings
 from functools import cached_property
-from typing import List, Mapping, Optional, Sequence, Tuple, Union
+from typing import Dict, Generator, List, Mapping, Optional, Sequence, Tuple
 from xml.etree import ElementTree
 
 import cv2 as cv
 import numpy as np
+from numpy.typing import ArrayLike, NDArray
 from sklearn.decomposition import PCA
-from tqdm import tqdm
-
 from src.utils import MovieIterator, cv2pil, make_video
+from tqdm import tqdm
 
 
 class Camera:
@@ -20,7 +22,7 @@ class Camera:
         keypoint_xml: str,
         x_range: Sequence[float],
         y_range: Sequence[float],
-        camera_matrix: Optional[np.ndarray],
+        camera_matrix: Optional[ArrayLike],
         camera_matrix_path: Optional[str],
         distortion_coefficients: Optional[str],
         distortion_coefficients_path: Optional[str],
@@ -37,7 +39,6 @@ class Camera:
             camera_matrix (Optional[Union[str, np.ndarray]]): numpy array or path to file containing camera matrix.
             distortion_coefficients (Optional[Union[str, np.ndarray]]): numpy array or path to file containing distortion coefficients.
             calibration_video_path (Optional[str]): path to video file with checkerboard to use for calibration.
-
         Attributes:
             camera_matrix (np.ndarray): numpy array containing camera matrix.
             distortion_coefficients (np.ndarray): numpy array containing distortion coefficients.
@@ -45,6 +46,7 @@ class Camera:
             H (np.ndarray): homography matrix from image to pitch.
             w (int): width of video.
             h (int): height of video.
+
         """
         self.label = label
         source_keypoints, target_keypoints = read_pitch_keypoints(keypoint_xml, "video")
@@ -59,7 +61,7 @@ class Camera:
 
         if camera_matrix is None or distortion_coefficients is None:
             if (
-                calibration_video_path is not None
+                camera_matrix_path is not None
                 and distortion_coefficients_path is not None
             ):
                 assert os.path.exists(camera_matrix_path)
@@ -87,76 +89,16 @@ class Camera:
         self.x_range = x_range
         self.y_range = y_range
 
-    def video2pitch(self, video_pts: np.ndarray) -> np.ndarray:
-        """Convert image coordinates to pitch coordinates.
+    def movie_iterator(self, calibrate: bool = False) -> Generator[NDArray, None, None]:
+        """Create a movie iterator.
 
         Args:
-            video_pts (np.ndarray): points in image coordinate space
+            calibrate (bool, optional): Option to calibrate frames. Defaults to False.
 
-        Returns:
-            np.ndarray: points in pitch coordinate
+        Yields:
+            Generator[NDArray]: frames of video.
+
         """
-        if video_pts.ndim == 1:
-            pts = video_pts.reshape(1, -1)
-
-        pitch_pts = cv.perspectiveTransform(np.asarray([pts], dtype=np.float32), self.H)
-        return pitch_pts
-
-    def pitch_to_video(self, pitch_pts: np.ndarray) -> np.ndarray:
-        # TODO: implement this
-        raise NotImplementedError
-        return ...
-
-    def undistort_video(self, video_path: str, out_path: str):
-        mtx = self.calibration_matrix
-        dist = self.distortion_coefficients
-        if mtx is None or dist is None:
-            assert (
-                self.checkerboard_video is not None
-            ), "Checkerboard is necessary if calibration params are not available."
-
-        movie_iterator = MovieIterator(video_path)
-
-        w = movie_iterator.img_width
-        h = movie_iterator.img_height
-
-        newcameramtx, roi = cv.getOptimalNewCameraMatrix(mtx, dist, (w, h), 1, (w, h))
-        undistorted_frames = []
-        for i, frame in enumerate(tqdm(movie_iterator, total=len(movie_iterator))):
-            dst = cv.undistort(frame, mtx, dist, None, newcameramtx)
-            x, y, w, h = roi
-            dst = dst[y : y + h, x : x + w]
-            undistorted_frames.append(dst)
-
-        self.src_kps = self.undistort_points(self.src_kps)
-        make_video(undistorted_frames, movie_iterator.video_fps, out_path)
-        return out_path
-
-    def undistort_points(self, points, checkerboard_video=None):
-        mtx = self.calibration_matrix
-        dist = self.distortion_coefficients
-        if mtx is None or dist is None:
-
-            assert (
-                checkerboard_video is not None
-            ), "Checkerboard is necessary if calibration params are not available."
-            mtx, dist = find_intrinsic_camera_parameters(checkerboard_video)
-            self.mtx = mtx
-            self.dist = dist
-
-        w = self.w
-        h = self.h
-
-        newcameramtx, roi = cv.getOptimalNewCameraMatrix(mtx, dist, (w, h), 1, (w, h))
-        dst = cv.undistortPoints(points, mtx, dist, None, newcameramtx)
-        dst = dst.reshape(-1, 2)
-
-        x, y, w, h = roi
-        dst = dst - np.asarray([x, y])
-
-        return dst
-
-    def movie_iterator(self, calibrate: bool = False):
         movie_iterator = MovieIterator(self.video_path)
         if not calibrate:
             for i, frame in enumerate(movie_iterator):
@@ -174,17 +116,90 @@ class Camera:
             dst = dst[y : y + h, x : x + w]
             yield dst
 
-    def save_calibrated_frames(self, save_path: str) -> None:
-        """Save calibrated frames as a video to disk.
+    def video2pitch(self, video_pts: ArrayLike) -> NDArray[np.float64]:
+        """Convert image coordinates to pitch coordinates.
 
         Args:
-            save_path (str): path to save video to.
+            video_pts (np.ndarray): points in image coordinate space
+
+        Returns:
+            np.ndarray: points in pitch coordinate
+
+        """
+        if video_pts.ndim == 1:
+            pts = video_pts.reshape(1, -1)
+
+        pitch_pts = cv.perspectiveTransform(np.asarray([pts], dtype=np.float32), self.H)
+        return pitch_pts
+
+    def pitch2video(self, pitch_pts: ArrayLike) -> NDArray[np.float64]:
+        """Converts pitch coordinates to image coordinates.
+
+        Args:
+            pitch_pts (ArrayLike): coordinates in pitch coordinate space.
+
+        Raises:
+            NotImplementedError: this method is not implemented.
+
+        Returns:
+            NDArray[np.float64]: ...
+
+        """
+        # TODO: implement this
+        raise NotImplementedError
+
+    def save_calibrated_video(self, save_path: str) -> None:
+        """Save a video with undistorted frames.
+
+        Args:
+            save_path (str): path to save video.
+
         """
         movie_iterator = self.movie_iterator(calibrate=True)
         make_video(movie_iterator, self.video_fps, save_path)
 
+    # def undistort_points(self, points, checkerboard_video=None):
+    #     mtx = self.calibration_matrix
+    #     dist = self.distortion_coefficients
+    #     if mtx is None or dist is None:
+
+    #         assert (
+    #             checkerboard_video is not None
+    #         ), "Checkerboard is necessary if calibration params are not available."
+    #         mtx, dist = find_intrinsic_camera_parameters(checkerboard_video)
+    #         self.mtx = mtx
+    #         self.dist = dist
+
+    #     w = self.w
+    #     h = self.h
+
+    #     newcameramtx, roi = cv.getOptimalNewCameraMatrix(mtx, dist, (w, h), 1, (w, h))
+    #     dst = cv.undistortPoints(points, mtx, dist, None, newcameramtx)
+    #     dst = dst.reshape(-1, 2)
+
+    #     x, y, w, h = roi
+    #     dst = dst - np.asarray([x, y])
+
+    #     return dst
+
     @cached_property
-    def keypoint_map(self) -> Mapping:
+    def video_fps(self) -> int:
+        """Get video fps.
+
+        Returns:
+            int: video fps.
+
+        """
+        return MovieIterator(self.video_path).video_fps
+
+    @cached_property
+    def keypoint_map(self) -> Dict[Tuple[int, int], Tuple[int, int]]:
+        """Get dictionary of pitch keypoints in pitch space to pixel space.
+
+        Returns:
+            Dict: dictionary of pitch keypoints in pitch space to pixel space.
+
+        """
         return {
             tuple(key): value
             for key, value in zip(self.target_keypoints, self.source_keypoints)
@@ -192,19 +207,45 @@ class Camera:
 
     @cached_property
     def w(self) -> int:
+        """Width of video frames.
+
+        Returns:
+            int: width
+
+        """
         return MovieIterator(self.video_path).img_width
 
     @cached_property
     def h(self) -> int:
+        """Height of video frames.
+
+        Returns:
+            int: height
+
+        """
         return MovieIterator(self.video_path).img_height
 
     @cached_property
-    def A(self) -> np.ndarray:
+    def A(self) -> NDArray[np.float64]:
+        """Calculate the affine transformation matrix from pitch to video space.
+
+        Returns:
+            NDArray[np.float64]: affine transformation matrix.
+
+        """
+
         A, *_ = cv.estimateAffinePartial2D(self.source_keypoints, self.target_keypoints)
         return A
 
     @cached_property
-    def H(self) -> np.ndarray:
+    def H(self) -> NDArray[np.float64]:
+        """Calculate the homography transformation matrix from pitch to video space.
+
+        Returns:
+            NDArray[np.float64]: homography transformation matrix.
+
+        """
+
         H, *_ = cv.findHomography(
             self.source_keypoints, self.target_keypoints, cv.RANSAC, 5.0
         )
@@ -213,7 +254,20 @@ class Camera:
 
 def read_pitch_keypoints(
     xmlfile: str, annot_type: str
-) -> Tuple[np.ndarray, np.ndarray]:
+) -> Tuple[NDArray[np.float64], NDArray[np.float64]]:
+    """Read pitch keypoints from xml file.
+
+    Args:
+        xmlfile (str): path to xml file.
+        annot_type (str): type of annotation. Either 'pitch' or 'video'.
+
+    Raises:
+        ValueError: if annotation type is not 'pitch' or 'video'.
+
+    Returns:
+        Tuple[NDArray[np.float64], NDArray[np.float64]]: pitch keypoints and video keypoints.
+
+    """
     tree = ElementTree.parse(xmlfile)
     root = tree.getroot()
 
@@ -235,19 +289,31 @@ def read_pitch_keypoints(
             if d != {}:
                 dst.append(eval(d["label"]))
                 src.append(eval(child[0].attrib["points"]))
+    else:
+        raise ValueError("Annotation type must be `video` or `frame`.")
 
     src = np.asarray(src)
     dst = np.asarray(dst)
 
-    if src.size == 0:
-        print("Array is empty. Is annot_type correct?")
-
+    assert src.size != 0, "No keypoints found in XML file."
     return src, dst
 
 
 def find_intrinsic_camera_parameters(
     video_path: str, fps: int = 1, s: int = 4, save_path: str = None
-):
+) -> Tuple[NDArray[np.float64], NDArray[np.float64]]:
+    """Find intrinsic camera parameters.
+
+    Args:
+        video_path (str): path to calibration video. Must contain a checkerboard.
+        fps (int, optional): fps to use. Defaults to 1.
+        s (int, optional): ???. Defaults to 4.
+        save_path (str, optional): path to save. Defaults to None.
+
+    Returns:
+        Tuple[NDArray[np.float64], NDArray[np.float64]]: camera matrix and distortion coefficients.
+
+    """
     criteria = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 100, 0.001)
 
     # prepare object points, like (0,0,0), (1,0,0), (2,0,0) ....,(6,5,0)
@@ -262,8 +328,6 @@ def find_intrinsic_camera_parameters(
     imgs = []
 
     movie_iterator = MovieIterator(video_path)
-    w = movie_iterator.img_width
-    h = movie_iterator.img_height
 
     nskip = math.ceil(movie_iterator.video_fps / fps)
 
@@ -279,7 +343,7 @@ def find_intrinsic_camera_parameters(
         # Find the chess board corners
         ret, corners = cv.findChessboardCorners(image=gray_small, patternSize=(9, 5))
 
-        if ret == True:
+        if ret is True:
             corners *= s
             corners2 = cv.cornerSubPix(gray, corners, (11, 11), (-1, -1), criteria)
 
@@ -335,6 +399,15 @@ def find_intrinsic_camera_parameters(
 
 
 def load_cameras(camera_info: List[Mapping]) -> List[Camera]:
+    """Load cameras from a list of dictionaries containing camera information.
+
+    Args:
+        camera_info (List[Mapping]): list of dictionaries containing camera information.
+
+    Returns:
+        List[Camera]: list of cameras objects.
+        
+    """
     cameras = []
     for cam_info in camera_info:
         camera = Camera(
