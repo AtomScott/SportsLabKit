@@ -272,5 +272,7 @@ autodoc_mock_imports = [
     'vidgear',
     'cv2',
     'torch',
-    'omegaconf'
+    'omegaconf',
+    'more_itertools',
+    'sklearn'
 ]
