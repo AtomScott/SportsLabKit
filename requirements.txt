@@ -12,3 +12,4 @@ python-dotenv>=0.5.1
 # sphinx doc requirements
 m2r2==0.3.1
 pydata-sphinx-theme==0.7.2
+mistune==0.8.4
