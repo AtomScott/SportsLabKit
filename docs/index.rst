@@ -8,4 +8,5 @@
         :maxdepth: 2
         :hidden:
 
+        Home <self>
         API Reference <source/modules>
