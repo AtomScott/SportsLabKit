@@ -269,5 +269,6 @@ autodoc_mock_imports = [
     'scikit-learn',
     'setuptools',
     'tqdm',
-    'vidgear'
+    'vidgear',
+    'cv2'
 ]
