@@ -110,7 +110,7 @@ html_theme_options = {
         },
     ],
     "show_nav_level": 2,
-    "use_edit_page_button": True,
+    "use_edit_page_button": False,
 }
 
 # Add any paths that contain custom themes here, relative to this directory.

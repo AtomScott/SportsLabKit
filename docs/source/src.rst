@@ -7,10 +7,18 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
-   src.data
-   src.features
-   src.models
-   src.visualization
+   src.utils
+
+Submodules
+----------
+
+src.detect module
+-----------------
+
+.. automodule:: src.detect
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
 Module contents
 ---------------
