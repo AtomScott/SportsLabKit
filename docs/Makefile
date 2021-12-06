@@ -42,7 +42,7 @@ clean:
 	-rm -rf $(BUILDDIR)/*
 
 html:
-	sphinx-apidoc -o source/ -d 5 --force --separate ../src/
+	sphinx-apidoc -o source/ --force --separate ../src/
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."

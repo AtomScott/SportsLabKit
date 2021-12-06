@@ -5,7 +5,7 @@ Submodules
 ----------
 
 .. toctree::
-   :maxdepth: 5
+   :maxdepth: 4
 
    src.utils.camera
    src.utils.detection

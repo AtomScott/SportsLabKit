@@ -5,7 +5,7 @@ Subpackages
 -----------
 
 .. toctree::
-   :maxdepth: 5
+   :maxdepth: 4
 
    src.utils
 
@@ -13,7 +13,7 @@ Submodules
 ----------
 
 .. toctree::
-   :maxdepth: 5
+   :maxdepth: 4
 
    src.detect
 
