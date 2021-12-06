@@ -1,4 +1,4 @@
-.PHONY: clean data lint requirements sync_data_to_s3 sync_data_from_s3 show-d
+.PHONY: clean data format lint requirements sync_data_to_s3 sync_data_from_s3 show-d
 
 #################################################################################
 # GLOBALS                                                                       #
@@ -33,6 +33,12 @@ data: requirements
 clean:
 	find . -type f -name "*.py[co]" -delete
 	find . -type d -name "__pycache__" -delete
+
+
+## format python source code
+format:
+	$(PYTHON_INTERPRETER) -m black src/
+	$(PYTHON_INTERPRETER) -m isort src/
 
 ## Lint using flake8
 lint:

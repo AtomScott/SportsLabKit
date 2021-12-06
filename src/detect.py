@@ -11,13 +11,13 @@ from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from more_itertools import bucket, chunked
 from mplsoccer import Pitch, VerticalPitch
 from PIL import Image
+from podm.bounding_box import BoundingBox
+from podm.utils.enumerators import BBFormat, BBType, CoordinatesType
+from tqdm.auto import tqdm
+
 from src.utils import MovieIterator
 from src.utils.camera import Camera
 from src.utils.detection import CandidateDetection
-from tqdm.auto import tqdm
-
-from podm.bounding_box import BoundingBox
-from podm.utils.enumerators import BBFormat, BBType, CoordinatesType
 
 
 def detect_objects(

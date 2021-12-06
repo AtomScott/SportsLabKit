@@ -1,15 +1,16 @@
 import math
 import os
 import warnings
-import xml.etree.ElementTree as ET
 from functools import cached_property
 from typing import List, Mapping, Optional, Sequence, Tuple, Union
+from xml.etree import ElementTree
 
 import cv2 as cv
 import numpy as np
 from sklearn.decomposition import PCA
-from src.utils import MovieIterator, cv2pil, make_video
 from tqdm import tqdm
+
+from src.utils import MovieIterator, cv2pil, make_video
 
 
 class Camera:
@@ -64,10 +65,7 @@ class Camera:
                 assert os.path.exists(camera_matrix_path)
                 assert os.path.exists(distortion_coefficients_path)
                 self.camera_matrix = np.load(camera_matrix_path)
-                self.distortion_coefficients = np.load(
-                    distortion_coefficients_path
-                )
-
+                self.distortion_coefficients = np.load(distortion_coefficients_path)
 
             elif calibration_video_path is not None:
                 (
@@ -158,7 +156,7 @@ class Camera:
 
         return dst
 
-    def movie_iterator(self, calibrate : bool=False):
+    def movie_iterator(self, calibrate: bool = False):
         movie_iterator = MovieIterator(self.video_path)
         if not calibrate:
             for i, frame in enumerate(movie_iterator):
@@ -175,6 +173,15 @@ class Camera:
             x, y, w, h = roi
             dst = dst[y : y + h, x : x + w]
             yield dst
+
+    def save_calibrated_frames(self, save_path: str) -> None:
+        """Save calibrated frames as a video to disk.
+
+        Args:
+            save_path (str): path to save video to.
+        """
+        movie_iterator = self.movie_iterator(calibrate=True)
+        make_video(movie_iterator, self.video_fps, save_path)
 
     @cached_property
     def keypoint_map(self) -> Mapping:
@@ -207,7 +214,7 @@ class Camera:
 def read_pitch_keypoints(
     xmlfile: str, annot_type: str
 ) -> Tuple[np.ndarray, np.ndarray]:
-    tree = ET.parse(xmlfile)
+    tree = ElementTree.parse(xmlfile)
     root = tree.getroot()
 
     src = []
