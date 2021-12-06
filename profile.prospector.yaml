@@ -1,6 +1,6 @@
 output-format: grouped
 
-strictness: medium
+strictness: low
 doc-warnings: true
 
 ignore-paths:
@@ -16,11 +16,8 @@ mypy:
   run: true
   options:
     ignore-missing-imports: true
-    follow-imports: skip
-    allow:
-      - untyped-globals
-    disallow:
-      - untyped_defs
+    strict: true
+    strict-optional: true
 
 pep8:
   run:

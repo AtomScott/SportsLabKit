@@ -1,4 +1,4 @@
-.PHONY: clean data lint requirements sync_data_to_s3 sync_data_from_s3
+.PHONY: clean data lint requirements sync_data_to_s3 sync_data_from_s3 show-d
 
 #################################################################################
 # GLOBALS                                                                       #
@@ -75,6 +75,7 @@ endif
 ## Test python environment is setup correctly
 test_environment:
 	$(PYTHON_INTERPRETER) test_environment.py
+
 
 #################################################################################
 # PROJECT RULES                                                                 #
