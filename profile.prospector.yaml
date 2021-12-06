@@ -16,6 +16,7 @@ mypy:
   run: true
   options:
     ignore-missing-imports: true
+    follow-imports: skip
     strict: true
     strict-optional: true
 
