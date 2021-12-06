@@ -5,20 +5,17 @@ Subpackages
 -----------
 
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 5
 
    src.utils
 
 Submodules
 ----------
 
-src.detect module
------------------
+.. toctree::
+   :maxdepth: 5
 
-.. automodule:: src.detect
-   :members:
-   :undoc-members:
-   :show-inheritance:
+   src.detect
 
 Module contents
 ---------------
