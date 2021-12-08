@@ -3,7 +3,7 @@
 [![Documentation Status](https://readthedocs.org/projects/soccertrack/badge/?version=latest)](https://soccertrack.readthedocs.io/en/latest/?badge=latest)
 
 
-A short description of the project.
+SoccerTrack is a dataset for tracking soccer players and balls.
 
 Project Organization
 ------------
