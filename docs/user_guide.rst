@@ -1,1 +1,1 @@
-.. mdinclude:: ../user_guide.md
+.. mdinclude:: ../notebooks/user_guide.md
