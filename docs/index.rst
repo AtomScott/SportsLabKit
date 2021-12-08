@@ -9,5 +9,5 @@
         :hidden:
 
         Home <self>
-        User Guide <user_guide>
+        user_guide
         API Reference <source/modules>
