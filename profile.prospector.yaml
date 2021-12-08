@@ -11,10 +11,8 @@ dodgy:
 
 pylint:
   disable:
-    - missing-docstring
     - line-too-long
     - E1103
-    - duplicate-code
     - too-many-branches
     - too-many-arguments
     - too-many-locals
@@ -31,10 +29,6 @@ pylint:
     - lowercase-l-suffix
     - deprecated-module
     - global-variable-not-assigned
-    - unused-import
-    - unused-variable
-    - unused-argument
-    - unused-wildcard-import
     - redefined-builtin
     - redefine-in-handler
     - bare-except
@@ -61,15 +55,11 @@ mypy:
   run: true
   options:
     strict: true
+    strict-optional: true
     ignore-missing-imports: true
     follow-imports: skip
     allow:
       - untyped-calls
-      - untyped-globals
-    disallow:
-      - untyped-defs
-      - redundant-expr
-      - return-any
 
 pep8:
   run:
