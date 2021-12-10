@@ -1,3 +1,4 @@
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/e743f9314ada408aa62e5e95c21c65d2)](https://app.codacy.com/gh/AtomScott/SoccerTrack?utm_source=github.com&utm_medium=referral&utm_content=AtomScott/SoccerTrack&utm_campaign=Badge_Grade_Settings)
 [![Documentation Status](https://readthedocs.org/projects/soccertrack/badge/?version=latest)](https://soccertrack.readthedocs.io/en/latest/?badge=latest)
 
 
