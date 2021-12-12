@@ -44,9 +44,7 @@ clean:
 html:
 	rm -rf api _build
 	sphinx-apidoc -fMeET ../soccertrack/ -o api/ 
-	for f in api/*.rst; do\
-		perl -pi -e 's/(module|package)$$// if $$. == 1' $$f ;\
-	done
+	python prepend_titles.py
 
 	@echo "Auto-generation of API documentation finished. " \
 		"The generated files are in 'api/'"

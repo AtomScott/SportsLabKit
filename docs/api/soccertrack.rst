@@ -1,4 +1,7 @@
-soccertrack 
+soccertrack
+***********
+
+soccertrack package
 ===================
 
 .. automodule:: soccertrack
