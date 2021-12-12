@@ -1,7 +1,7 @@
-src
-===
+soccertrack
+===========
 
 .. toctree::
    :maxdepth: 4
 
-   src
+   soccertrack

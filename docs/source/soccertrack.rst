@@ -1,5 +1,5 @@
-src package
-===========
+soccertrack package
+===================
 
 Subpackages
 -----------
@@ -7,7 +7,7 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
-   src.utils
+   soccertrack.utils
 
 Submodules
 ----------
@@ -15,12 +15,12 @@ Submodules
 .. toctree::
    :maxdepth: 4
 
-   src.detect
+   soccertrack.detect
 
 Module contents
 ---------------
 
-.. automodule:: src
+.. automodule:: soccertrack
    :members:
    :undoc-members:
    :show-inheritance:
