@@ -1,5 +1,10 @@
-soccertrack.utils package
+soccertrack.utils 
 =========================
+
+.. automodule:: soccertrack.utils
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
 Submodules
 ----------
@@ -11,11 +16,3 @@ Submodules
    soccertrack.utils.detection
    soccertrack.utils.logger
    soccertrack.utils.utils
-
-Module contents
----------------
-
-.. automodule:: soccertrack.utils
-   :members:
-   :undoc-members:
-   :show-inheritance:

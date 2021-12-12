@@ -1,5 +1,10 @@
-soccertrack package
+soccertrack 
 ===================
+
+.. automodule:: soccertrack
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
 Subpackages
 -----------
@@ -16,11 +21,3 @@ Submodules
    :maxdepth: 4
 
    soccertrack.detect
-
-Module contents
----------------
-
-.. automodule:: soccertrack
-   :members:
-   :undoc-members:
-   :show-inheritance:

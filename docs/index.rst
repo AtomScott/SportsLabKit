@@ -10,5 +10,5 @@
 
         Home <self>
         User Guide <user_guide>
-        API Reference <source/modules>
+        API Reference <api>
         Contributing <contributing>

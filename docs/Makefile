@@ -42,7 +42,15 @@ clean:
 	-rm -rf $(BUILDDIR)/*
 
 html:
-	sphinx-apidoc -o source/ --force --separate ../soccertrack/
+	rm -rf api _build
+	sphinx-apidoc -fMeET ../soccertrack/ -o api/ 
+	for f in api/*.rst; do\
+		perl -pi -e 's/(module|package)$$// if $$. == 1' $$f ;\
+	done
+
+	@echo "Auto-generation of API documentation finished. " \
+		"The generated files are in 'api/'"
+
 	$(SPHINXBUILD) -E -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
