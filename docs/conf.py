@@ -26,10 +26,22 @@ sys.path.insert(0, os.path.abspath(".."))
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ["sphinx.ext.napoleon", "sphinx.ext.autodoc", "m2r2"]
+extensions = [
+    "sphinx.ext.napoleon",
+    "sphinx.ext.autodoc",
+    "sphinx.ext.todo",
+    "sphinx.ext.viewcode",
+    "m2r2",
+    "sphinx_autodoc_typehints",
+]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
+
+#
+# -- Options for TODOs -------------------------------------------------------
+#
+todo_include_todos = True
 
 # The suffix of source filenames.
 source_suffix = [".md", ".rst"]
@@ -97,19 +109,19 @@ html_theme = "furo"
 # further.  For a list of options available for each theme, see the
 # documentation.
 html_theme_options = {
-    "icon_links": [
-        {
-            "name": "Github",
-            "url": "https://github.com/AtomScott/SoccerTrack",
-            "icon": "fab fa-github-square",
-        },
-        {
-            "name": "Twitter",
-            "url": "https://twitter.com/AtomJamesScott",
-            "icon": "fab fa-twitter-square",
-        },
-    ],
-    "use_edit_page_button": False,
+    # "icon_links": [
+    #     {
+    #         "name": "Github",
+    #         "url": "https://github.com/AtomScott/SoccerTrack",
+    #         "icon": "fab fa-github-square",
+    #     },
+    #     {
+    #         "name": "Twitter",
+    #         "url": "https://twitter.com/AtomJamesScott",
+    #         "icon": "fab fa-twitter-square",
+    #     },
+    # ],
+    # "use_edit_page_button": False,
 }
 
 # Add any paths that contain custom themes here, relative to this directory.
@@ -145,14 +157,16 @@ html_static_path = ["_static"]
 # html_use_smartypants = True
 
 # Custom sidebar templates, maps document names to template names.
-html_sidebars = {"**": [
-    "sidebar/scroll-start.html",
-    "sidebar/brand.html",
-    "sidebar/search.html",
-    "sidebar/navigation.html",
-    "sidebar/ethical-ads.html",
-    "sidebar/scroll-end.html",
-]}
+html_sidebars = {
+    "**": [
+        "sidebar/scroll-start.html",
+        "sidebar/brand.html",
+        "sidebar/search.html",
+        "sidebar/navigation.html",
+        "sidebar/ethical-ads.html",
+        "sidebar/scroll-end.html",
+    ]
+}
 
 # Additional templates that should be rendered to pages, maps page names to
 # template names.
@@ -263,25 +277,25 @@ texinfo_documents = [
 # texinfo_show_urls = 'footnote'
 
 # -- Options for autodoc -------------------------------------------------------
-autoclass_content = 'both'
-autodoc_mock_imports = [ 
+autoclass_content = "both"
+autodoc_mock_imports = [
     # I think the imports should be `as imported`. For example, `sklean` instead
-    # of `scikit-learn`. 
-    'joblib',
-    'numpy',
-    'matplotlib',
-    'mplsoccer',
-    'opencv_python',
-    'pandas',
-    'Pillow',
-    'podm',
-    'scikit-learn',
-    'setuptools',
-    'tqdm',
-    'vidgear',
-    'cv2',
-    'torch',
-    'omegaconf',
-    'more_itertools',
-    'sklearn'
+    # of `scikit-learn`.
+    "joblib",
+    "numpy",
+    "matplotlib",
+    "mplsoccer",
+    "opencv_python",
+    "pandas",
+    "Pillow",
+    "podm",
+    "scikit-learn",
+    "setuptools",
+    "tqdm",
+    "vidgear",
+    "cv2",
+    "torch",
+    "omegaconf",
+    "more_itertools",
+    "sklearn",
 ]
