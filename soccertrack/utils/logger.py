@@ -4,7 +4,7 @@ import os
 import sys
 
 from loguru import logger
-from tqdm.auto import tqdm
+
 
 class LoggerMixin:
     def __init__(self):
@@ -55,7 +55,7 @@ class LevelFilter:
         self._level = level
 
 
-def set_log_level(level, tqdm=tqdm):
+def set_log_level(level):
     """Set the logging level for the logger"""
     level_filter.level = level
     os.environ["LOG_LEVEL"] = level
@@ -64,9 +64,21 @@ def tqdm(*args, level="INFO", **kwargs):
     """Wrapper for tqdm.tqdm that uses the logger's level"""
     from tqdm.auto import tqdm
     LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO")
+
     enable = logger.level(LOG_LEVEL).no <= logger.level(level.upper()).no
     kwargs.update({"disable" : not enable})
     return tqdm(*args, **kwargs)
+
+def inspect(*args, level="INFO", **kwargs):
+    """Wrapper for rich.inspect that uses the logger's level"""
+    from rich import inspect
+    LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO")
+    enable = logger.level(LOG_LEVEL).no <= logger.level(level.upper()).no
+    if enable:
+        logger.log(level, "Inspecting: {}".format(args))
+        inspect(*args, **kwargs)
+    else:
+        return None
 
 """
 Code that runs on `import .logger` 
@@ -101,8 +113,6 @@ config = {
 }
 
 logger.configure(**config)
-
-# logger.add(lambda msg: tqdm.write(msg, end=""))
 
 if __name__ == "__main__":
     """
