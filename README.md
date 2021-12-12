@@ -1,8 +1,6 @@
+# SoccerTrack
 [![Documentation Status](https://readthedocs.org/projects/soccertrack/badge/?version=latest)](https://soccertrack.readthedocs.io/en/latest/?badge=latest) [![Codacy Badge](https://app.codacy.com/project/badge/Grade/b121ddfb4e244b6d88096840bdcfa1a2)](https://www.codacy.com/gh/AtomScott/SoccerTrack/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=AtomScott/SoccerTrack&amp;utm_campaign=Badge_Grade)
 
-
-
-# SoccerTrack?
 
 SoccerTrack is a dataset and for tracking soccer players and balls.
 
