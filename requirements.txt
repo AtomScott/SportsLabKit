@@ -4,9 +4,11 @@ mplsoccer==1.0.5
 opencv_python==4.5.4.60
 pandas==1.3.4
 Pillow==8.4.0
-podm==0.1.dev0
 scikit_learn==1.0.1
 setuptools==58.0.4
 tqdm==4.62.3
 vidgear==0.2.3
 loguru==0.5.3
+
+# atomscott repos
+git+git@github.com:AtomScott/Python-Object-Detection-Metrics.git@20ea52eba4935c75fe868186112b39abb6fb01dd
