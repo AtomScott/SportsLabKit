@@ -11,4 +11,4 @@ vidgear==0.2.3
 loguru==0.5.3
 
 # atomscott repos
-git+git@github.com:AtomScott/Python-Object-Detection-Metrics.git@20ea52eba4935c75fe868186112b39abb6fb01dd
+# git+git@github.com:AtomScott/Python-Object-Detection-Metrics.git@20ea52eba4935c75fe868186112b39abb6fb01dd
