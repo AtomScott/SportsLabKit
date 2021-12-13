@@ -1,9 +1,11 @@
+""" Genereal utils """
 import os
 from datetime import datetime
 from typing import Mapping
 
 import cv2 as cv
 import numpy as np
+from numpy.typing import NDArray, Iterable
 from omegaconf import OmegaConf
 from PIL import Image
 from vidgear.gears import WriteGear
@@ -15,7 +17,15 @@ OmegaConf.register_new_resolver(
 )
 
 
-def load_config(yaml_path):
+def load_config(yaml_path: str) -> OmegaConf:
+    """Load config from yaml file.
+
+    Args:
+        yaml_path (str): Path to yaml file
+
+    Returns:
+        OmegaConf: Config object loaded from yaml file
+    """    
     assert os.path.exists(yaml_path)
     cfg = OmegaConf.load(yaml_path)
 
@@ -26,13 +36,26 @@ def load_config(yaml_path):
     return cfg
 
 
-def write_config(yaml_path: str, cfg: Mapping):
+def write_config(yaml_path: str, cfg: Mapping)  -> None:
+    """Write config to yaml file.
+
+    Args:
+        yaml_path (str): Path to yaml file
+        cfg (Mapping): Config object
+    """    
     assert os.path.exists(yaml_path)
     OmegaConf.save(cfg, yaml_path)
 
 
-def pil2cv(image):
-    """PIL型 -> OpenCV型"""
+def pil2cv(image: Image.Image) -> NDArray[np.uint8]:
+    """Convert PIL image to OpenCV image.
+
+    Args:
+        image (Image.Image): PIL image
+
+    Returns:
+        NDArray[np.uint8]: Numpy Array (OpenCV image)
+    """    
     new_image = np.array(image, dtype=np.uint8)
     if new_image.ndim == 2:  # モノクロ
         pass
@@ -43,8 +66,15 @@ def pil2cv(image):
     return new_image
 
 
-def cv2pil(image):
-    """OpenCV型 -> PIL型"""
+def cv2pil(image: NDArray[np.uint8]) -> Image.Image:
+    """Convert OpenCV image to PIL image.
+
+    Args:
+        image (NDArray[np.uint8]): Numpy Array (OpenCV image)
+
+    Returns:
+        Image.Image: PIL image
+    """    
     new_image = image.copy()
     if new_image.ndim == 2:  # モノクロ
         pass
@@ -59,7 +89,17 @@ def cv2pil(image):
 # Cell
 
 
-def make_video(frames, fps, outpath):
+def make_video(frames: Iterable[NDArray[np.uint8]], outpath:str) -> None:
+    """Make video from a list of opencv format frames.
+
+    Args:
+        frames (Iterable[NDArray[np.uint8]]): List of opencv format frames
+        outpath (str): Path to output video file
+
+    Todo:
+        * add FPS option
+        * functionality to use PIL image
+    """    
     writer = WriteGear(output_filename=outpath, compression_mode=True)
 
     # loop over
@@ -101,7 +141,7 @@ class MovieIterator:
                 self._index += 1
                 return img
             else:
-                logger.debug("Unexpected end.") # <- Not sure why this happens
+                logger.debug("Unexpected end.")  # <- Not sure why this happens
                 raise StopIteration
         raise StopIteration
 
