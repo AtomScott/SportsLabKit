@@ -1,11 +1,9 @@
+"""Detection utilities."""
 from typing import Optional
 
-import cv2 as cv
 import numpy as np
 from podm.bounding_box import BoundingBox
-from podm.utils.enumerators import BBFormat
 
-from soccertrack.utils import MovieIterator
 from soccertrack.utils.camera import Camera
 
 
@@ -18,6 +16,23 @@ class CandidateDetection(BoundingBox):
         detection_confidence: Optional[float] = None,
         from_bbox: Optional[BoundingBox] = None,
     ):
+        """Creates a new candidate detection.
+
+        Args:
+            camera (Camera): The camera that produced the detection.
+            frame_idx (Optional[int], optional): Frame index. Defaults to None.
+            detection_id (Optional[int], optional): Dection identification number Defaults to None.
+            detection_confidence (Optional[float], optional): Confidence of bounding box. Defaults to None.
+            from_bbox (Optional[BoundingBox], optional): `Bounding Box` to instantiate from. Defaults to None.
+
+        Raises:
+            NotImplementedError: Support for this instance without bbox is not implemented yet.
+
+        Todo:
+            * Implement support for this instance without bbox.
+            * Add attribute documentation. Try to inherit from `BoundBox`.
+            * Add examples.
+        """
         self.camera = camera
         self.frame_idx = frame_idx
         if from_bbox is not None:
@@ -33,6 +48,9 @@ class CandidateDetection(BoundingBox):
                 # type_coordinates=CoordinatesType.ABSOLUTE, # default should work
             )
         else:
+            super().__init__()
+            self.deteection_id = detection_id
+            self.detection_confidence = detection_confidence
             raise NotImplementedError()
 
         self.px, self.py = camera.video2pitch(np.array([self._y, self._x])).squeeze()

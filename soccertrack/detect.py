@@ -6,11 +6,12 @@ from typing import Any, Dict, Iterable, List, Optional, Tuple
 import numpy as np
 import torch
 from more_itertools import bucket, chunked
+from numpy.typing import NDArray
 from PIL import Image
 from podm.bounding_box import BoundingBox
 from podm.utils.enumerators import BBFormat, BBType, CoordinatesType
 from tqdm.auto import tqdm
-from numpy.typing import NDArray
+
 from soccertrack.utils.camera import Camera
 from soccertrack.utils.detection import CandidateDetection
 
@@ -77,7 +78,7 @@ def sort_candidates(
 
     Returns:
         Dict[int, List[CandidateDetection]]: Dictionary of lists of candidate detections sorted by frame number
-    """    
+    """
     candidate_detections.sort(
         key=lambda candidate_detection: candidate_detection.frame_idx
     )
@@ -89,6 +90,7 @@ def sort_candidates(
 
     dict_of_detections = {frame_idx: list(buckets[frame_idx]) for frame_idx in buckets}
     return dict_of_detections
+
 
 # TODO: decorator to verify model output
 # @verify_model_input
@@ -118,7 +120,7 @@ def yolov5_input_func(batch_input: Iterable[NDArray[np.uint8]]) -> Iterable[Any]
 
 
 # @verify_model_output
-def yolov5_output_func(batch_output:Any)->List[List[BoundingBox]]:
+def yolov5_output_func(batch_output: Any) -> List[List[BoundingBox]]:
     """Convert output from yolo v5 model to a list of lists of bounding box objects.
 
     Args:
@@ -126,7 +128,7 @@ def yolov5_output_func(batch_output:Any)->List[List[BoundingBox]]:
 
     Returns:
         List[List[BoundingBox]]: List of lists of bounding box objects
-    """    
+    """
     bounding_boxes_list = []
     for frame_idx, dets in enumerate(batch_output.pandas().xyxy):
         bounding_boxes = []
@@ -159,8 +161,8 @@ def get_detection_model(model_name: str) -> Any:
 
     Returns:
         Any: Model, input function and output function
-    """    
-    # 
+    """
+    #
 
     if model_name == "yolov5s":
         input_func = yolov5_input_func
@@ -186,5 +188,5 @@ def get_detection_model(model_name: str) -> Any:
             input_func,
             output_func,
         )  #  P6 model
-    
+
     raise ValueError(f"Unknown model name: {model_name}")

@@ -4,8 +4,17 @@ import math
 import os
 import warnings
 from functools import cached_property
-from typing import (Dict, Generator, Iterable, List, Mapping, Optional,
-                    Sequence, Tuple, Union)
+from typing import (
+    Dict,
+    Generator,
+    Iterable,
+    List,
+    Mapping,
+    Optional,
+    Sequence,
+    Tuple,
+    Union,
+)
 from xml.etree import ElementTree
 
 import cv2 as cv
@@ -14,8 +23,14 @@ from numpy.typing import ArrayLike, NDArray
 from podm.utils.enumerators import BBFormat
 from sklearn.decomposition import PCA
 
-from soccertrack.utils import (ImageIterator, MovieIterator, cv2pil, logger,
-                               make_video, tqdm)
+from soccertrack.utils import (
+    ImageIterator,
+    MovieIterator,
+    cv2pil,
+    logger,
+    make_video,
+    tqdm,
+)
 
 
 class Camera:
@@ -367,7 +382,11 @@ def read_pitch_keypoints(
 
 
 def find_intrinsic_camera_parameters(
-    video_path: str, fps: int = 1, s: int = 4, save_path: str = None, draw_on_save: bool = False
+    video_path: str,
+    fps: int = 1,
+    s: int = 4,
+    save_path: str = None,
+    draw_on_save: bool = False,
 ) -> Tuple[NDArray[np.float64], NDArray[np.float64]]:
     """Find intrinsic camera parameters.
 

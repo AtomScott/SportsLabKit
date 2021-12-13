@@ -1,11 +1,10 @@
-""" Genereal utils """
+"""Genereal utils."""
 import os
 from datetime import datetime
-from typing import Mapping
 
 import cv2 as cv
 import numpy as np
-from numpy.typing import NDArray, Iterable
+from numpy.typing import Iterable, NDArray
 from omegaconf import OmegaConf
 from PIL import Image
 from vidgear.gears import WriteGear
@@ -25,7 +24,7 @@ def load_config(yaml_path: str) -> OmegaConf:
 
     Returns:
         OmegaConf: Config object loaded from yaml file
-    """    
+    """
     assert os.path.exists(yaml_path)
     cfg = OmegaConf.load(yaml_path)
 
@@ -36,13 +35,13 @@ def load_config(yaml_path: str) -> OmegaConf:
     return cfg
 
 
-def write_config(yaml_path: str, cfg: Mapping)  -> None:
+def write_config(yaml_path: str, cfg: OmegaConf) -> None:
     """Write config to yaml file.
 
     Args:
         yaml_path (str): Path to yaml file
-        cfg (Mapping): Config object
-    """    
+        cfg (OmegaConf): Config object
+    """
     assert os.path.exists(yaml_path)
     OmegaConf.save(cfg, yaml_path)
 
@@ -55,7 +54,7 @@ def pil2cv(image: Image.Image) -> NDArray[np.uint8]:
 
     Returns:
         NDArray[np.uint8]: Numpy Array (OpenCV image)
-    """    
+    """
     new_image = np.array(image, dtype=np.uint8)
     if new_image.ndim == 2:  # モノクロ
         pass
@@ -74,7 +73,7 @@ def cv2pil(image: NDArray[np.uint8]) -> Image.Image:
 
     Returns:
         Image.Image: PIL image
-    """    
+    """
     new_image = image.copy()
     if new_image.ndim == 2:  # モノクロ
         pass
@@ -86,10 +85,7 @@ def cv2pil(image: NDArray[np.uint8]) -> Image.Image:
     return new_image
 
 
-# Cell
-
-
-def make_video(frames: Iterable[NDArray[np.uint8]], outpath:str) -> None:
+def make_video(frames: Iterable[NDArray[np.uint8]], outpath: str) -> None:
     """Make video from a list of opencv format frames.
 
     Args:
@@ -99,7 +95,8 @@ def make_video(frames: Iterable[NDArray[np.uint8]], outpath:str) -> None:
     Todo:
         * add FPS option
         * functionality to use PIL image
-    """    
+        * reconsider compression (current compression is not good)
+    """
     writer = WriteGear(output_filename=outpath, compression_mode=True)
 
     # loop over
@@ -114,11 +111,28 @@ def make_video(frames: Iterable[NDArray[np.uint8]], outpath:str) -> None:
     writer.close()
 
 
-# Cell
 class MovieIterator:
-    """Very simple iterator class for movie files."""
+    def __init__(self, path: str):
+        """Very simple iterator class for movie files.
 
-    def __init__(self, path):
+        Args:
+            path (str): Path to movie file
+
+        Attributes:
+            video_fps (int): Frames per second
+            video_frame_count (int): Total number of frames
+            vcInput (cv.VideoCapture): OpenCV VideoCapture object
+            img_width (int): Width of frame
+            img_height (int): Height of frame
+            path (str): Path to movie file
+
+        Raises:
+            FileNotFoundError: If file does not exist
+
+        """
+        if not os.path.isfile(path):
+            raise FileNotFoundError
+
         vcInput = cv.VideoCapture(path)
         self.vcInput = vcInput
         self.video_fps: int = int(vcInput.get(cv.CAP_PROP_FPS))
@@ -128,28 +142,29 @@ class MovieIterator:
         self.path = path
         self._index = 0
 
-    def __len__(self):
+    def __len__(self) -> int:
         return self.video_frame_count
 
-    def __iter__(self):
+    def __iter__(self) -> "MovieIterator":
         return self
 
-    def __next__(self):
+    def __next__(self) -> NDArray[np.uint8]:
         if self._index < len(self):
             ret, img = self.vcInput.read()
             if ret:
                 self._index += 1
                 return img
-            else:
-                logger.debug("Unexpected end.")  # <- Not sure why this happens
-                raise StopIteration
+            logger.debug("Unexpected end.")  # <- Not sure why this happens
         raise StopIteration
 
 
 class ImageIterator:
-    """Very simple iterator class for image files."""
+    def __init__(self, path: str):
+        """Very simple iterator class for image files.
 
-    def __init__(self, path):
+        Args:
+            path (str): Path to image file
+        """
         assert os.path.isdir(path), f"{path} is not a directory."
         self.path = path
 
@@ -163,20 +178,18 @@ class ImageIterator:
         self.imgs = imgs
         self._index = 0
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.imgs)
 
-    def __iter__(self):
+    def __iter__(self) -> "ImageIterator":
         return self
 
-    def __next__(self):
+    def __next__(self) -> NDArray[np.uint8]:
         if self._index < len(self):
             img = self.imgs[self._index]
             self._index += 1
             return img
-        else:
-            logger.debug("Unexpected end.")
-            raise StopIteration
+        raise StopIteration
 
 
 # Due to memory consumption concerns, the function below has been replaced by the function that uses vidgear above.
