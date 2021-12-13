@@ -1,0 +1,34 @@
+cameras:
+- label: left
+  video_path: ../../data/raw/left_camera.mp4
+  keypoint_xml: ../../data/raw/left_keypoints.xml
+  calibration_video_path: ../../data/raw/left_checkerboard_images/
+  x_range:
+  - 0
+  - 52.5
+  y_range:
+  - 0
+  - 68
+  camera_matrix: null
+  camera_matrix_path: null
+  distortion_coefficients: null
+  distortion_coefficients_path: null
+- label: right
+  video_path: ../../data/raw/right_camera.mp4
+  keypoint_xml: ../../data/raw/right_keypoints.xml
+  calibration_video_path: ../../data/raw/right_checkerboard_images/
+  x_range:
+  - 52.5
+  - 105
+  y_range:
+  - 0
+  - 68
+  camera_matrix: null
+  camera_matrix_path: null
+  distortion_coefficients: null
+  distortion_coefficients_path:  null
+detection:
+  model_name: yolov5x
+  size: 3000
+  batch_size: 32
+outdir: ../../data/processed/
