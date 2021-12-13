@@ -43,7 +43,7 @@ clean:
 
 html:
 	rm -rf api _build
-	sphinx-apidoc -fMeET ../soccertrack/ -o api/ 
+	sphinx-apidoc -t _templates -fMeET ../soccertrack/ -o api/ 
 	python prepend_titles.py
 
 	@echo "Auto-generation of API documentation finished. " \

@@ -30,6 +30,7 @@ extensions = [
     "sphinx.ext.napoleon",
     "sphinx.ext.autodoc",
     "sphinx.ext.todo",
+    "sphinx.ext.autosummary",
     "sphinx.ext.viewcode",
     "m2r2",
     "sphinx_autodoc_typehints",
