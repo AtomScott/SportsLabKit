@@ -1,21 +1,16 @@
-import warnings
-from typing import Any, Dict, List, Optional, Union
+"""Tools to retrieve bounding boxes from a given object detector."""
 
-import cv2
-import matplotlib.pyplot as plt
+import warnings
+from typing import Any, Dict, Iterable, List, Optional, Tuple
+
 import numpy as np
-import pandas as pd
 import torch
-from joblib import Parallel, delayed
-from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from more_itertools import bucket, chunked
-from mplsoccer import Pitch, VerticalPitch
 from PIL import Image
 from podm.bounding_box import BoundingBox
 from podm.utils.enumerators import BBFormat, BBType, CoordinatesType
 from tqdm.auto import tqdm
-
-from soccertrack.utils import MovieIterator
+from numpy.typing import NDArray
 from soccertrack.utils.camera import Camera
 from soccertrack.utils.detection import CandidateDetection
 
@@ -26,24 +21,24 @@ def detect_objects(
     batch_size: int,
     size: Optional[int],
     filter_range: bool = True,
-) -> Union[Dict[int, List[CandidateDetection]], Dict[int, List[CandidateDetection]]]:
-    """[summary]
+) -> Tuple[Dict[int, List[CandidateDetection]], Dict[int, List[CandidateDetection]]]:
+    """Detect object from a list of camera objects.
 
     Args:
-        cameras (List[Camera]): [description]
-        model_name (str): [description]
-        batch_size (int): [description]
+        cameras (List[Camera]): List of cameras
+        model_name (str): Name of the model to use
+        batch_size (int): Batch size
         size (Optional[int]): list of lists of detections sorted by frame number
+        filter_range (bool): Filter detections by range specified in the camera object
 
     Returns:
-        List[List[CandidateDetection]]: [description]
+        List[List[CandidateDetection]]: List of lists of detections sorted by frame number
     """
     ball_candidate_detections = []
     person_candidate_detections = []
     model, input_func, output_func = get_detection_model(model_name)
     for camera in cameras:
         bounding_boxes_list = []
-        frame_idxs = []
         movie_iterator = camera.movie_iterator(True)
 
         for batch in chunked(tqdm(movie_iterator), batch_size):
@@ -66,19 +61,23 @@ def detect_objects(
                 else:
                     warnings.warn(f"Unknown class id {candidate_detection._class_id}")
 
-    ball_candidate_detections = sort_candidates(ball_candidate_detections)
-    person_candidate_detections = sort_candidates(person_candidate_detections)
+    person_candidate_detections_dict = sort_candidates(person_candidate_detections)
+    ball_candidate_detections_dict = sort_candidates(ball_candidate_detections)
 
-    return person_candidate_detections, ball_candidate_detections
+    return person_candidate_detections_dict, ball_candidate_detections_dict
 
 
 def sort_candidates(
     candidate_detections: List[CandidateDetection],
 ) -> Dict[int, List[CandidateDetection]]:
+    """Sort candidate detections by frame number.
 
-    # sort detections by frame number
-    # return list of lists of detections
+    Args:
+        candidate_detections (List[CandidateDetection]): List of candidate detections
 
+    Returns:
+        Dict[int, List[CandidateDetection]]: Dictionary of lists of candidate detections sorted by frame number
+    """    
     candidate_detections.sort(
         key=lambda candidate_detection: candidate_detection.frame_idx
     )
@@ -90,26 +89,18 @@ def sort_candidates(
 
     dict_of_detections = {frame_idx: list(buckets[frame_idx]) for frame_idx in buckets}
     return dict_of_detections
-    # return buckets
-    # df_ball = pd.DataFrame()
-    # df_person = pd.DataFrame()
 
-    # for i, batch in enumerate(chunked(tqdm(movie_iterator), batch_size)):
-    #     if fast:
-    #         results = model(batch, size=500, augment=False)
-    #     else:
-    #         results = model(batch, size=movie_iterator.img_width, augment=True)
-
-    #     for j, row in enumerate(results.pandas().xyxy):
-    #         row["frame"] = i * batch_size + j
-    #         df_ball = pd.concat([df_ball, row[row["name"] == "sports ball"]])
-    #         df_person = pd.concat([df_person, row[row["name"] == "person"]])
-    # return df_person, df_ball
-
-
+# TODO: decorator to verify model output
 # @verify_model_input
-def yolov5_input_func(batch_input) -> List[Any]:
-    # model input is a list of PIL images or RGB cv2 images
+def yolov5_input_func(batch_input: Iterable[NDArray[np.uint8]]) -> Iterable[Any]:
+    """Convert input to yolo v5 model input.
+
+    Args:
+        batch_input (Iterable): List of images
+
+    Returns:
+        List[Any]: A list of PIL images or RGB cv2 images
+    """
     assert any(
         [
             isinstance(batch_input, list),
@@ -127,11 +118,19 @@ def yolov5_input_func(batch_input) -> List[Any]:
 
 
 # @verify_model_output
-def yolov5_output_func(batch_output):
+def yolov5_output_func(batch_output:Any)->List[List[BoundingBox]]:
+    """Convert output from yolo v5 model to a list of lists of bounding box objects.
+
+    Args:
+        batch_output (Any): Output from yolo v5 model
+
+    Returns:
+        List[List[BoundingBox]]: List of lists of bounding box objects
+    """    
     bounding_boxes_list = []
     for frame_idx, dets in enumerate(batch_output.pandas().xyxy):
         bounding_boxes = []
-        for det_idx, det in dets.iterrows():
+        for _, det in dets.iterrows():
 
             bbox = BoundingBox(
                 image_name=batch_output.files[frame_idx],
@@ -150,7 +149,18 @@ def yolov5_output_func(batch_output):
 
 
 def get_detection_model(model_name: str) -> Any:
-    # wrap models so that they return bounding box objects
+    """Wrap models to return bounding box objects.
+
+    Args:
+        model_name (str): Name of the model to use
+
+    Raises:
+        ValueError: If model name is not supported
+
+    Returns:
+        Any: Model, input function and output function
+    """    
+    # 
 
     if model_name == "yolov5s":
         input_func = yolov5_input_func
@@ -160,7 +170,15 @@ def get_detection_model(model_name: str) -> Any:
             input_func,
             output_func,
         )  #  P6 model
-    elif model_name == "yolov5x":
+    if model_name == "yolov5m":
+        input_func = yolov5_input_func
+        output_func = yolov5_output_func
+        return (
+            torch.hub.load("ultralytics/yolov5", "yolov5m"),
+            input_func,
+            output_func,
+        )  #  P6 model
+    if model_name == "yolov5x":
         input_func = yolov5_input_func
         output_func = yolov5_output_func
         return (
@@ -168,53 +186,5 @@ def get_detection_model(model_name: str) -> Any:
             input_func,
             output_func,
         )  #  P6 model
-    else:
-        raise ValueError(f"Unknown model name: {model_name}")
-
-
-# TODO: add visualization of detections
-# def visualize_results(videopath, df_ball, df_person, outpath):
-#     imgs = []
-#     movie_iterator = MovieIterator(videopath)
-#     for frame_idx, img in enumerate(tqdm(movie_iterator)):
-#         frame_df_ball = df_ball[df_ball["frame"] == frame_idx][
-#             ["xmin", "ymin", "xmax", "ymax", "confidence", "name"]
-#         ]
-#         frame_df_person = df_person[df_person["frame"] == frame_idx][
-#             ["xmin", "ymin", "xmax", "ymax", "confidence", "name"]
-#         ]
-
-#         for row_idx, row in frame_df_person.iterrows():
-#             color = (0, 0, 255)
-#             confidence = row.pop("confidence")
-#             label = row.pop("name")
-#             xmin, ymin, xmax, ymax = pd.to_numeric(row).values.round().astype(int)
-#             img = cv2.rectangle(img, (xmin, ymin), (xmax, ymax), color=color)
-#             cv2.putText(
-#                 img,
-#                 f"{label} {confidence:.3f}",
-#                 (xmin, ymin - 10),
-#                 cv2.FONT_HERSHEY_SIMPLEX,
-#                 0.9,
-#                 color,
-#                 2,
-#             )
-
-#         for row_idx, row in frame_df_ball.iterrows():
-#             color = (0, 255, 0)
-#             confidence = row.pop("confidence")
-#             label = row.pop("name")
-#             xmin, ymin, xmax, ymax = pd.to_numeric(row).values.round().astype(int)
-#             img = cv2.rectangle(img, (xmin, ymin), (xmax, ymax), color=color)
-#             cv2.putText(
-#                 img,
-#                 f"{label} {confidence:.3f}",
-#                 (xmin, ymin - 10),
-#                 cv2.FONT_HERSHEY_SIMPLEX,
-#                 0.9,
-#                 color,
-#                 2,
-#             )
-
-#         imgs.append(img)
-#     make_video(imgs, movie_iterator.video_fps, outpath)
+    
+    raise ValueError(f"Unknown model name: {model_name}")
