@@ -36,6 +36,12 @@ This project was based on the [cookiecutter data science template](https://drive
 
 # Roadmap
 
+## Release 0.0.1 !
+
+* [] Add a simple example notebook.
+* [] Add auto summary to docs (fork apidoc and include module members to jinja context).
+
+
 # Contributing
 
 See the [Contributing Guide](https://soccertrack.readthedocs.io/en/latest/contributing.html) for more information.
