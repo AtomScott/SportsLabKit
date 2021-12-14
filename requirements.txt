@@ -9,6 +9,7 @@ setuptools==58.0.4
 tqdm==4.62.3
 vidgear==0.2.3
 loguru==0.5.3
+rich==10.14.0
 
 # atomscott repos
 # git+git@github.com:AtomScott/Python-Object-Detection-Metrics.git@20ea52eba4935c75fe868186112b39abb6fb01dd
