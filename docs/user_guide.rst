@@ -1,5 +1,6 @@
-.. Indices and tables
-.. ==================
+******************
+User Guide
+******************
 
 This is the user guide.
 
@@ -10,16 +11,16 @@ This is the user guide.
         notebooks/detect_and_track/detect_and_track.ipynb
         notebooks/dev/logging-demo.ipynb
 
-.. Detection and Tracking Example
-.. ------------------------------
+Detection and Tracking Example
+******************************
 
-See [detect_and_track.ipynb](notebooks/detect_and_track/detect_and_track.ipynb) for an example.
+See `detect_and_track <detect_and_track>`_ for an example.
 
 
-.. Developer Guide
-.. ------------------------------
+Developer Guide
+******************
 
 This section explains some of the utilities provided by the library. 
 See the contributor guide for more information on how to help with development.
 
-* `logger.py` - Logging utilities. See the [logging demo](notebooks/dev/logging-demo.ipynb) for example usage.
+* `logger.py` - Logging utilities. See the `logging <detect_and_track>`_  for example usage.
