@@ -43,7 +43,7 @@ clean:
 
 html:
 	rm -rf api _build
-	ln -sf $(realpath ../notebooks) $(realpath .)
+	ln -sf ../notebooks .
 	sphinx-apidoc -t _templates -fMeET ../soccertrack/ -o api/ 
 	python prepend_titles.py
 
