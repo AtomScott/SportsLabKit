@@ -1,10 +1,10 @@
 """Genereal utils."""
 import os
 from datetime import datetime
-
+from typing import Iterable
 import cv2 as cv
 import numpy as np
-from numpy.typing import Iterable, NDArray
+from numpy.typing import NDArray
 from omegaconf import OmegaConf
 from PIL import Image
 from vidgear.gears import WriteGear
