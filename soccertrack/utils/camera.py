@@ -235,7 +235,7 @@ class Camera:
                 for pitch_keypoint in self.source_keypoints:
                     cv.circle(frame, pitch_keypoint.astype(int), 5, (0, 0, 255), -1)
             output_frames.append(frame)
-        make_video(output_frames, self.video_fps, save_path)
+        make_video(output_frames, save_path)
 
     def undistort_points(self, points: ArrayLike) -> NDArray[np.float64]:
         """Undistort points with the camera matrix and distortion coefficients.
