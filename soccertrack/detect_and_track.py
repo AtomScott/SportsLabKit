@@ -8,12 +8,11 @@ from rich import print
 # from soccertrack.utils import load_config
 # from soccertrack.utils.camera import load_cameras, find_intrinsic_camera_parameters
 from soccertrack.detect import detect_objects
-from typing import List, Dict, Any, TypeVar, Callable
+from typing import List, Dict, Any, TypeVar, Callable, Tuple
 # from soccertrack.utils import cv2pil
 
 from mplsoccer import Pitch
 import matplotlib.pyplot as plt
-import numpy as np
 from IPython.display import Video, display
 
 
@@ -33,9 +32,21 @@ from IPython.display import Video, display
 F = TypeVar('F', bound=Callable[..., Any])
 
 
-def merge_dict_of_lists(d1, d2):
+def merge_dict_of_lists(
+    d1:dict, 
+    d2:dict
+) -> Dict[dict, dict]:
+    """Merge two dictionaries of lists.
+
+    Args:  
+        d1 (dict): Dictionary of lists.
+        d2 (dict): Dictionary of lists.
+
+    Returns:
+        ret: Dictionary of lists.
+    """
     ret = {k:v for k,v in d1.items()}
-    for k, v in d1.items():
+    for k in d1.items():
         if k in d2.keys():
             ret[k] += d2[k]
         else:
@@ -43,6 +54,17 @@ def merge_dict_of_lists(d1, d2):
     return ret
 
 def display_detected_video(cfg, cameras):
+    """Display detected video.
+    
+    Args:
+        cfg (dict): Configuration dictionary.
+        cameras (list): List of cameras(camera configuration).
+    
+    Returns:
+        video (Video): Video object.
+        ball_detections (list): List of ball detections.
+        player_detections (list): List of player detections.
+    """
 
     player_detections, ball_detections = detect_objects(
         cameras,
@@ -69,7 +91,10 @@ def display_detected_video(cfg, cameras):
     return video, ball_detections, player_detections
 
 
-def display_detected_video_with_pitch(player_detections: dict, cameras: list):
+def display_detected_video_with_pitch(
+    player_detections: dict, 
+    cameras: list
+):
     """Display detected video with pitch overlay.
 
     Args:
