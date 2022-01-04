@@ -14,7 +14,7 @@ This is the user guide.
 Detection and Tracking Example
 ******************************
 
-See `detect_and_track <notebooks/detect_and_track/detect_and_track>`_ for an example.
+See `detect_and_track <notebooks/detect_and_track/detect_and_track.html>`_ for an example.
 
 
 Developer Guide
@@ -23,4 +23,4 @@ Developer Guide
 This section explains some of the utilities provided by the library. 
 See the contributor guide for more information on how to help with development.
 
-* `logger.py` - Logging utilities. See the `logging <notebooks/dev/logging-demo>`_  for example usage.
+* `logger.py` - Logging utilities. See the `logging <notebooks/dev/logging-demo.html>`_  for example usage.
