@@ -93,9 +93,11 @@ def make_video(
     crf: int = 23,
     ss: int = 0,
     t: Optional[int] = None,
-    c: bool = False,
-    scale_filter: Optional[str] = None,
+    c: Optional[str] = None,
+    height: Optional[int] = -1,
+    width: Optional[int] = -1,
     input_framerate: int = 30,
+    logging: bool = False,
 ) -> None:
     """Make video from a list of opencv format frames.
 
@@ -129,38 +131,42 @@ def make_video(
         ss (int): Start-time of the clip in seconds. Defaults to `0`.
         t (Optional[int]): Duration of the clip in seconds. Defaults to None.
         c (bool): copies the first video, audio, and subtitle bitstream from the input to the output file without re-encoding them. Defaults to `False`.
-        scale_fiter (str): Scale filter. Defaults to `None`. If you need to simply resize your video to a specific size (e.g 320×240), `320:240` is the correct value.
-            If you want to keep the aspect ratio, specify only one component, either width or height, and set the other component to -1
+        height (int): Video height. Defaults to `None`.
+        width (int): Video width. Defaults to `None`. 
         input_framerate (int): Input framerate. Defaults to `25`.
+        logging (bool): Logging. Defaults to `False`.
     Todo:
         * add FPS option
         * functionality to use PIL image
         * reconsider compression (current compression is not good)
     """
 
+    scale_filter = f"scale={width}:{height}" 
     output_params = {
         k: v
         for k, v in {
             "-vcodec": vcodec,
             # encoding quality
-            "-crf": 0,
-            "-preset": "medium",
+            "-crf": crf,
+            "-preset": preset,
+            # size
+            "-vf": scale_filter,
             # Trimming
             "-c": c,
             "-ss": ss,
             "-t": t,
             # frame rate
             "-input_framerate": input_framerate,
-        }
+        }.items()
         if v is not None
     }
 
     writer = WriteGear(
-        output_filename=outpath, compression_mode=True, output_params=output_params
+        output_filename=outpath, compression_mode=True, logging=logging, **output_params
     )
 
     # loop over
-    for frame in tqdm(frames):
+    for frame in tqdm(frames, desc="Writing video", level="DEBUG"):
 
         # simulating RGB frame for example
         frame_rgb = frame[:, :, ::-1]
