@@ -195,6 +195,7 @@ class Camera:
         calibrate: bool = True,
         filter_range: bool = True,
         frames: Union[int, str] = "all",
+        **kwargs
     ) -> None:
 
         """Visualize candidate detections.
@@ -204,12 +205,14 @@ class Camera:
             save_path (str): path to save video.
             plot_pitch_keypoints (bool): Option to plot pitch keypoints. Defaults to False.
             calibrate (bool): Option to calibrate frames. Defaults to True.
-
+        
+        Note:
+            kwargs are passed to `make_video`, so it is recommended that you refere to the documentation for `make_video`.
         """
         movie_iterator = self.movie_iterator(calibrate=calibrate)
 
         output_frames = []
-        for i, frame in tqdm(enumerate(movie_iterator)):
+        for i, frame in tqdm(enumerate(movie_iterator), level="DEBUG", desc="Sorting frames"): 
             if isinstance(frames, int):
                 if i > frames:
                     break
@@ -235,7 +238,7 @@ class Camera:
                 for pitch_keypoint in self.source_keypoints:
                     cv.circle(frame, pitch_keypoint.astype(int), 5, (0, 0, 255), -1)
             output_frames.append(frame)
-        make_video(output_frames, save_path)
+        make_video(output_frames, save_path, **kwargs)
 
     def undistort_points(self, points: ArrayLike) -> NDArray[np.float64]:
         """Undistort points with the camera matrix and distortion coefficients.
