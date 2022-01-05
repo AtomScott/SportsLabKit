@@ -53,10 +53,22 @@ class CandidateDetection(BoundingBox):
             self.detection_confidence = detection_confidence
             raise NotImplementedError()
 
-        self.px, self.py = camera.video2pitch(np.array([self._y, self._x])).squeeze()
+        self.px, self.py = camera.video2pitch(np.array([self._x, self._y])).squeeze()
         self.in_range = all(
             [
                 self.camera.x_range[0] <= self.px <= self.camera.x_range[-1],
                 self.camera.y_range[0] <= self.py <= self.camera.y_range[-1],
             ]
         )
+
+    @property
+    def _feature_xy(self):
+        return np.array([self.px, self.py])
+
+    @property
+    def _feature_motion(self):
+        return np.array([self.px, self.py])
+
+    @property
+    def _feature_appearance(self):
+        pass
