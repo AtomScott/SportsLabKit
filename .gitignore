@@ -1,5 +1,4 @@
 data/*/.gitkeep 
-data/processed/*
 data/results/*
 *.pt
 
