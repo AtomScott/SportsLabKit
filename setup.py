@@ -3,7 +3,7 @@ from setuptools import find_packages, setup
 import os
 from setuptools import setup
 
-with open('requirements.txt') as f:
+with open("requirements.txt") as f:
     required = f.read().splitlines()
 
 
