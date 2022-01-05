@@ -30,5 +30,6 @@ cameras:
 detection:
   model_name: yolov5x
   size: 3000
-  batch_size: 32
+  batch_size: 1
+  filter_range: True
 outdir: ../../data/processed/
