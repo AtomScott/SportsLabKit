@@ -336,6 +336,16 @@ class Camera:
         )
         return H
 
+    @cached_property
+    def fps(self) -> int:
+        """Get video fps.
+
+        Returns:
+            int: video fps.
+
+        """
+        return MovieIterator(self.video_path).video_fps
+
 
 def read_pitch_keypoints(
     xmlfile: str, annot_type: str
@@ -385,7 +395,7 @@ def read_pitch_keypoints(
 
 
 def find_intrinsic_camera_parameters(
-    video_path: str,
+    video_path: Union[str, List[str]],
     fps: int = 1,
     s: int = 4,
     save_path: str = None,
@@ -403,6 +413,11 @@ def find_intrinsic_camera_parameters(
         Tuple[NDArray[np.float64], NDArray[np.float64]]: camera matrix and distortion coefficients.
 
     """
+    if isinstance(video_path, str):
+        video_paths = [video_path]
+    else:
+        video_paths = video_path
+
     criteria = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 100, 0.001)
 
     # prepare object points, like (0,0,0), (1,0,0), (2,0,0) ....,(6,5,0)
@@ -413,43 +428,44 @@ def find_intrinsic_camera_parameters(
     objpoints = []  # 3d point in real world space
     imgpoints = []  # 2d points in image plane.
 
-    # list to store images with drawen corners
+    # list to store images with drawn corners
     imgs = []
 
-    if os.path.isdir(video_path):
-        movie_iterator = ImageIterator(video_path)
-        nskip = 1
-    else:
-        movie_iterator = MovieIterator(video_path)
-        nskip = math.ceil(movie_iterator.video_fps / fps)
+    for video_path in video_paths:
+        if os.path.isdir(video_path):
+            movie_iterator = ImageIterator(video_path)
+            nskip = 1
+        else:
+            movie_iterator = MovieIterator(video_path)
+            nskip = math.ceil(movie_iterator.video_fps / fps)
 
-    assert len(movie_iterator) > 0, "No images found in video."
-    for i, frame in enumerate(tqdm(movie_iterator, total=len(movie_iterator))):
-        if i % nskip != 0:
-            continue
+        assert len(movie_iterator) > 0, "No images found in video."
+        for i, frame in enumerate(tqdm(movie_iterator, total=len(movie_iterator))):
+            if i % nskip != 0:
+                continue
 
-        gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
+            gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
 
-        # scale image for faster detection
-        gray_small = cv.resize(gray, None, fx=1 / s, fy=1 / s)
+            # scale image for faster detection
+            gray_small = cv.resize(gray, None, fx=1 / s, fy=1 / s)
 
-        # Find the chess board corners
-        ret, corners = cv.findChessboardCorners(image=gray_small, patternSize=(9, 5))
+            # Find the chess board corners
+            ret, corners = cv.findChessboardCorners(image=gray_small, patternSize=(9, 5))
 
-        if ret is True:
-            corners *= s
-            corners2 = cv.cornerSubPix(gray, corners, (11, 11), (-1, -1), criteria)
+            if ret is True:
+                corners *= s
+                corners2 = cv.cornerSubPix(gray, corners, (11, 11), (-1, -1), criteria)
 
-            objpoints.append(objp)
-            imgpoints.append(corners2)
+                objpoints.append(objp)
+                imgpoints.append(corners2)
 
-            if save_path:
-                if draw_on_save:
-                    # Draw and display the corners
-                    img = cv.drawChessboardCorners(frame, (9, 5), corners2, ret)
-                    imgs.append(img)
-                else:
-                    imgs.append(frame)
+                if save_path:
+                    if draw_on_save:
+                        # Draw and display the corners
+                        img = cv.drawChessboardCorners(frame, (9, 5), corners2, ret)
+                        imgs.append(img)
+                    else:
+                        imgs.append(frame)
 
     # speed up
     logger.debug(imgpoints)
