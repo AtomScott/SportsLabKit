@@ -111,6 +111,29 @@ def visualize_cameras(
                 logger.info(f"Saving {os.path.basename(tmp_path)}")
                 os.rename(tmp_path, os.path.join(save_dir, os.path.basename(tmp_path)))
 
+def get_xsys(detections: Iterable[CandidateDetection], cameras:Iterable[Camera]):
+    if isinstance(detections, dict):
+        detections = list(detections.values())
+
+    xs, ys = [], []
+    for dets in detections:
+        if isinstance(dets, CandidateDetection):
+            dets = [dets]
+        else:
+            raise ValueError(f"{dets} is not a CandidateDetection or a list of CandidateDetections")
+        for pd in dets:
+            if pd.camera.label == cameras[0].label:
+                px, py = cameras[0].video2pitch(np.array([pd._x, pd._y])).squeeze()
+            elif pd.camera.label == cameras[1].label:
+                px, py = cameras[1].video2pitch(np.array([pd._x, pd._y])).squeeze()
+            else:
+                raise ValueError("camera label not found")
+
+            assert px == pd.px, (px, pd.px)
+            assert py == pd.py, (py, pd.py)
+            xs.append(px)
+            ys.append(py)
+    return xs, ys
 
 def visualize_cameras_to_pitch(
     cameras: Iterable[Camera],
@@ -118,29 +141,9 @@ def visualize_cameras_to_pitch(
     save_path: str = "",
     plot_keypoints: bool = False,
     auto_grid: bool = True,
+    afterimage: int = 5,
     **kwargs,
 ):
-    def get_xsys(detections: Iterable[CandidateDetection], cameras:Iterable[Camera]):
-        if isinstance(detections, dict):
-            detections = list(detections.values())
-
-        xs, ys = [], []
-        for dets in detections:
-            if isinstance(dets, CandidateDetection):
-                dets = [dets]
-            for pd in dets:
-                if pd.camera.label == cameras[0].label:
-                    px, py = cameras[0].video2pitch(np.array([pd._x, pd._y])).squeeze()
-                elif pd.camera.label == cameras[1].label:
-                    px, py = cameras[1].video2pitch(np.array([pd._x, pd._y])).squeeze()
-                else:
-                    raise ValueError("camera label not found")
-
-                assert px == pd.px, (px, pd.px)
-                assert py == pd.py, (py, pd.py)
-                xs.append(px)
-                ys.append(py)
-        return xs, ys
 
     pitch = Pitch(
         pitch_color="black",
@@ -159,12 +162,21 @@ def visualize_cameras_to_pitch(
                 kys.append(y)
 
     frames = []
+    prev_xs, prev_ys = [], []
     for candidate_detections_per_frame in tqdm(candidate_detections.values(), level="DEBUG", desc="Drawing pitch"):
         xs, ys = get_xsys(candidate_detections_per_frame, cameras)
 
         fig, ax = pitch.draw()
         ax.scatter(xs, ys, color="deeppink")
         if plot_keypoints: ax.scatter(kxs, kys, color="red")
+        
+        len_afterimage = min(afterimage, len(prev_xs))
+        if len_afterimage > 0:
+            size = np.linspace(0.3, 1, len_afterimage) * 20
+            alpha = np.linspace(0.2, 1, len_afterimage)
+
+            for i in range(len_afterimage):
+                ax.scatter(prev_xs[-i], prev_ys[-i], color="deeppink", s=size[-i], alpha=alpha[-i])
         fig.canvas.draw()
         
         with io.BytesIO() as buff:
@@ -176,6 +188,8 @@ def visualize_cameras_to_pitch(
 
         frames.append(img)
         plt.close()
+        prev_xs.append(xs)
+        prev_ys.append(ys)
 
 
     make_video(frames, outpath=save_path)
