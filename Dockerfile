@@ -12,4 +12,5 @@ RUN apt-get install time
 COPY requirements.txt requirements.txt
 RUN pip3 install -r requirements.txt
 
-RUN pip install https://github.com/AtomScott/Python-Object-Detection-Metrics.git
+RUN git clone https://github.com/AtomScott/Python-Object-Detection-Metrics.git
+RUN pip install ./Python-Object-Detection-Metrics
