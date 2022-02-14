@@ -1,5 +1,7 @@
+data/*
 data/*/.gitkeep 
 data/results/*
+
 *.pt
 
 # Byte-compiled / optimized / DLL files
