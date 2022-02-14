@@ -157,7 +157,7 @@ config = {
     "handlers": [
         {
             "sink": sys.stdout,
-            "format": "<level><b>{extra[classname]}{function}:{line}</b>\t{level.icon}</level>| {message}",
+            "format": "<level>{extra[classname]}{function}:{line}\t{level.icon}| {message} </level>",
             "colorize": True,
             "filter": level_filter,
         },
@@ -165,9 +165,9 @@ config = {
     "levels": [
         {"name": "DEBUG", "color": "<white>", "icon": "🐛"},
         {"name": "INFO", "color": "<cyan>", "icon": "💬"},
-        {"name": "SUCCESS", "color": "<green>", "icon": "✔️"},
-        {"name": "WARNING", "color": "<yellow>", "icon": "⚠️"},
-        {"name": "ERROR", "color": "<red>", "icon": "❌"},
+        {"name": "SUCCESS", "color": "<green>", "icon": "✅"},
+        {"name": "WARNING", "color": "<yellow>", "icon": "🤔"},
+        {"name": "ERROR", "color": "<light-red>", "icon": "❌"},
         {"name": "CRITICAL", "color": "<red>", "icon": "🔥"},
     ],
     "patcher": patcher,
