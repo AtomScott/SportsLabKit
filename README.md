@@ -4,14 +4,22 @@
 
 SoccerTrack is a dataset and for tracking soccer players and balls.
 
-# Installation
+## Installation
 
+```
+pip install -e .
+```
 
-# User Guide
+```
+pip install -e .
+```
+
+If install takes too long, try upgrading pip with `pip install --upgrade pip` and then try again.
+## User Guide
 
 See the [User Guide](https://soccertrack.readthedocs.io/en/latest/user_guide.html) for more information.
 
-# Project Organization
+## Project Organization
 
 This project was based on the [cookiecutter data science template](https://drivendata.github.io/cookiecutter-data-science/), but some folders were removed. Below is a brief overview of the current project structure. 
 
@@ -33,15 +41,22 @@ This project was based on the [cookiecutter data science template](https://drive
     │
     └── models             <- Trained model weights (only minimum stuff on github).
 ```
+## Data
 
-# Roadmap
+Data is uploaded on 
 
-## Release 0.0.1 !
+## Docker
+
+[Dockerhub](https://hub.docker.com/repository/docker/atomscott/soccertrack)
+
+## Roadmap
+
+### Release 0.0.1 !
 
 * [] Add a simple example notebook.
 * [] Add auto summary to docs (fork apidoc and include module members to jinja context).
 
 
-# Contributing
+## Contributing
 
 See the [Contributing Guide](https://soccertrack.readthedocs.io/en/latest/contributing.html) for more information.
