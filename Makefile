@@ -149,3 +149,18 @@ help:
 		printf "\n"; \
 	}' \
 	| more $(shell test $(shell uname) = Darwin && echo '--no-init --raw-control-chars')
+
+#################################################################################
+# Docker                                                     #
+#################################################################################
+
+.PHONY: all-in-one
+all-in-one:
+	echo "all-in-one"
+	docker build -t atomscott/all-in-one:latest . --no-cache
+	docker run -t atomscott/all-in-one:latest echo "atomscott/all-in-one done"
+
+.PHONY: push
+push:
+	docker login
+	docker push atomscott/all-in-one:latest
