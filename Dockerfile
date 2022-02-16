@@ -1,6 +1,12 @@
 # syntax=docker/dockerfile:1
 FROM pytorchlightning/pytorch_lightning
 
+
+# Install ffmpeg
+RUN apt-get -y update
+RUN apt-get -y upgrade
+RUN apt-get install -y ffmpeg
+
 # install opencv
 RUN apt-get update && apt-get install -y python3-opencv
 RUN pip install opencv-python

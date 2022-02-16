@@ -154,13 +154,20 @@ help:
 # Docker                                                     #
 #################################################################################
 
-.PHONY: all-in-one
-all-in-one:
-	echo "all-in-one"
-	docker build -t atomscott/all-in-one:latest . --no-cache
-	docker run -t atomscott/all-in-one:latest echo "atomscott/all-in-one done"
+.PHONY: docker
+docker:
+	docker build -t atomscott/soccertrack:latest . --no-cache
+	docker run -t atomscott/soccertrack:latest echo "atomscott/soccertrack done"
 
-.PHONY: push
-push:
+.PHONY: docker-push
+docker-push:
 	docker login
-	docker push atomscott/all-in-one:latest
+	docker push atomscott/soccertrack:latest
+
+
+#################################################################################
+# Singularity                                                     #
+#################################################################################
+.PHONY: singularity-pull
+singularity-pull:
+	singularity pull docker://atomscott/soccertrack:latest
