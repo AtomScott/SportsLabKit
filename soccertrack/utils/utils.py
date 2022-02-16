@@ -1,20 +1,34 @@
 """Genereal utils."""
+import itertools
 import os
+from collections import deque
 from datetime import datetime
 from typing import Iterable, Optional
+
 import cv2 as cv
 import numpy as np
 from numpy.typing import NDArray
 from omegaconf import OmegaConf
 from PIL import Image
-from vidgear.gears import WriteGear
-
 from soccertrack.utils import logger, tqdm
+from vidgear.gears import WriteGear
 
 OmegaConf.register_new_resolver(
     "now", lambda x: datetime.now().strftime(x), replace=True
 )
 
+def count_iter_items(iterable: Iterable) -> int:
+    """Consume an iterable not reading it into memory; return the number of items.
+    
+    Args:
+        iterable (Iterable): Iterable object
+        
+    Returns:
+        int: Number of items
+    """
+    counter = itertools.count()
+    deque(itertools.zip(iterable, counter), maxlen=0)  # (consume at C speed)
+    return next(counter)
 
 def load_config(yaml_path: str) -> OmegaConf:
     """Load config from yaml file.
@@ -161,12 +175,14 @@ def make_video(
         if v is not None
     }
 
+    os.makedirs(os.path.dirname(outpath), exist_ok=True)
     writer = WriteGear(
         output_filename=outpath, compression_mode=True, logging=logging, **output_params
     )
 
     # loop over
-    for frame in tqdm(frames, desc="Writing video", level="DEBUG"):
+    n_frames = count_iter_items(frames)
+    for frame in tqdm(frames, desc=f"Writing video", total=n_frames, level="INFO"):
 
         # simulating RGB frame for example
         frame_rgb = frame[:, :, ::-1]
