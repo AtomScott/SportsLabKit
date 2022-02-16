@@ -37,14 +37,15 @@ class Camera:
     def __init__(
         self,
         video_path: str,
-        keypoint_xml: str,
-        x_range: Sequence[float],
-        y_range: Sequence[float],
-        camera_matrix: Optional[ArrayLike],
-        camera_matrix_path: Optional[str],
-        distortion_coefficients: Optional[str],
-        distortion_coefficients_path: Optional[str],
-        calibration_video_path: Optional[str],
+        keypoint_xml: Optional[str] = None,
+        x_range: Optional[Sequence[float]] = None,
+        y_range: Optional[Sequence[float]] = None,
+        camera_matrix: Optional[ArrayLike] = None,
+        camera_matrix_path: Optional[str] = None,
+        distortion_coefficients: Optional[str] = None,
+        distortion_coefficients_path: Optional[str] = None,
+        calibration_video_path: Optional[str] = None,
+        calibration_method: str = "zhang",
         label: str = "",
         verbose: int = 0,
     ):
@@ -70,12 +71,12 @@ class Camera:
 
         """
         self.label = label
-        source_keypoints, target_keypoints = read_pitch_keypoints(keypoint_xml, "video")
 
         self.camera_matrix_path = camera_matrix_path
         self.distortion_coefficients_path = distortion_coefficients_path
 
         self.video_path = video_path
+        self.calibration_method = calibration_method
 
         if camera_matrix is None or distortion_coefficients is None:
             if (
@@ -103,20 +104,28 @@ class Camera:
                 np.save(self.distortion_coefficients_path, distortion_coefficients)
             else:
                 warnings.warn("Insufficient information to perform camera calibration!")
+        else:
+            self.camera_matrix = camera_matrix
+            self.distortion_coefficients = distortion_coefficients
 
         self.x_range = x_range
         self.y_range = y_range
 
-        ## TODO: add option to not undistort points maybe?
-        source_keypoints = self.undistort_points(source_keypoints).squeeze()
+        if keypoint_xml is not None:
+            source_keypoints, target_keypoints = read_pitch_keypoints(
+                keypoint_xml, "video"
+            )
 
-        self.source_keypoints = source_keypoints
-        self.target_keypoints = target_keypoints
+            ## TODO: add option to not undistort points maybe?
+            source_keypoints = self.undistort_points(source_keypoints).squeeze()
 
-        proj_error = np.linalg.norm(
-            self.video2pitch(source_keypoints) - target_keypoints, axis=-1
-        ).mean()
-        logger.debug(f"Camera `{self.label}`: projection error = {proj_error:.2f}m")
+            self.source_keypoints = source_keypoints
+            self.target_keypoints = target_keypoints
+
+            proj_error = np.linalg.norm(
+                self.video2pitch(source_keypoints) - target_keypoints, axis=-1
+            ).mean()
+            logger.debug(f"Camera `{self.label}`: projection error = {proj_error:.2f}m")
 
     def movie_iterator(self, calibrate: bool = False) -> Generator[NDArray, None, None]:
         """Create a movie iterator.
@@ -138,12 +147,17 @@ class Camera:
         w = self.w
         h = self.h
 
-        newcameramtx, roi = cv.getOptimalNewCameraMatrix(mtx, dist, (w, h), 1, (w, h))
         for i, frame in enumerate(movie_iterator):
-            dst = cv.undistort(frame, mtx, dist, None, newcameramtx)
-            x, y, w, h = roi
-            dst = dst[y : y + h, x : x + w]
-            yield dst
+            undistorted_image = undistort_image(
+                image=frame,
+                K=mtx,
+                D=dist,
+                calibration_method=self.calibration_method,
+                crop=False,
+                w=self.w,
+                h=self.h,
+            )
+            yield undistorted_image
 
     def video2pitch(self, pts: ArrayLike) -> NDArray[np.float64]:
         """Convert image coordinates to pitch coordinates.
@@ -185,7 +199,7 @@ class Camera:
 
         """
         movie_iterator = self.movie_iterator(calibrate=True)
-        make_video(movie_iterator, self.video_fps, save_path)
+        make_video(movie_iterator, input_framerate=self.video_fps, outpath=save_path)
 
     def visualize_candidate_detections(
         self,
@@ -195,7 +209,7 @@ class Camera:
         calibrate: bool = True,
         filter_range: bool = True,
         frames: Union[int, str] = "all",
-        **kwargs
+        **kwargs,
     ) -> None:
 
         """Visualize candidate detections.
@@ -205,14 +219,16 @@ class Camera:
             save_path (str): path to save video.
             plot_pitch_keypoints (bool): Option to plot pitch keypoints. Defaults to False.
             calibrate (bool): Option to calibrate frames. Defaults to True.
-        
+
         Note:
             kwargs are passed to `make_video`, so it is recommended that you refere to the documentation for `make_video`.
         """
         movie_iterator = self.movie_iterator(calibrate=calibrate)
 
         output_frames = []
-        for i, frame in tqdm(enumerate(movie_iterator), level="DEBUG", desc="Sorting frames"): 
+        for i, frame in tqdm(
+            enumerate(movie_iterator), level="DEBUG", desc="Sorting frames"
+        ):
             if isinstance(frames, int):
                 if i > frames:
                     break
@@ -394,19 +410,51 @@ def read_pitch_keypoints(
     return src, dst
 
 
+def undistort_image(image, K, D, calibration_method, crop, w, h):
+    dim = (w,h)
+
+    if calibration_method.lower() == "zhang":
+        newcameramtx, roi = cv.getOptimalNewCameraMatrix(K, D, dim, 1, dim)
+        mapx, mapy = cv.initUndistortRectifyMap(K, D, None, newcameramtx, dim, 5)
+
+    elif calibration_method.lower() == "fisheye":
+        balance = 1. # 0~1 how much to crop
+        new_K = cv.fisheye.estimateNewCameraMatrixForUndistortRectify(K, D, dim, np.eye(3), balance=balance)
+        mapx, mapy = cv.fisheye.initUndistortRectifyMap(
+            K, D, np.eye(3), new_K, dim, cv.CV_16SC2
+        )
+        
+        
+
+    else:
+        raise ValueError("Calibration method must be `zhang` or `fisheye`.")
+
+    undistorted_image = cv.remap(
+        image, mapx, mapy, interpolation=cv.INTER_LINEAR, borderMode=cv.BORDER_CONSTANT
+    )
+
+    # crop the image
+    if crop:
+        x, y, w, h = roi
+        undistorted_image = undistorted_image[y : y + h, x : x + w]
+    return undistorted_image
+
+
 def find_intrinsic_camera_parameters(
     video_path: Union[str, List[str]],
     fps: int = 1,
     s: int = 4,
     save_path: str = None,
     draw_on_save: bool = False,
+    points_to_use: int = 50,
+    calibration_method: str = "zhang",
 ) -> Tuple[NDArray[np.float64], NDArray[np.float64]]:
     """Find intrinsic camera parameters.
 
     Args:
         video_path (str): path to calibration video. Must contain a checkerboard.
         fps (int, optional): fps to use. Defaults to 1.
-        s (int, optional): ???. Defaults to 4.
+        s (int, optional): scale Defaults to 4.
         save_path (str, optional): path to save. Defaults to None.
 
     Returns:
@@ -450,7 +498,9 @@ def find_intrinsic_camera_parameters(
             gray_small = cv.resize(gray, None, fx=1 / s, fy=1 / s)
 
             # Find the chess board corners
-            ret, corners = cv.findChessboardCorners(image=gray_small, patternSize=(9, 5))
+            ret, corners = cv.findChessboardCorners(
+                image=gray_small, patternSize=(9, 5)
+            )
 
             if ret is True:
                 corners *= s
@@ -468,30 +518,30 @@ def find_intrinsic_camera_parameters(
                         imgs.append(frame)
 
     # speed up
-    logger.debug(imgpoints)
+    logger.debug(f"imgpoints found: {len(imgpoints)}")
     X = np.asarray([np.ravel(x) for x in imgpoints])
     pca = PCA(n_components=1)
     Xt = np.ravel(pca.fit_transform(X))
     idxs = np.argsort(Xt)
 
-    if len(imgpoints) > 50:
+    if len(imgpoints) > points_to_use:
         objpoints = [objpoints[i] for i in idxs]
         imgpoints = [imgpoints[i] for i in idxs]
         if save_path:
             imgs = [imgs[i] for i in idxs]
 
-        logger.info(f"Too many ({len(imgpoints)}) checkerboards found. Selecting 50.")
+        logger.info(f"Too many ({len(imgpoints)}) checkerboards found. Selecting {points_to_use}.")
         objpoints = [
             objpoints[int(i)]
-            for i in np.linspace(0, len(imgpoints), 50, endpoint=False)
+            for i in np.linspace(0, len(imgpoints), points_to_use, endpoint=False)
         ]
         imgpoints = [
             imgpoints[int(i)]
-            for i in np.linspace(0, len(imgpoints), 50, endpoint=False)
+            for i in np.linspace(0, len(imgpoints), points_to_use, endpoint=False)
         ]
         if save_path:
             imgs = [
-                imgs[int(i)] for i in np.linspace(0, len(imgpoints), 50, endpoint=False)
+                imgs[int(i)] for i in np.linspace(0, len(imgpoints), points_to_use, endpoint=False)
             ]
 
     if save_path:
@@ -499,15 +549,43 @@ def find_intrinsic_camera_parameters(
         for i, img in enumerate(imgs):
             cv2pil(img).save(os.path.join(save_path, f"{i}.png"))
 
-    logger.debug("Computing calibration parameters...")
-    if len(imgpoints) > 50:
+    logger.info("Computing calibration parameters...")
+    if len(imgpoints) > points_to_use:
         logger.info(
             f"(This will take time since many ({len(imgpoints)}) checkerboards were found.)"
         )
 
-    ret, mtx, dist, rvecs, tvecs = cv.calibrateCamera(
-        objpoints, imgpoints, gray.shape[::-1], None, None
-    )
+    if calibration_method.lower() == "zhang":
+        logger.debug("Using Zhang's method.")
+        ret, mtx, dist, rvecs, tvecs = cv.calibrateCamera(
+            objpoints, imgpoints, gray.shape[::-1], None, None
+        )
+    elif calibration_method.lower() == "fisheye":
+        logger.info("Using Fisheye method.")
+        N_OK = len(objpoints)
+
+        mtx = np.zeros((3, 3))
+        dist = np.zeros((4, 1))
+        rvecs = [np.zeros((1, 1, 3), dtype=np.float64) for i in range(N_OK)]
+        tvecs = [np.zeros((1, 1, 3), dtype=np.float64) for i in range(N_OK)]
+        objpoints = np.expand_dims(np.asarray(objpoints), -2)
+        calibration_flags = cv.fisheye.CALIB_RECOMPUTE_EXTRINSIC+cv.fisheye.CALIB_CHECK_COND+cv.fisheye.CALIB_FIX_SKEW
+
+        ret, mtx, dist, rvecs, tvecs = cv.fisheye.calibrate(
+            objpoints,
+            imgpoints,
+            gray.shape[::-1],
+            mtx,
+            dist,
+            rvecs,
+            tvecs,
+            calibration_flags,
+            (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 30, 1e-6),
+        )
+    else:
+        raise ValueError("Calibration method must be `zhang` or `fisheye`.")
+
+    logger.info("Finished computing calibration parameters.")
     return mtx, dist
 
 
