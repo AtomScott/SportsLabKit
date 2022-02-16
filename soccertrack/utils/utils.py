@@ -17,18 +17,20 @@ OmegaConf.register_new_resolver(
     "now", lambda x: datetime.now().strftime(x), replace=True
 )
 
+
 def count_iter_items(iterable: Iterable) -> int:
     """Consume an iterable not reading it into memory; return the number of items.
-    
+
     Args:
         iterable (Iterable): Iterable object
-        
+
     Returns:
         int: Number of items
     """
     counter = itertools.count()
-    deque(itertools.zip(iterable, counter), maxlen=0)  # (consume at C speed)
+    deque(zip(iterable, counter), maxlen=0)  # (consume at C speed)
     return next(counter)
+
 
 def load_config(yaml_path: str) -> OmegaConf:
     """Load config from yaml file.
@@ -146,7 +148,7 @@ def make_video(
         t (Optional[int]): Duration of the clip in seconds. Defaults to None.
         c (bool): copies the first video, audio, and subtitle bitstream from the input to the output file without re-encoding them. Defaults to `False`.
         height (int): Video height. Defaults to `None`.
-        width (int): Video width. Defaults to `None`. 
+        width (int): Video width. Defaults to `None`.
         input_framerate (int): Input framerate. Defaults to `25`.
         logging (bool): Logging. Defaults to `False`.
     Todo:
@@ -155,7 +157,7 @@ def make_video(
         * reconsider compression (current compression is not good)
     """
 
-    scale_filter = f"scale={width}:{height}" 
+    scale_filter = f"scale={width}:{height}"
     output_params = {
         k: v
         for k, v in {
