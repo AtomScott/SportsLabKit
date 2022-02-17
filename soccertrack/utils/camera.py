@@ -77,6 +77,8 @@ class Camera:
 
         self.video_path = video_path
         self.calibration_method = calibration_method
+        
+        # self.mapx, self.mapy = find_intrinsic_camera_parameters(calibration_video_path, return_mappings=True)
 
         if camera_matrix is None or distortion_coefficients is None:
             if (
@@ -115,13 +117,11 @@ class Camera:
             source_keypoints, target_keypoints = read_pitch_keypoints(
                 keypoint_xml, "video"
             )
-
-            ## TODO: add option to not undistort points maybe?
-            source_keypoints = self.undistort_points(source_keypoints).squeeze()
-
             self.source_keypoints = source_keypoints
             self.target_keypoints = target_keypoints
 
+            ## TODO: add option to not undistort points maybe?
+            source_keypoints = self.undistort_points(source_keypoints).squeeze()
             proj_error = np.linalg.norm(
                 self.video2pitch(source_keypoints) - target_keypoints, axis=-1
             ).mean()
@@ -142,22 +142,8 @@ class Camera:
             for i, frame in enumerate(movie_iterator):
                 yield frame
 
-        mtx = self.camera_matrix
-        dist = self.distortion_coefficients
-        w = self.w
-        h = self.h
-
         for i, frame in enumerate(movie_iterator):
-            undistorted_image = undistort_image(
-                image=frame,
-                K=mtx,
-                D=dist,
-                calibration_method=self.calibration_method,
-                crop=False,
-                w=self.w,
-                h=self.h,
-            )
-            yield undistorted_image
+            yield self.undistort_image(frame)
 
     def video2pitch(self, pts: ArrayLike) -> NDArray[np.float64]:
         """Convert image coordinates to pitch coordinates.
@@ -191,7 +177,7 @@ class Camera:
         # TODO: implement this
         raise NotImplementedError
 
-    def save_calibrated_video(self, save_path: str) -> None:
+    def save_calibrated_video(self, save_path: str, plot_pitch_keypoints:bool = True) -> None:
         """Save a video with undistorted frames.
 
         Args:
@@ -199,7 +185,16 @@ class Camera:
 
         """
         movie_iterator = self.movie_iterator(calibrate=True)
-        make_video(movie_iterator, input_framerate=self.video_fps, outpath=save_path)
+        roi = self.roi
+        
+        def frames(movie_iterator):
+            x1, y1, x2, y2 = roi
+            for frame in movie_iterator:
+                for pitch_keypoint in self.source_keypoints:
+                    cv.circle(frame, pitch_keypoint.astype(int), 5, (0, 0, 255), -1)
+                yield frame[y1:y2, x1:x2]
+
+        make_video(frames(movie_iterator), input_framerate=self.video_fps, outpath=save_path)
 
     def visualize_candidate_detections(
         self,
@@ -252,7 +247,7 @@ class Camera:
 
             if plot_pitch_keypoints:
                 for pitch_keypoint in self.source_keypoints:
-                    cv.circle(frame, pitch_keypoint.astype(int), 5, (0, 0, 255), -1)
+                    cv.circle(frame, pitch_keypoint.astype(int), 1, (0, 0, 255), -1)
             output_frames.append(frame)
         make_video(output_frames, save_path, **kwargs)
 
@@ -268,21 +263,35 @@ class Camera:
         Note:
             Not to be confused with video2pitch which uses a homography transformation.
         """
+
         mtx = self.camera_matrix
         dist = self.distortion_coefficients
         w = self.w
         h = self.h
-
-        newcameramtx, roi = cv.getOptimalNewCameraMatrix(mtx, dist, (w, h), 1, (w, h))
-
-        dst = cv.undistortPoints(points, mtx, dist, None, newcameramtx)
-        dst = dst.reshape(-1, 2)
-
-        x, y, w, h = roi
-        dst = dst - np.asarray([x, y])
-
+        
+        if self.calibration_method=='zhang':
+            newcameramtx, roi = cv.getOptimalNewCameraMatrix(mtx, dist, (w, h), 1, (w, h))
+            dst = cv.undistortPoints(points, mtx, dist, None, newcameramtx)
+            dst = dst.reshape(-1, 2)
+            x, y, w, h = roi
+            dst = dst - np.asarray([x, y])
+        elif self.calibration_method=='fisheye':
+            mtx_new = cv.fisheye.estimateNewCameraMatrixForUndistortRectify(
+                mtx, dist, (w, h), np.eye(3), balance=1.0)
+            points = np.expand_dims(points, axis=1)
+            dst = np.squeeze(cv.fisheye.undistortPoints(points, mtx, dist, P=mtx_new))
         return dst
 
+    def undistort_image(self, image: NDArray) -> NDArray:
+        undistorted_image = cv.remap(
+            image,
+            self.mapx,
+            self.mapy,
+            interpolation=cv.INTER_LINEAR,
+            borderMode=cv.BORDER_CONSTANT,
+        )
+        return undistorted_image
+    
     @cached_property
     def video_fps(self) -> int:
         """Get video fps.
@@ -293,7 +302,7 @@ class Camera:
         """
         return MovieIterator(self.video_path).video_fps
 
-    @cached_property
+    @property
     def keypoint_map(self) -> Dict[Tuple[int, int], Tuple[int, int]]:
         """Get dictionary of pitch keypoints in pitch space to pixel space.
 
@@ -306,7 +315,7 @@ class Camera:
             for key, value in zip(self.target_keypoints, self.source_keypoints)
         }
 
-    @cached_property
+    @property
     def w(self) -> int:
         """Width of video frames.
 
@@ -316,7 +325,7 @@ class Camera:
         """
         return MovieIterator(self.video_path).img_width
 
-    @cached_property
+    @property
     def h(self) -> int:
         """Height of video frames.
 
@@ -326,7 +335,7 @@ class Camera:
         """
         return MovieIterator(self.video_path).img_height
 
-    @cached_property
+    @property
     def A(self) -> NDArray[np.float64]:
         """Calculate the affine transformation matrix from pitch to video space.
 
@@ -338,7 +347,7 @@ class Camera:
         A, *_ = cv.estimateAffinePartial2D(self.source_keypoints, self.target_keypoints)
         return A
 
-    @cached_property
+    @property
     def H(self) -> NDArray[np.float64]:
         """Calculate the homography transformation matrix from pitch to video space.
 
@@ -352,7 +361,7 @@ class Camera:
         )
         return H
 
-    @cached_property
+    @property
     def fps(self) -> int:
         """Get video fps.
 
@@ -361,6 +370,24 @@ class Camera:
 
         """
         return MovieIterator(self.video_path).video_fps
+    
+    @property
+    def roi(self) -> Tuple[int, int, int, int]:
+        keypoint_map = self.keypoint_map
+        source_keypoints = self.source_keypoints
+        
+        cx, cy = keypoint_map[(52.5, 34)]
+        width = source_keypoints[:, 0].max() - source_keypoints[:, 0].min()
+        height = source_keypoints[:, 1].max() - source_keypoints[:, 1].min()
+        
+        width *= 1.5
+        height = width * (9/16) # use 16:9 aspect ratio
+
+        x1 = cx - width / 2
+        y1 = cy - height / 2
+        x2 = cx + width / 2
+        y2 = cy + height / 2
+        return int(x1), int(y1), int(x2), int(y2)
 
 
 def read_pitch_keypoints(
@@ -410,44 +437,15 @@ def read_pitch_keypoints(
     return src, dst
 
 
-def undistort_image(image, K, D, calibration_method, crop, w, h):
-    dim = (w,h)
-
-    if calibration_method.lower() == "zhang":
-        newcameramtx, roi = cv.getOptimalNewCameraMatrix(K, D, dim, 1, dim)
-        mapx, mapy = cv.initUndistortRectifyMap(K, D, None, newcameramtx, dim, 5)
-
-    elif calibration_method.lower() == "fisheye":
-        balance = 1. # 0~1 how much to crop
-        new_K = cv.fisheye.estimateNewCameraMatrixForUndistortRectify(K, D, dim, np.eye(3), balance=balance)
-        mapx, mapy = cv.fisheye.initUndistortRectifyMap(
-            K, D, np.eye(3), new_K, dim, cv.CV_16SC2
-        )
-        
-        
-
-    else:
-        raise ValueError("Calibration method must be `zhang` or `fisheye`.")
-
-    undistorted_image = cv.remap(
-        image, mapx, mapy, interpolation=cv.INTER_LINEAR, borderMode=cv.BORDER_CONSTANT
-    )
-
-    # crop the image
-    if crop:
-        x, y, w, h = roi
-        undistorted_image = undistorted_image[y : y + h, x : x + w]
-    return undistorted_image
-
-
 def find_intrinsic_camera_parameters(
     video_path: Union[str, List[str]],
     fps: int = 1,
-    s: int = 4,
+    scale: int = 4,
     save_path: str = None,
     draw_on_save: bool = False,
     points_to_use: int = 50,
     calibration_method: str = "zhang",
+    return_mappings: bool = True,
 ) -> Tuple[NDArray[np.float64], NDArray[np.float64]]:
     """Find intrinsic camera parameters.
 
@@ -461,41 +459,31 @@ def find_intrinsic_camera_parameters(
         Tuple[NDArray[np.float64], NDArray[np.float64]]: camera matrix and distortion coefficients.
 
     """
-    if isinstance(video_path, str):
-        video_paths = [video_path]
-    else:
-        video_paths = video_path
 
-    criteria = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 100, 0.001)
+    def _detect_corners(iterator, scale, fps):
+        assert len(iterator) > 0, "No images found in video."
 
-    # prepare object points, like (0,0,0), (1,0,0), (2,0,0) ....,(6,5,0)
-    objp = np.zeros((5 * 9, 3), np.float32)
-    objp[:, :2] = np.mgrid[0:9, 0:5].T.reshape(-1, 2)
+        nskip = math.ceil(iterator.video_fps / fps)
 
-    # Arrays to store object points and image points from all the images.
-    objpoints = []  # 3d point in real world space
-    imgpoints = []  # 2d points in image plane.
+        # Arrays to store object points and image points from all the images.
+        objpoints = []  # 3d point in real world space
+        imgpoints = []  # 2d points in image plane.
 
-    # list to store images with drawn corners
-    imgs = []
+        # prepare object points, like (0,0,0), (1,0,0), (2,0,0) ....,(6,5,0)
+        objp = np.zeros((5 * 9, 3), np.float32)
+        objp[:, :2] = np.mgrid[0:9, 0:5].T.reshape(-1, 2)
 
-    for video_path in video_paths:
-        if os.path.isdir(video_path):
-            movie_iterator = ImageIterator(video_path)
-            nskip = 1
-        else:
-            movie_iterator = MovieIterator(video_path)
-            nskip = math.ceil(movie_iterator.video_fps / fps)
-
-        assert len(movie_iterator) > 0, "No images found in video."
-        for i, frame in enumerate(tqdm(movie_iterator, total=len(movie_iterator))):
-            if i % nskip != 0:
+        all_corners = []
+        criteria = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 100, 0.001)
+        
+        for i, frame in enumerate(tqdm(iterator, total=len(iterator))):
+            if i % nskip != 0 and len(iterator) > 1:
                 continue
 
             gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
 
             # scale image for faster detection
-            gray_small = cv.resize(gray, None, fx=1 / s, fy=1 / s)
+            gray_small = cv.resize(gray, None, fx=1 / scale, fy=1 / scale)
 
             # Find the chess board corners
             ret, corners = cv.findChessboardCorners(
@@ -503,90 +491,112 @@ def find_intrinsic_camera_parameters(
             )
 
             if ret is True:
-                corners *= s
-                corners2 = cv.cornerSubPix(gray, corners, (11, 11), (-1, -1), criteria)
-
+                corners *= scale
+                corners = cv.cornerSubPix(gray, corners, (11, 11), (-1, -1), criteria)
+                imgpoints.append(corners)
                 objpoints.append(objp)
-                imgpoints.append(corners2)
+        return objpoints, imgpoints
 
-                if save_path:
-                    if draw_on_save:
-                        # Draw and display the corners
-                        img = cv.drawChessboardCorners(frame, (9, 5), corners2, ret)
-                        imgs.append(img)
-                    else:
-                        imgs.append(frame)
+    def _select_images(imgpoints, objpoints, points_to_use):
+        if len(imgpoints) < points_to_use:
+            return imgpoints, objpoints
 
-    # speed up
-    logger.debug(f"imgpoints found: {len(imgpoints)}")
-    X = np.asarray([np.ravel(x) for x in imgpoints])
-    pca = PCA(n_components=1)
-    Xt = np.ravel(pca.fit_transform(X))
-    idxs = np.argsort(Xt)
+        logger.info(
+            f"Too many ({len(imgpoints)}) checkerboards found. Selecting {points_to_use}."
+        )
 
-    if len(imgpoints) > points_to_use:
+        X = np.asarray([np.ravel(x) for x in imgpoints])
+        pca = PCA(n_components=1)
+        Xt = np.ravel(pca.fit_transform(X))
+        
+        # sort images by their distance to the origin
+        idxs = np.argsort(Xt)
         objpoints = [objpoints[i] for i in idxs]
         imgpoints = [imgpoints[i] for i in idxs]
-        if save_path:
-            imgs = [imgs[i] for i in idxs]
 
-        logger.info(f"Too many ({len(imgpoints)}) checkerboards found. Selecting {points_to_use}.")
-        objpoints = [
-            objpoints[int(i)]
-            for i in np.linspace(0, len(imgpoints), points_to_use, endpoint=False)
-        ]
-        imgpoints = [
-            imgpoints[int(i)]
-            for i in np.linspace(0, len(imgpoints), points_to_use, endpoint=False)
-        ]
-        if save_path:
-            imgs = [
-                imgs[int(i)] for i in np.linspace(0, len(imgpoints), points_to_use, endpoint=False)
-            ]
+        # select points to use 
+        x_range = np.linspace(0, len(imgpoints), points_to_use, endpoint=False)
+        objpoints = [objpoints[int(i)] for i in x_range]
+        imgpoints = [imgpoints[int(i)] for i in x_range]
+        
+        return imgpoints, objpoints
 
-    if save_path:
-        os.makedirs(save_path, exist_ok=True)
-        for i, img in enumerate(imgs):
-            cv2pil(img).save(os.path.join(save_path, f"{i}.png"))
+    # Support multiple video files
+    video_paths = [video_path] if isinstance(video_path, str) else video_path
+
+    # Support image directories and video files
+    iterators = [
+        ImageIterator(video_path)
+        if os.path.isdir(video_path)
+        else MovieIterator(video_path)
+        for video_path in video_paths
+    ]
+
+    # Find corners in each video
+    objpoints, imgpoints = [], []
+    for iterator in iterators:
+        _objpoints, _imgpoints = _detect_corners(iterator, scale, fps)
+        objpoints += _objpoints
+        imgpoints += _imgpoints
+    logger.debug(f"imgpoints found: {len(imgpoints)}")
+
+    # Select frames to use based on PCA Variance
+    objpoints, imgpoints  = _select_images(objpoints, imgpoints, points_to_use)
+    logger.debug(f"imgpoints used: {len(imgpoints)}")
 
     logger.info("Computing calibration parameters...")
-    if len(imgpoints) > points_to_use:
-        logger.info(
-            f"(This will take time since many ({len(imgpoints)}) checkerboards were found.)"
-        )
 
+    dim = iterators[0].img_width, iterators[0].img_height
     if calibration_method.lower() == "zhang":
-        logger.debug("Using Zhang's method.")
-        ret, mtx, dist, rvecs, tvecs = cv.calibrateCamera(
-            objpoints, imgpoints, gray.shape[::-1], None, None
+        # TODO: Abstract this into a function.
+        logger.info("Using Zhang's method.")
+        
+        ret, K, D, rvecs, tvecs = cv.calibrateCamera(
+            objpoints, imgpoints, dim, None, None
         )
+        newcameramtx, roi = cv.getOptimalNewCameraMatrix(K, D, dim, 1, dim)
+        mapx, mapy = cv.initUndistortRectifyMap(K, D, None, newcameramtx, dim, 5)
     elif calibration_method.lower() == "fisheye":
+        # TODO: Abstract this into a function.
         logger.info("Using Fisheye method.")
         N_OK = len(objpoints)
 
-        mtx = np.zeros((3, 3))
-        dist = np.zeros((4, 1))
+        K = np.zeros((3, 3))
+        D = np.zeros((4, 1))
         rvecs = [np.zeros((1, 1, 3), dtype=np.float64) for i in range(N_OK)]
         tvecs = [np.zeros((1, 1, 3), dtype=np.float64) for i in range(N_OK)]
         objpoints = np.expand_dims(np.asarray(objpoints), -2)
-        calibration_flags = cv.fisheye.CALIB_RECOMPUTE_EXTRINSIC+cv.fisheye.CALIB_CHECK_COND+cv.fisheye.CALIB_FIX_SKEW
+        # FIXME: Fisheye calibration fails with CALIB_CHECK_COND.
+        # https://stackoverflow.com/q/49038464
+        # calibration_flags = cv.fisheye.CALIB_RECOMPUTE_EXTRINSIC+cv.fisheye.CALIB_CHECK_COND+cv.fisheye.CALIB_FIX_SKEW
+        calibration_flags = (
+            cv.fisheye.CALIB_RECOMPUTE_EXTRINSIC + cv.fisheye.CALIB_FIX_SKEW
+        )
 
-        ret, mtx, dist, rvecs, tvecs = cv.fisheye.calibrate(
+        ret, K, D, rvecs, tvecs = cv.fisheye.calibrate(
             objpoints,
             imgpoints,
-            gray.shape[::-1],
-            mtx,
-            dist,
+            dim,
+            K,
+            D,
             rvecs,
             tvecs,
             calibration_flags,
             (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 30, 1e-6),
         )
+        balance = 1  # 0~1 how much to crop
+        new_K = cv.fisheye.estimateNewCameraMatrixForUndistortRectify(
+            K, D, dim, np.eye(3), balance=balance
+        )
+        mapx, mapy = cv.fisheye.initUndistortRectifyMap(
+            K, D, np.eye(3), new_K, dim, cv.CV_32FC1
+        )
     else:
         raise ValueError("Calibration method must be `zhang` or `fisheye`.")
 
     logger.info("Finished computing calibration parameters.")
-    return mtx, dist
+    
+    return K, D, mapx, mapy
 
 
 def load_cameras(camera_info: List[Mapping]) -> List[Camera]:

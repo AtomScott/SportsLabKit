@@ -66,36 +66,43 @@ def download(dataset, output, quiet=False):
 )
 @option("-p", "--pts", default=50, help="Number of points to use for calibration.")
 @option("--calibration_method", default="zhang", help="Calibration method.")
+@option("--keypoint_xml", default=None, help="Path to the keypoint xml file.")
 def calibrate(
-    input, checkerboard, output, fps=1, scale=1, pts=50, calibration_method="zhang"
+    input, checkerboard, output, fps=1, scale=1, pts=50, calibration_method="zhang", keypoint_xml=None
 ):
     """Calibrate video from input"""
     input_files = list(glob(input))
     checkerboard_files = list(glob(checkerboard))
 
-    camera_matrix, distortion_coefficients = find_intrinsic_camera_parameters(
+    mtx, dist, mapx, mapy = find_intrinsic_camera_parameters(
         checkerboard_files,
         fps=fps,
-        s=scale,
+        scale=scale,
         save_path=False,
         draw_on_save=False,
         points_to_use=pts,
         calibration_method=calibration_method,
+        return_mappings=True,
     )
-    logger.debug(f"Camera Matrix:\n{camera_matrix}")
-    logger.debug(f"Distortion Coefficients:\n{distortion_coefficients}")
 
     for input_file in input_files:
         camera = Camera(
             video_path=input_file,
+            keypoint_xml=keypoint_xml,
             x_range=None,
             y_range=None,
-            camera_matrix=camera_matrix,
-            distortion_coefficients=distortion_coefficients,
             calibration_method=calibration_method,
+            calibration_video_path=checkerboard_files,
+            camera_matrix=mtx,
+            distortion_coefficients=dist,
         )
+        camera.mapx = mapx
+        camera.mapy = mapy
+        camera.source_keypoints = camera.undistort_points(camera.source_keypoints)
+        
         save_path = os.path.join(output, os.path.basename(input_file))
         camera.save_calibrated_video(save_path=save_path)
+        logger.info(f"Video saved to {save_path}")
 
 
 if __name__ == "__main__":

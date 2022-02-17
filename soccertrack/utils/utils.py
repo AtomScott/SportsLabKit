@@ -183,8 +183,7 @@ def make_video(
     )
 
     # loop over
-    n_frames = count_iter_items(frames)
-    for frame in tqdm(frames, desc=f"Writing video", total=n_frames, level="INFO"):
+    for frame in tqdm(frames, desc=f"Writing video", level="INFO"):
 
         # simulating RGB frame for example
         frame_rgb = frame[:, :, ::-1]
@@ -231,6 +230,7 @@ class MovieIterator:
 
     def __iter__(self) -> "MovieIterator":
         return self
+
 
     def __next__(self) -> NDArray[np.uint8]:
         if self._index < len(self):
