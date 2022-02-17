@@ -1,5 +1,3 @@
-data/*
-data/*/.gitkeep 
 data/results/*
 
 *.pt
