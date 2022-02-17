@@ -14,5 +14,9 @@ vidgear
 numpy>=1.20
 omegaconf
 click
+torch
+more_itertools
+pickle5
+filterpy
 # atomscott repos
 # git+git@github.com:AtomScott/Python-Object-Detection-Metrics.git
