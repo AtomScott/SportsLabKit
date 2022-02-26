@@ -18,5 +18,6 @@ torch
 more_itertools
 pickle5
 filterpy
+torchvision
 # atomscott repos
 # git+git@github.com:AtomScott/Python-Object-Detection-Metrics.git

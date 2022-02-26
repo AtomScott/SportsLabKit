@@ -49,6 +49,9 @@ Data is uploaded on
 
 [Dockerhub](https://hub.docker.com/repository/docker/atomscott/soccertrack)
 
+### conda
+
+
 ## Roadmap
 
 ### Release 0.0.1 !

@@ -291,12 +291,8 @@ def merge_dict_of_lists(d1: dict, d2: dict) -> dict:
     dict
         The merged dict.
     """
-    ret = {k: list(v) for k, v in d1.items()}
-    for k, _ in d1.items():
-        if k in d2.keys():
-            ret[k] += d2[k]
-        else:
-            ret[k] = d2[k]
+    keys = set(d1.keys()).union(d2.keys())
+    ret = {k: list(d1.get(k, [])) + list(d2.get(k, [])) for k in keys}
     return ret
 
 
