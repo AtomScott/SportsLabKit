@@ -186,15 +186,15 @@ class Camera:
         """
         movie_iterator = self.movie_iterator(calibrate=True)
         roi = self.roi
-        
+
         def frames(movie_iterator):
             x1, y1, x2, y2 = roi
             for frame in movie_iterator:
                 for pitch_keypoint in self.source_keypoints:
                     cv.circle(frame, pitch_keypoint.astype(int), 5, (0, 0, 255), -1)
-                yield frame[y1:y2, x1:x2]
+                yield frame
 
-        make_video(frames(movie_iterator), input_framerate=self.video_fps, outpath=save_path)
+        make_video(frames(movie_iterator), input_framerate=self.video_fps, outpath=save_path, crf=0, preset=None)
 
     def visualize_candidate_detections(
         self,
@@ -380,11 +380,11 @@ class Camera:
         width = source_keypoints[:, 0].max() - source_keypoints[:, 0].min()
         height = source_keypoints[:, 1].max() - source_keypoints[:, 1].min()
         
-        width *= 1.5
+        width *= 1.3
         height = width * (9/16) # use 16:9 aspect ratio
 
-        x1 = cx - width / 2
-        y1 = cy - height / 2
+        x1 = max(0, cx - width / 2)
+        y1 = max(0, cy - height / 2)
         x2 = cx + width / 2
         y2 = cy + height / 2
         return int(x1), int(y1), int(x2), int(y2)
