@@ -51,6 +51,7 @@ def visualize_cameras(
         for i, camera in enumerate(cameras):
 
             tmp_path = os.path.join(tmpdir, f"{camera.label}-{i:02d}.mp4")
+            logger.debug(f"Saving {camera.label}-{i:02d}.mp4 video to {tmp_path}")
             tmp_paths.append(tmp_path)
 
             logger.info(f"Visualizing camera {camera.label}")
@@ -89,7 +90,7 @@ def visualize_cameras(
                 filter_complex += '" -map "[v]"'
 
             save_path = os.path.join(save_dir, "grid.mp4")
-
+            
             cmd = " ".join(
                 [
                     "ffmpeg",
@@ -102,7 +103,13 @@ def visualize_cameras(
             )
 
             logger.debug(f"ffmpeg command: \n{cmd}")
-            output = subprocess.check_output(cmd, shell=True, stderr=subprocess.DEVNULL)
+            try:
+                output = subprocess.check_output(cmd, shell=True, stderr=subprocess.DEVNULL)
+            except subprocess.CalledProcessError as e:
+                logger.critical(f"Error processing video.")
+                print(e)
+                return
+
             logger.debug(f"ffmpeg output: \n{output}")
             logger.info(f"Saving video to {save_path}")
 
