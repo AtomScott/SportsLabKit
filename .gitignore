@@ -1,3 +1,4 @@
+x_ignore/*
 data/results/*
 
 *.pt
