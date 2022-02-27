@@ -98,7 +98,10 @@ class Camera:
                 self.video2pitch(source_keypoints) - target_keypoints, axis=-1
             ).mean()
             logger.debug(f"Camera `{self.label}`: projection error = {proj_error:.2f}m")
-
+        else:
+            self.source_keypoints = None
+            self.target_keypoints = None
+            
     def load_calibration_params(self):
         # self.mapx, self.mapy = find_intrinsic_camera_parameters(calibration_video_path, return_mappings=True)
         calibration_video_path = self.calibration_video_path
@@ -197,19 +200,24 @@ class Camera:
         raise NotImplementedError
 
     def save_calibrated_video(
-        self, save_path: str, plot_pitch_keypoints: bool = True
+        self, save_path: str, plot_pitch_keypoints: bool = True, **kwargs
     ) -> None:
         """Save a video with undistorted frames.
 
         Args:
             save_path (str): path to save video.
 
+        Note:
+            See utils.make_video for available kwargs.
+
         """
         movie_iterator = self.movie_iterator(calibrate=True)
         roi = self.roi
 
         make_video(
-            movie_iterator, input_framerate=self.video_fps, outpath=save_path
+            movie_iterator, 
+            outpath=save_path,
+            **kwargs
         )
 
     def visualize_candidate_detections(
@@ -334,6 +342,8 @@ class Camera:
             Dict: dictionary of pitch keypoints in pitch space to pixel space.
 
         """
+        if self.source_keypoints is None:
+            return None
         return {
             tuple(key): value
             for key, value in zip(self.target_keypoints, self.source_keypoints)
@@ -397,7 +407,9 @@ class Camera:
 
     @property
     def roi(self) -> Tuple[int, int, int, int]:
-        if self.calibration_method == "zhang":
+        if self.keypoint_map is None:
+            return 0, 0, self.w, self.h
+        elif self.calibration_method == "zhang":
             dim = (self.w, self.h)
             K = self.camera_matrix
             D = self.distortion_coefficients

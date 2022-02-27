@@ -106,13 +106,13 @@ def make_video(
     outpath: str,
     vcodec: str = "libx264",
     preset: str = "medium",
-    crf: int = 23,
-    ss: int = 0,
+    crf: Optional[int] = None,
+    ss: Optional[int] = None,
     t: Optional[int] = None,
     c: Optional[str] = None,
     height: Optional[int] = -1,
     width: Optional[int] = -1,
-    input_framerate: int = 30,
+    input_framerate: Optional[int] = None,
     logging: bool = False,
 ) -> None:
     """Make video from a list of opencv format frames.
@@ -158,6 +158,7 @@ def make_video(
     """
 
     scale_filter = f"scale={width}:{height}"
+    print(input_framerate)
     output_params = {
         k: v
         for k, v in {
@@ -177,6 +178,7 @@ def make_video(
         if v is not None
     }
 
+    logger.debug(f"output_params: {output_params}")
     os.makedirs(os.path.dirname(outpath), exist_ok=True)
     writer = WriteGear(
         output_filename=outpath, compression_mode=True, logging=logging, **output_params
@@ -218,10 +220,10 @@ class MovieIterator:
 
         vcInput = cv.VideoCapture(path)
         self.vcInput = vcInput
-        self.video_fps: int = int(vcInput.get(cv.CAP_PROP_FPS))
-        self.video_frame_count = int(vcInput.get(cv.CAP_PROP_FRAME_COUNT))
-        self.img_width = int(vcInput.get(cv.CAP_PROP_FRAME_WIDTH))
-        self.img_height = int(vcInput.get(cv.CAP_PROP_FRAME_HEIGHT))
+        self.video_fps: int = round(vcInput.get(cv.CAP_PROP_FPS))
+        self.video_frame_count = round(vcInput.get(cv.CAP_PROP_FRAME_COUNT))
+        self.img_width = round(vcInput.get(cv.CAP_PROP_FRAME_WIDTH))
+        self.img_height = round(vcInput.get(cv.CAP_PROP_FRAME_HEIGHT))
         self.path = path
         self._index = 0
 
@@ -230,7 +232,6 @@ class MovieIterator:
 
     def __iter__(self) -> "MovieIterator":
         return self
-
 
     def __next__(self) -> NDArray[np.uint8]:
         if self._index < len(self):
