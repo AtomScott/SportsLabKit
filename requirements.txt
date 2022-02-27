@@ -13,7 +13,7 @@ tqdm
 vidgear
 numpy>=1.20
 omegaconf
-click
+fire
 torch
 more_itertools
 pickle5
