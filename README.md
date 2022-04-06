@@ -1,65 +1,98 @@
-# SoccerTrack
-[![Documentation Status](https://readthedocs.org/projects/soccertrack/badge/?version=latest)](https://soccertrack.readthedocs.io/en/latest/?badge=latest) [![Codacy Badge](https://app.codacy.com/project/badge/Grade/b121ddfb4e244b6d88096840bdcfa1a2)](https://www.codacy.com/gh/AtomScott/SoccerTrack/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=AtomScott/SoccerTrack&amp;utm_campaign=Badge_Grade)
+## Phantom for Jekyll
 
+A minimalist, responsive portfolio theme for [Jekyll](http://jekyllrb.com/) with Bootstrap.
 
-SoccerTrack is a dataset and for tracking soccer players and balls.
+![preview](preview.jpg)
 
-## Installation
+[See it in action](http://jamigibbs.github.io/phantom/).
 
+## Fancy using it for your own site?
+
+Here are some steps to get you started:
+
+1. Clone this repo and cd into the directory:
+
+  ```bash
+  git clone https://github.com/jamigibbs/phantom.git your-dir-name && cd your-dir-name
+  ```
+
+2. Run:
+
+  ```bash
+  gem install bundler
+  bundle install
+  bundle exec jekyll serve
+  ```
+
+  You may need to append your commands with `sudo` if you're getting a permissions error.
+
+  _Don't have Jekyll yet? [Get `er installed then!](http://jekyllrb.com/docs/installation/)_
+
+3. Visit in your browser at:
+
+  `http://127.0.0.1:4000`
+
+## Launching with Github Pages :rocket:
+
+Jekyll + Github pages is a marriage made in heaven. You can [use your own custom domain name](https://help.github.com/articles/setting-up-a-custom-domain-with-github-pages/) or use the default Github url (ie. http://username.github.io/repository) and not bother messing around with DNS settings.
+
+## Theme Features
+
+### Navigation
+
+Navigation can be customized in `_config.yml` under the `nav_item` key. Default settings:
+
+```yaml
+nav_item:
+    - { url: '/', text: 'Home' }
+    - { url: '/about', text: 'About' }
 ```
-pip install -e .
+
+Set the `nav_enable` variable to false in `_config.yml` to disable navigation.
+
+### Contact Form
+
+You can display a contact form within the modal window template. This template is already setup to use the [Formspree](https://formspree.io) email system. You'll just want to add your email address to the form in `/_includes/contact-modal.html`.
+
+Place the modal window template in any place you'd like the user to click for the contact form.
+The template will display a link to click for the contact form modal window:
+
+```liquid
+{% include contact.html %}
+{% include contact-modal.html %}
 ```
 
+### Animation Effects
+
+Animations with CSS classes are baked into the theme. To animate a section or element, simply add the animation classes:
+
+```html
+<div id="about-me" class="wow fadeIn">
+  I'm the coolest!
+</div>
 ```
-pip install -e .
+
+For a complete list of animations, see the [animation list](http://daneden.github.io/animate.css/).
+
+### Pagination
+
+By default, pagination on the home page will activate after 10 posts. You can change this within `_config.yml`. You can add the pagination to other layouts with:
+
+```liquid
+  {% for post in paginator.posts %}
+    {% include post-content.html %}
+  {% endfor %}
+
+  {% include pagination.html %}
 ```
 
-If install takes too long, try upgrading pip with `pip install --upgrade pip` and then try again.
-## User Guide
+Read more about the [pagination plugin](http://jekyllrb.com/docs/pagination/).
 
-See the [User Guide](https://soccertrack.readthedocs.io/en/latest/user_guide.html) for more information.
+## Credit
 
-## Project Organization
+* Bootstrap, http://getbootstrap.com/, (C) 2011 - 2016 Twitter, Inc., [MIT](https://github.com/twbs/bootstrap/blob/master/LICENSE)
 
-This project was based on the [cookiecutter data science template](https://drivendata.github.io/cookiecutter-data-science/), but some folders were removed. Below is a brief overview of the current project structure. 
+* Wow, https://github.com/matthieua/WOW, (C) 2014 - 2016 Matthieu Aussaguel
+, [GPL](https://github.com/matthieua/WOW#open-source-license)
 
-```
-    │
-    ├── docs               <- Sphinx project.
-    │
-    ├── notebooks          <- Jupyter notebooks for example usage.
-    │
-    ├── reports            <- Generated analysis including references
-    │
-    ├── soccertrack        <- Source code. See API Refence.
-    │
-    ├── data               <- (Only minimum stuff on github).
-    │   ├── external       <- Data from third party sources.
-    │   ├── interim        <- Intermediate data that has been transformed.
-    │   ├── processed      <- The final, canonical data sets for modeling.
-    │   └── raw            <- The original, immutable data dump.
-    │
-    └── models             <- Trained model weights (only minimum stuff on github).
-```
-## Data
-
-Data is uploaded on 
-
-## Docker
-
-[Dockerhub](https://hub.docker.com/repository/docker/atomscott/soccertrack)
-
-### conda
-
-
-## Roadmap
-
-### Release 0.0.1 !
-
-* [] Add a simple example notebook.
-* [] Add auto summary to docs (fork apidoc and include module members to jinja context).
-
-
-## Contributing
-
-See the [Contributing Guide](https://soccertrack.readthedocs.io/en/latest/contributing.html) for more information.
+* Animate.css, https://github.com/daneden/animate.css, (C) 2016 Daniel Eden, [MIT](https://github.com/daneden/animate.css/blob/master/LICENSE)
