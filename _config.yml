@@ -21,6 +21,7 @@ url: "https://atomscott.github.io/SoccerTrack" # the base hostname & protocol fo
 github_url: 'https://github.com/AtomScott/SoccerTrack'
 rtd_url: 'https://soccertrack.readthedocs.io/'
 download_url: "#download"
+paper_url: "#paper"
 
 # Build settings
 markdown: kramdown
@@ -99,3 +100,4 @@ enable_nav: true
 nav_item:
   - { url: '/', text: 'Home' }
   - { url: '/about', text: 'About' }
+  - { url: '/dev', text: 'Dev' }

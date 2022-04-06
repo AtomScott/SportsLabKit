@@ -25,7 +25,9 @@
           </p>
           {% endif %}
 
-          <div class="hero-buttons">
+          <img src="{{ site.url }}/img/banner.png" class="img-fluid" alt="Banner">
+
+          <div class="hero-buttons text-center">
             {% if site.github_url != '' %}
               <a href="{{ site.github_url }}"><button class="btn btn-default btn-lg"><i class="fa fa-github fa-lg"></i>Github</button></a>
             {% endif %}
@@ -34,6 +36,9 @@
             {% endif %}
             {% if site.download_url != '' %}
               <a href="{{ site.download_url }}"><button class="btn btn-default btn-lg"><i class="fa fa-download fa-lg"></i>Download</button></a>
+            {% endif %}
+            {% if site.paper_url != '' %}
+              <a href="{{ site.paper_url }}"><button class="btn btn-default btn-lg"><i class="fa fa-file-text fa-lg"></i>Paper</button></a>
             {% endif %}
             
           </div>

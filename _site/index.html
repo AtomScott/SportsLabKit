@@ -19,8 +19,7 @@
 
   <!-- Fonts -->
   <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,300,600,400italic,700|Merriweather:400,300,300italic,400italic,700' rel='stylesheet' type='text/css'>
-
-  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
 
   <!-- Styles -->
   <link rel="stylesheet" href="http://localhost:4000/css/animate.min.css">
@@ -54,6 +53,10 @@
                   <a href="http://localhost:4000/about">About</a>
                 </li>
               
+                <li>
+                  <a href="http://localhost:4000/dev">Dev</a>
+                </li>
+              
             </ul>
           </div>
       </div>
@@ -85,7 +88,9 @@
           </p>
           
 
-          <div class="hero-buttons">
+          <img src="http://localhost:4000/img/banner.png" class="img-fluid" alt="Banner">
+
+          <div class="hero-buttons text-center">
             
               <a href="https://github.com/AtomScott/SoccerTrack"><button class="btn btn-default btn-lg"><i class="fa fa-github fa-lg"></i>Github</button></a>
             
@@ -94,6 +99,9 @@
             
             
               <a href="#download"><button class="btn btn-default btn-lg"><i class="fa fa-download fa-lg"></i>Download</button></a>
+            
+            
+              <a href="#paper"><button class="btn btn-default btn-lg"><i class="fa fa-file-text fa-lg"></i>Paper</button></a>
             
             
           </div>
@@ -113,183 +121,54 @@
         <div class="row">
           <div class="col-md-8 col-md-offset-2">
 
-            <h2 id="markdown">Markdown</h2>
+            <h2 id="abstract">Abstract</h2>
+<p>Tracking devices that can track both players and balls are critical to the performance of sports teams. Recently, significant effort has been focused on building larger broadcast sports video datasets. However, broadcast videos do not show the entire pitch and only provides partial information about the game. On the other hand, other camera perspectives can capture the whole field in a single frame, such as fish-eye and bird-eye view (drone) cameras. Unfortunately, there has not been a dataset where such data has been publicly shared until now.</p>
 
-<p>Text can be <strong>bold</strong>, <em>italic</em>, <del>strikethrough</del> or <code class="language-plaintext highlighter-rouge">keyword</code>.</p>
-
-<p><a href="/index.html">Link to another page</a>.</p>
-
-<p>There should be whitespace between paragraphs.</p>
-
-<h1 id="header-1">Header 1</h1>
-
-<p>This is a normal paragraph following a header. GitHub is a code hosting platform for version control and collaboration. It lets you and others work together on projects from anywhere.</p>
-
-<h2 id="header-2">Header 2</h2>
-
-<blockquote>
-  <p>This is a blockquote following a header.</p>
-
-  <p>When something is important enough, you do it even if the odds are not in your favor.</p>
-</blockquote>
-
-<h3 id="header-3">Header 3</h3>
-
-<figure class="highlight"><pre><code class="language-js" data-lang="js"><span class="c1">// Javascript code with syntax highlighting.</span>
-<span class="kd">var</span> <span class="nx">fun</span> <span class="o">=</span> <span class="kd">function</span> <span class="nx">lang</span><span class="p">(</span><span class="nx">l</span><span class="p">)</span> <span class="p">{</span>
-  <span class="nx">dateformat</span><span class="p">.</span><span class="nx">i18n</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="dl">'</span><span class="s1">./lang/</span><span class="dl">'</span> <span class="o">+</span> <span class="nx">l</span><span class="p">)</span>
-  <span class="k">return</span> <span class="kc">true</span><span class="p">;</span>
-<span class="p">}</span></code></pre></figure>
-
-<figure class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="c1"># Ruby code with syntax highlighting</span>
-<span class="no">GitHubPages</span><span class="o">::</span><span class="no">Dependencies</span><span class="p">.</span><span class="nf">gems</span><span class="p">.</span><span class="nf">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">gem</span><span class="p">,</span> <span class="n">version</span><span class="o">|</span>
-  <span class="n">s</span><span class="p">.</span><span class="nf">add_dependency</span><span class="p">(</span><span class="n">gem</span><span class="p">,</span> <span class="s2">"= </span><span class="si">#{</span><span class="n">version</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-<span class="k">end</span></code></pre></figure>
-
-<h4 id="header-4">Header 4</h4>
-
-<ul>
-  <li>This is an unordered list following a header.</li>
-  <li>This is an unordered list following a header.</li>
-  <li>This is an unordered list following a header.</li>
-</ul>
-
-<h5 id="header-5">Header 5</h5>
-
-<ol>
-  <li>This is an ordered list following a header.</li>
-  <li>This is an ordered list following a header.</li>
-  <li>This is an ordered list following a header.</li>
-</ol>
-
-<h6 id="header-6">Header 6</h6>
-
-<table>
-  <thead>
-    <tr>
-      <th style="text-align: left">head1</th>
-      <th style="text-align: left">head two</th>
-      <th style="text-align: left">three</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td style="text-align: left">ok</td>
-      <td style="text-align: left">good swedish fish</td>
-      <td style="text-align: left">nice</td>
-    </tr>
-    <tr>
-      <td style="text-align: left">out of stock</td>
-      <td style="text-align: left">good and plenty</td>
-      <td style="text-align: left">nice</td>
-    </tr>
-    <tr>
-      <td style="text-align: left">ok</td>
-      <td style="text-align: left">good <code class="language-plaintext highlighter-rouge">oreos</code></td>
-      <td style="text-align: left">hmm</td>
-    </tr>
-    <tr>
-      <td style="text-align: left">ok</td>
-      <td style="text-align: left">good <code class="language-plaintext highlighter-rouge">zoute</code> drop</td>
-      <td style="text-align: left">yumm</td>
-    </tr>
-  </tbody>
-</table>
-
-<h3 id="theres-a-horizontal-rule-below-this">There’s a horizontal rule below this.</h3>
-
-<hr />
-
-<h3 id="here-is-an-unordered-list">Here is an unordered list:</h3>
-
-<ul>
-  <li>Item foo</li>
-  <li>Item bar</li>
-  <li>Item baz</li>
-  <li>Item zip</li>
-</ul>
-
-<h3 id="and-an-ordered-list">And an ordered list:</h3>
-
-<ol>
-  <li>Item one</li>
-  <li>Item two</li>
-  <li>Item three</li>
-  <li>Item four</li>
-</ol>
-
-<h3 id="and-a-nested-list">And a nested list:</h3>
-
-<ul>
-  <li>level 1 item
-    <ul>
-      <li>level 2 item</li>
-      <li>level 2 item
-        <ul>
-          <li>level 3 item</li>
-          <li>level 3 item</li>
-        </ul>
-      </li>
-    </ul>
-  </li>
-  <li>level 1 item
-    <ul>
-      <li>level 2 item</li>
-      <li>level 2 item</li>
-      <li>level 2 item</li>
-    </ul>
-  </li>
-  <li>level 1 item
-    <ul>
-      <li>level 2 item</li>
-      <li>level 2 item</li>
-    </ul>
-  </li>
-  <li>level 1 item</li>
-</ul>
-
-<h3 id="wide-image">Wide image</h3>
-
-<p><img src="https://guides.github.com/activities/hello-world/branching.png" alt="Branching" /></p>
-
-<h3 id="definition-lists-can-be-used-with-html-syntax">Definition lists can be used with HTML syntax.</h3>
-
-<dl>
-<dt>Name</dt>
-<dd>Godzilla</dd>
-<dt>Born</dt>
-<dd>1952</dd>
-<dt>Birthplace</dt>
-<dd>Japan</dd>
-<dt>Color</dt>
-<dd>Green</dd>
-</dl>
-
-<figure class="highlight"><pre><code class="language-txt" data-lang="txt">Long, single-line code blocks should not wrap. They should horizontally scroll if they are too long. This line should be long enough to demonstrate this.</code></pre></figure>
-
-<figure class="highlight"><pre><code class="language-txt" data-lang="txt">The final element.</code></pre></figure>
-
-<hr />
-
-<h2 id="syntax-highlighting">Syntax highlighting</h2>
-
-<p>Jekyll has <a href="https://jekyllrb.com/docs/templates/#code-snippet-highlighting">built in support</a> for syntax highlighting of over 60 languages thanks to <a href="http://rouge.jneen.net/">Rouge</a>.</p>
-
-<p>To render a code block with syntax highlighting, surround your code as follows:</p>
-
-<figure class="highlight"><pre><code class="language-markdown" data-lang="markdown">{% highlight ruby %}
-def foo
-  puts 'foo'
-end
-{% endhighlight %}</code></pre></figure>
-
-<p><a href="http://pygments.org/">Pygments</a> styles are present under section 6.0 of <code class="language-plaintext highlighter-rouge">css/style.scss</code> for customization.</p>
-
-<h3 id="examples">Examples</h3>
-
-<hr />
+<p>This paper proposes SoccerTrack, a dataset set consisting of GNSS and bounding box tracking data annotated on video captured with a 8K-resolution fish-eye camera and a 4K-resolution drone camera. In addition to a benchmark tracking algorithm, we include code for camera calibration and other preprocessing. Finally, we evaluate the tracking accuracy among a GNSS, fish-eye camera and drone camera data. SoccerTrack is expected to provide a more robust foundation for designing MOT algorithms that are less reliant on visual cues and more reliant on motion analysis.</p>
 
 <h2 id="download">Download</h2>
+
+<h3 id="training-data">Training Data</h3>
+
+<h3 id="test-data">Test Data</h3>
+
+<div style="overflow: scroll">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Thumbnail</th>
+        <th>Filename</th>
+        <th>Modality</th>
+        <th>FPS</th>
+        <th>Resolution</th>
+        <th>Length</th>
+        <th>Tracks</th>
+        <th>Boxes</th>
+        <th>Description</th>
+        <th>Download</th>
+      </tr>
+    </thead>
+    <tr>
+      <td>
+        <a href="http://localhost:4000/img/banner.png">
+          <img src="http://localhost:4000/img/banner.png" class="thumbnail" alt="Thumbnail" /></a>
+      </td>
+      <td>STDrone-000</td>
+      <td>Drone</td>
+      <td>30</td>
+      <td>3840 x 2160</td>
+      <td>30 sec</td>
+      <td>23</td>
+      <td>20700</td>
+      <td>Drone video sequence</td>
+      <td>
+        <a href="https://drive.google.com/uc?export=download&amp;id=1eOJMQYsd9qoXLkXKhitSm5oOYMTaoB81">Video</a>
+        /
+        <a href="https://drive.google.com/uc?export=download&amp;id=1eOJMQYsd9qoXLkXKhitSm5oOYMTaoB81">Annotation</a>
+      </td>
+    </tr>
+  </table>
+</div>
 
 
   
