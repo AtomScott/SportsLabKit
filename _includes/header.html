@@ -23,8 +23,8 @@
   <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
 
   <!-- Styles -->
-  <link rel="stylesheet" href="{{ "/css/animate.min.css" | prepend: site.baseurl }}">
-  <link rel="stylesheet" href="{{ "/css/style.css" | prepend: site.baseurl }}">
+  <link rel="stylesheet" href="{{ "/css/animate.min.css" | prepend: site.url }}">
+  <link rel="stylesheet" href="{{ "/css/style.css" | prepend: site.url }}">
 
 </head>
 <body class="{{ post.title | downcase | replace:' ','-' | replace:',','' | strip_html }}{% if page.category %} category-{{ page.category }}{% endif %}{% if page.layout-class %} layout-{{ page.layout-class }}{% endif %}">
@@ -47,7 +47,7 @@
             <ul class="nav navbar-nav navbar-right">
               {% for item in site.nav_item %}
                 <li>
-                  <a href="{{ item.url }}">{{ item.text }}</a>
+                  <a href="{{ site.url }}{{ item.url }}">{{ item.text }}</a>
                 </li>
               {% endfor %}
             </ul>
