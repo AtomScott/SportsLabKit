@@ -15,11 +15,12 @@
 # in the templates via {{ site.myvariable }}.
 title: "SoccerTrack"
 email: 'atom.james.scott@gmail.com'
-description: "A Dataset and Tracking Algorithm \\for Soccer with Fish-eye and Drone Videos"
+description: "A Dataset and Tracking Algorithm for Soccer with Fish-eye and Drone Videos"
 baseurl: "" # the subpath of your site, e.g. /blog
 url: "https://atomscott.github.io/SoccerTrack" # the base hostname & protocol for your site, e.g. https://example.com
-twitter_username: 'AtomJamesScott'
-github_username: 'AtomScott'
+github_url: 'https://github.com/AtomScott/SoccerTrack'
+rtd_url: 'https://soccertrack.readthedocs.io/'
+download_url: "#download"
 
 # Build settings
 markdown: kramdown
