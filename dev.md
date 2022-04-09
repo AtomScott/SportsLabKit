@@ -28,7 +28,7 @@ Found a typo? Think you can improve this page? [Send a pull request]() by follow
 * Clone the repo
 
  ```
- git clone https://github.com/AtomScott/SoccerTrack.git
+ git clone gh-pages https://github.com/AtomScott/SoccerTrack.git
  ```
 
 * Run the following commands
@@ -37,6 +37,11 @@ Found a typo? Think you can improve this page? [Send a pull request]() by follow
  bundle install
  bundle exec jekyll serve
  # Navigate to http://localhost:4000 in your browser.
+
+ #Note : If the error "cannot load such file - webrick (LoadError)" is detected, run the following script before bundle install
+
+ bundle add webrick
+
  ```
 
 

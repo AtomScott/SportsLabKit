@@ -71,9 +71,16 @@
 
           <h2 id="contributing">Contributing</h2>
 
+<p>This document aims to direct you to further instructions for contributing to SoccerTrack.
+If you have any questions, feel free to reach out to <a href="https://atomscott.me/">Atom Scott</a>, who is the the primary maintainer.</p>
+
 <h3 id="dataset">Dataset</h3>
 
-<h3 id="algorithm">Algorithm</h3>
+<p>Please <a href="https://github.com/AtomScott/SoccerTrack/issues">create an issue</a> with the appropriate template.</p>
+
+<h3 id="algorithm--package">Algorithm / Package</h3>
+
+<p>We welcome any bug reports, feature requests, documentation contributions etc. If you are thinking of contributing, please start by reading the <a href="https://soccertrack.readthedocs.io/en/latest/">contributor guide in our read the docs</a> page!</p>
 
 <h3 id="this-webapge">This Webapge</h3>
 
@@ -90,7 +97,7 @@
   </li>
 </ul>
 
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code> git clone https://github.com/AtomScott/SoccerTrack.git
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code> git clone gh-pages https://github.com/AtomScott/SoccerTrack.git
 </code></pre></div></div>
 
 <ul>
@@ -100,11 +107,37 @@
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code> bundle install
  bundle exec jekyll serve
  # Navigate to http://localhost:4000 in your browser.
+
+ #Note : If the error "cannot load such file - webrick (LoadError)" is detected, run the following script before bundle install
+
+ bundle add webrick
+
 </code></pre></div></div>
 
-<h4 id="2-confirm-your-code-works-locally">2. Confirm your code works locally</h4>
+<h4 id="2-write-code--confirm-it-works-locally">2. Write code &amp; confirm it works locally</h4>
+
+<ul>
+  <li>
+    <p>Create a branch and prepare your changes. Don’t work on <code class="language-plaintext highlighter-rouge">gh-pages</code> branch directly as it may become complicatied when you need to rebase.</p>
+  </li>
+  <li>
+    <p>If you completed step 1. correctly, then most of the changes should be reflected without needing to restart the jekyll server. Reload localhost:4000 and if it looks good you should be ok.</p>
+  </li>
+  <li>
+    <p>Note that some files will affect how github serves this webpage. Try not to change those files since it will cause discrepancy between what you see locally and here on github.</p>
+  </li>
+</ul>
 
 <h4 id="3-make-a-pull-request">3. Make a pull request</h4>
+
+<ul>
+  <li>
+    <p>Make sure your pull request has a good name! It will be useful later when you may work on multiple tasks/PRs.</p>
+  </li>
+  <li>
+    <p>See the Github Docs on <a href="https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-pull-requests">pull requests</a> or <a href="https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request">creating a PR</a> for further details.</p>
+  </li>
+</ul>
 
 
         </div>
