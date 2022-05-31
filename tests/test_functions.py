@@ -10,7 +10,6 @@ sys.path.append("../")
 
 from sandbox.functions import * # noqa
 
-
 class TestFunctions(TestCase):
     """ test functions """
     
@@ -18,21 +17,20 @@ class TestFunctions(TestCase):
         """A test for the cut_video_file function."""
 
         with TemporaryDirectory() as tmpdir:
-            video_file_name = Path('tests/assets/small-movie.mp4')
+            video_file_name = Path('tests/assets/small-movie.mp4') #パス確認
 
-            start_time = 0
-            duration = 5
-
-            save_path = Path(tmpdir) / Path("new_video.mp4")
-            print(save_path)
-            cut_video_file(str(video_file_name), start_time, duration, str(save_path))
+            start_time = 1
+            end_time = 2
+            
+            save_path = Path(tmpdir) / Path("videos/new_video.mp4")
+            cut_video_file(video_file_name, start_time, end_time, save_path)
             self.assertTrue(save_path.exists())
             
             video_info = ffmpeg.probe(str(save_path))['streams'][0]
             self.assertEqual(video_info['width'], 320)
             self.assertEqual(video_info['height'], 240)
-            self.assertEqual(int(float(video_info['duration'])), duration)
-            self.assertEqual(int(video_info['nb_frames']), (duration - start_time) * 15)
+            self.assertEqual(float(video_info['duration']), end_time - start_time) #value error
+            self.assertEqual(int(video_info['nb_frames']), (end_time - start_time)*15)
 
 
     def test_cut_gps_file(self):

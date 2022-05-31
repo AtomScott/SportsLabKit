@@ -2,7 +2,7 @@ from typing import List
 from pathlib import Path
 import ffmpeg
 
-def cut_video_file(video_file_name: str, start_time: int, duration: int, save_path: str) -> None:
+def cut_video_file(video_file_name: str, start_time: int, end_time: int, save_path: str) -> None:
 
     """Cut a video from start_time to end_time.
     Args:
@@ -13,7 +13,8 @@ def cut_video_file(video_file_name: str, start_time: int, duration: int, save_pa
     """
 
     out_options = {'vcodec':'libx264', 'crf':23, 'preset':'slow'}
-    ffmpeg.input(video_file_name, ss=start_time, t=duration).output(save_path, **out_options).run(overwrite_output=True)
+    save_path.parents[0].mkdir(exist_ok=True, parents=True)
+    ffmpeg.input(str(video_file_name), ss= start_time, t=end_time - start_time).output(str(save_path), **out_options).run(overwrite_output=True)
 
 def cut_gps_file(gps_file_name: str, start_time: int, end_time: int, save_dir: str) -> None:
 
