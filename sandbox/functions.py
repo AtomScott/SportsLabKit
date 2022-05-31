@@ -1,25 +1,35 @@
-def cut_video_file(video_file_name: str, start_time: int, end_time: int, save_dir: str) -> None:
+from typing import List
+from pathlib import Path
+import ffmpeg
+
+def cut_video_file(video_file_name: str, start_time: int, end_time: int, save_path: str) -> None:
+
     """Cut a video from start_time to end_time.
     Args:
         video_file_name (str) : Path to the video file to cut.
         start_time (int) : Start time of the video.
-        end_time (int) : End time of the video.
-        save_dir (str) : Path to save the video.
+        duration (int) : Duration from start_time.
+        save_path (str) : Path to save the video.
     """
-    pass
+
+    out_options = {'vcodec':'libx264', 'crf':23, 'preset':'slow'}
+    save_path.parents[0].mkdir(exist_ok=True, parents=True)
+    ffmpeg.input(str(video_file_name), ss= start_time, t=end_time - start_time).output(str(save_path), **out_options).run(overwrite_output=True)
 
 def cut_gps_file(gps_file_name: str, start_time: int, end_time: int, save_dir: str) -> None:
+
     """Cut a gps file from start_time to end_time.
 
     Args:
         gps_file_name (str) : Path to the gps file to cut.
         start_time (int) : Start time of the gps file.
         end_time (int) : End time of the gps file.
-        save_dir (str) : Path to save the gps file.
+        save_path (str) : Path to save the gps file.
     """
     pass
 
 def visualization_gps(gps_file_name: str, save_path: str) -> None:
+
     """Visualize the gps file.
 
     Args:
@@ -29,6 +39,7 @@ def visualization_gps(gps_file_name: str, save_path: str) -> None:
     pass
 
 def visualization_annotations(annotations_file_name: str, save_path: str) -> None:
+
     """Visualize the annotations file.
 
     Args:
@@ -38,6 +49,7 @@ def visualization_annotations(annotations_file_name: str, save_path: str) -> Non
     pass
 
 def upload2s3(integration_key: str, bucket_name: str, file_name: str) -> bool: #Not sure how to integrate with S3, but probably need to fill in some kind of key or bucket name
+
     """Upload a file to S3.
 
     Args:
@@ -52,6 +64,7 @@ def upload2s3(integration_key: str, bucket_name: str, file_name: str) -> bool: #
     pass
 
 def download_from_s3(integration_key: str, bucket_name: str, download_dir: str, save_path: str) -> bool:
+
     """Download a file from S3.
 
     Args:
@@ -69,6 +82,7 @@ def download_from_s3(integration_key: str, bucket_name: str, download_dir: str, 
     pass
 
 def upload_annotation2labelbox(annotations_file_name: str, labelbox_api_key: str, labelbox_project_id: str) -> bool: #Probably some kind of Labelbox access key is needed.
+
     """Upload annotations to Labelbox.
 
     Args:
@@ -82,6 +96,7 @@ def upload_annotation2labelbox(annotations_file_name: str, labelbox_api_key: str
     pass
 
 def upload_video2labelbox(video_file_name: str, labelbox_api_key: str, labelbox_project_id: str) -> bool: #Probably some kind of Labelbox access key is needed.
+
     """Upload video to Labelbox.
 
     Args:
@@ -93,7 +108,8 @@ def upload_video2labelbox(video_file_name: str, labelbox_api_key: str, labelbox_
     """
     pass
 
-def create_annotation_df_from_s3(integration_key: str, bucket_name: str, root_dir: str ,dir_name_list: list[str], save_path: str) -> None:
+def create_annotation_df_from_s3(integration_key: str, bucket_name: str, root_dir: str ,dir_name_list: List[str], save_path: str) -> None:
+
     """Create a dataframe(csv file) from the annotations file.
 
     Args:
@@ -103,5 +119,5 @@ def create_annotation_df_from_s3(integration_key: str, bucket_name: str, root_di
         dir_name_list (list[str]) :List of data types to be stored in the df columns. The element of each list contains the directory name.
         save_path (str) : Path to save the csv_file.
     """
-
     pass
+
