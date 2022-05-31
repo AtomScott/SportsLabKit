@@ -5,6 +5,7 @@ doc-warnings: true
 
 ignore-paths:
   - docs
+  - tests
 
 dodgy:
   run: true
