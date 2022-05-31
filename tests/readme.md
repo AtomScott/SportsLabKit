@@ -1,5 +1,6 @@
 Basic usage
 
 ```
-poetry run pytest
+# run in xxx/SoccerTrack
+poetry run pytest tests
 ```
