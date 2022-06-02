@@ -53,7 +53,7 @@ def save_dataframe(
         df (pd.DataFrame): Dataframe to save.
         path_or_buf (FilePath | WriteBuffer[bytes] | WriteBuffer[str]): Path to save the dataframe.
     """
-    
+    assert df.columns.nlevels == 3, "Dataframe must have 3 levels of columns"
     if df.attrs:
         # write dataframe attributes to the csv file
         with open(path_or_buf, "w") as f:
