@@ -8,7 +8,6 @@ import ffmpeg
 
 from .sandbox.functions import *  # noqa
 
-
 class TestFunctions(TestCase):
     """test functions"""
 
