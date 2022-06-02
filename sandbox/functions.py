@@ -59,14 +59,14 @@ def cut_video_file(
 #     pass
 
 
-def last_row_append(df_list_idx):
+def last_row_append(df_list: List[pd.DataFrame], df_list_idx: int) -> None:
     """dfの最後の行を追加（各動画の最後のフレームに該当するSRTの値が存在しないため）
     Args:
+    df_list(List[pd.DataFrame]): DataFrame list.
     df_list_idx : int
             対象とするdfのリストのインデックス
-
     Returns
-    """
+        """
     timestamp_last = df_list[df_list_idx].iloc[-1]["timestamp"]  # 最後の行のtimestamp
     timestamp_next = df_list[df_list_idx + 1].iloc[0][
         "timestamp"
@@ -274,7 +274,7 @@ def get_split_time(
     """
     drone_log_dir = sorted(list(Path(drone_log_dir).glob("*.SRT")), reverse=False)
     df_list = []
-    for file_name in video_match_1_list:
+    for file_name in drone_log_dir:
         # print(file_name)
         srt_obj = pysrt.open(str(file_name))
         SRT_results = []
@@ -300,7 +300,7 @@ def get_split_time(
             SRT_results.append(SRT_result)
 
         df = pd.DataFrame(
-            SRT_results, columns=["timestamp", "lat", "lon", "alt", "duration(ms)"]
+            SRT_results, columns=["Time", "Lat", "Lon", "Alt", "duration(ms)"]
         )
         df_list.append(df)
 
@@ -338,9 +338,10 @@ def visualization_gps(gps_file_name: str, save_path: str) -> None:
     """Visualize the gps file.
 
     Args:
-        gps_file_name (str) : Path to the gps file to visualize.
-        save_path (str) : Path to save the gps file.
+        gps_file_name (str) : Path to the gps file to visualize. #整形したGPSデータ(csv)を指定
+        save_path (str) : Path to save the gps file
     """
+
     pass
 
 
