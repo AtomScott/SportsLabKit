@@ -149,7 +149,6 @@ def load_gpsports(
 
     idx = pd.MultiIndex.from_arrays(
         [[int(teamid)] * 2, [int(playerid)] * 2, list(raw_df.columns)],
-        names=["teamid", "playerid", "attributes"],
     )
 
     # Change single column to multi-column
@@ -191,7 +190,6 @@ def load_statsports(
 
     idx = pd.MultiIndex.from_arrays(
         [[int(teamid)] * 2, [int(playerid)] * 2, list(raw_df.columns)],
-        names=["teamid", "playerid", "attributes"],
     )
 
     # change multicolumn
@@ -201,7 +199,6 @@ def load_statsports(
     return statsports_dataframe
 
 
-# def load_gps(*funcs) -> pd.DataFrame:
 def load_gps(df_list: List[pd.DataFrame]) -> pd.DataFrame:
     # load_gpsports: pd.DataFrame, load_statsports: pd.DataFrame,
     """GPSPORTSとSTATSPORTSのファイルのマージ
@@ -215,7 +212,7 @@ def load_gps(df_list: List[pd.DataFrame]) -> pd.DataFrame:
     """
 
     merged_dataframe = df_list[0].join(df_list[1 : len(df_list)])
-    merged_dataframe = gps_df.sort_index().interpolate()
+    merged_dataframe = merged_dataframe.sort_index().interpolate()
     # merged_dataframe.index = merged_dataframe.set_index('Time')
 
     return merged_dataframe
