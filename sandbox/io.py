@@ -53,12 +53,15 @@ def save_dataframe(
         df (pd.DataFrame): Dataframe to save.
         path_or_buf (FilePath | WriteBuffer[bytes] | WriteBuffer[str]): Path to save the dataframe.
     """
+    
     if df.attrs:
         # write dataframe attributes to the csv file
         with open(path_or_buf, "w") as f:
             for k, v in df.attrs.items():
                 f.write(f"#{k}:{v}\n")
-    df.to_csv(path_or_buf, mode="a")
+        df.to_csv(path_or_buf, mode="a")
+    else:
+        df.to_csv(path_or_buf, mode="w")
 
 
 def load_dataframe(
