@@ -1,10 +1,11 @@
+from curses import meta
 import datetime
 import os
 import re
 import sys
 import time
 from pathlib import Path
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
 import cv2
 import ffmpeg
@@ -16,8 +17,14 @@ from omegaconf import OmegaConf
 
 sys.path.append("../../")
 
-from soccertrack.utils import (ImageIterator, MovieIterator, cv2pil, logger,
-                               make_video, tqdm)
+from soccertrack.utils import (
+    ImageIterator,
+    MovieIterator,
+    cv2pil,
+    logger,
+    make_video,
+    tqdm,
+)
 
 
 def cut_video_file(
@@ -93,7 +100,28 @@ def last_row_append(df_list_idx):
     )
 
 
-def load_gpsports(file_name: str) -> pd.DataFrame:
+def infer_metadata_from_filename(filename):
+    # TODO
+
+    filename = Path(filename)
+    basename = filename.name
+
+    try:
+        teamid = int(basename.split("_")[1])
+        playerid = int(basename.split("_")[2].split(".")[0])
+    except IndexError:
+        teamid = 0
+        playerid = 0
+    metadata = {
+        "teamid": teamid,
+        "playerid": playerid,
+    }
+    return metadata
+
+
+def load_gpsports(
+    file_name: str, playerid: Optional[int] = None, teamid: Optional[int] = None
+) -> pd.DataFrame:
     """
     Args:
         file_name(str): Path to gpsports file.
@@ -114,11 +142,16 @@ def load_gpsports(file_name: str) -> pd.DataFrame:
         index_col="Time",
     ).rename(columns={"Latitude": "Lat", "Longitude": "Lon"})
     # get multicolumn
-    teamid = file_name.split("/")[-1].split("_")[1]
-    playerid = file_name.split("/")[-1].split("_")[2].split(".")[0]
+
+    metadata = infer_metadata_from_filename(file_name)
+    teamid = teamid if teamid is not None else metadata.get("teamid")
+    playerid = playerid if playerid is not None else metadata.get("playerid")
+
     idx = pd.MultiIndex.from_arrays(
-        [[int(teamid)] * 2, [int(playerid)] * 2, list(raw_df.columns)]
+        [[int(teamid)] * 2, [int(playerid)] * 2, list(raw_df.columns)],
+        names=["teamid", "playerid", "attributes"],
     )
+
     # Change single column to multi-column
     gpsports_dataframe = pd.DataFrame(raw_df.values, index=raw_df.index, columns=idx)
     gpsports_dataframe.index = gpsports_dataframe.index.map(
@@ -127,7 +160,9 @@ def load_gpsports(file_name: str) -> pd.DataFrame:
     return gpsports_dataframe
 
 
-def load_statsports(file_name: str) -> pd.DataFrame:
+def load_statsports(
+    file_name: str, playerid: Optional[int] = None, teamid: Optional[int] = None
+) -> pd.DataFrame:
     """
     Args:
         file_name(str): Path to statsports file.
@@ -149,11 +184,14 @@ def load_statsports(file_name: str) -> pd.DataFrame:
     )
     raw_df["Time"] = pd.to_datetime(raw_df["Time"])
     raw_df.set_index("Time", inplace=True)
-    # rename
-    teamid = file_name.split("/")[-1].split("_")[1]
-    playerid = file_name.split("/")[-1].split("_")[2].split(".")[0]
+
+    metadata = infer_metadata_from_filename(file_name)
+    teamid = teamid if teamid is not None else metadata.get("teamid")
+    playerid = playerid if playerid is not None else metadata.get("playerid")
+
     idx = pd.MultiIndex.from_arrays(
-        [[int(teamid)] * 2, [int(playerid)] * 2, list(raw_df.columns)]
+        [[int(teamid)] * 2, [int(playerid)] * 2, list(raw_df.columns)],
+        names=["teamid", "playerid", "attributes"],
     )
 
     # change multicolumn
