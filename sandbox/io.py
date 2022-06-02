@@ -1,8 +1,9 @@
 from ast import literal_eval
+from typing import Any, Union
+
 import dateutil.parser
 import numpy as np
 import pandas as pd
-from typing import Any, Union
 from pandas._typing import FilePath, WriteBuffer
 
 
@@ -47,7 +48,7 @@ def save_dataframe(
     path_or_buf: Union[FilePath, WriteBuffer[bytes], WriteBuffer[str]],
 ) -> None:
     """Save a dataframe to a file.
-    
+
     Args:
         df (pd.DataFrame): Dataframe to save.
         path_or_buf (FilePath | WriteBuffer[bytes] | WriteBuffer[str]): Path to save the dataframe.
