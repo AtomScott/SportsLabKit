@@ -13,6 +13,7 @@ dodgy:
 pylint:
   disable:
     - missing-class-docstring
+    - missing-module-docstring
     - line-too-long
     - E1103
     - too-many-branches
@@ -42,7 +43,6 @@ pylint:
 pep257:
   run: true
   enable:
-    - D100
     - D102
     - D103
   disable:
