@@ -1,0 +1,21 @@
+devices:
+  - 
+    gps_format: STATSPORTS
+    playerid: 0
+    teamid: 0
+    filepath: "tests/assets/gps_data/statsports/0.csv"
+  - 
+    gps_format: STATSPORTS
+    playerid: 0
+    teamid: 1
+    filepath: "tests/assets/gps_data/statsports/1.csv"
+  - 
+    gps_format: GPSPORTS
+    playerid: 1
+    teamid: 0
+    filepath: "tests/assets/gps_data/gpsports/0.xlsx"
+  - 
+    gps_format: GPSPORTS
+    playerid: 1
+    teamid: 1
+    filepath: "tests/assets/gps_data/gpsports/1.xlsx"

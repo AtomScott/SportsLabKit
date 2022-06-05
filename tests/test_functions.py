@@ -79,22 +79,34 @@ class TestFunctions(TestCase):
         datetime_value = dataframe.index[0]
         self.assertEqual(datetime_value, datetime.time(12, 48, 47, 800000))
 
-    # def test_load_gps(self):
-    #     filename = Path("tests/assets/gps_data/xxx")
-    #     dataframe = load_gpsports(filename)
+    def test_load_gps_with_single_gpsports(self):
+        filename = Path("tests/assets/gps_data/gpsports/0.xlsx")
+        dataframe=load_gps(filename)
+        pd.testing.assert_frame_equal(dataframe, load_gpsports(filename))
 
-    #     answer_dict = {"latitude": [1, 2, 3], "longitude": [1, 2, 3]}
-    #     self.assertDictEqual(dataframe.to_dict(), answer_dict)
+    def test_load_gps_with_single_statsports(self):
+        filename = Path("tests/assets/gps_data/statsports/0.csv")
+        dataframe = load_gps(filename)
+        pd.testing.assert_frame_equal(dataframe, load_statsports(filename))
 
-    #     filename = Path("tests/assets/gps_data/xxx")
-    #     dataframe = load_gpsports(filename)
+    def test_load_gps_with_multiple_formats(self):
+        filenames = [
+            Path("tests/assets/gps_data/gpsports/0.xlsx"),
+            Path("tests/assets/gps_data/gpsports/1.xlsx"),
+            Path("tests/assets/gps_data/statsports/0.csv"),
+            Path("tests/assets/gps_data/statsports/1.csv"),
+        ]
+        dataframe=load_gps(filenames)
+        
+        # TODO: add assertions
 
-    #     answer_dict = {"latitude": [1, 2, 3], "longitude": [1, 2, 3]}
-    #     self.assertDictEqual(dataframe.to_dict(), answer_dict)
-
-    # def test_load_gps_from_yaml(self):
-    #     yamlfile = Path("tests/assets/gps_data/test_players_22.yaml")
-    #     pass
+        
+    def test_load_gps_from_yaml(self):
+        yamlfile = Path("tests/assets/gps_data/four_gps_files.yaml")
+        
+        dataframe = load_gps_from_yaml(yamlfile)
+        
+        # TODO: add assertions
 
     # def test_cut_gps_file(self):
     #     """A test for the cut_gps_file function."""
