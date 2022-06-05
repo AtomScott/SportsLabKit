@@ -59,12 +59,25 @@ class TestFunctions(TestCase):
         datetime_value = dataframe.index[0]
         self.assertEqual(datetime_value, datetime.time(12, 52, 35, 600000))
 
-    # def test_load_statsports(self):
-    #     filename = Path("tests/assets/gps_data/xxx")
-    #     dataframe = load_statsports(filename)
+    def test_load_statsports(self):
+        filename = Path("tests/assets/gps_data/statsports/0.csv")
+        dataframe = load_statsports(filename)
 
-    #     answer_dict = {"latitude": [1, 2, 3], "longitude": [1, 2, 3]}
-    #     self.assertDictEqual(dataframe.to_dict(), answer_dict)
+        # assert dataframe shape
+        self.assertEqual(dataframe.shape, (99, 2))
+
+        # assert headers are correct
+        self.assertListEqual(dataframe.columns.tolist(), [(0, 0, "Lat"), (0, 0, "Lon")])
+
+        # assert values in first row are correct
+        self.assertListEqual(dataframe.iloc[0].tolist(), [36.102613,140.107261])
+
+        # assert values in last row are correct
+        self.assertListEqual(dataframe.iloc[-1].tolist(), [36.10257933,140.1071105])
+
+        # assert index is correct
+        datetime_value = dataframe.index[0]
+        self.assertEqual(datetime_value, datetime.time(12, 48, 47, 800000))
 
     # def test_load_gps(self):
     #     filename = Path("tests/assets/gps_data/xxx")
