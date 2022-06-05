@@ -198,10 +198,28 @@ def load_statsports(
 
     return statsports_dataframe
 
+def infer_gps_format(file_name):
+    file_name = str(file_name)
+    # TODO: 拡張子で判定する方法はザルすぎる
+    if file_name.endswith(".xlsx"):
+        return "gpsports"
+    elif file_name.endswith(".csv"):
+        return "statsports"
+    else:
+        raise ValueError("Could not infer file format")
 
-def load_gps(df_list: List[pd.DataFrame]) -> pd.DataFrame:
+def get_gps_loader(format):
+    format = format.lower()
+    if format == "gpsports":
+        return load_gpsports
+    if format == "statsports":
+        return load_statsports
+    raise ValueError(f"Unknown format {format}")
+
+
+def load_gps(file_names: list[str]) -> pd.DataFrame:
     # load_gpsports: pd.DataFrame, load_statsports: pd.DataFrame,
-    """GPSPORTSとSTATSPORTSのファイルのマージ
+    """GPSPORTSとSTATSPORTSのファイルのマージ # TODO: 修正
 
     Args:
         gpsports_dataframe(pd.DataFrame): DataFrame of gpsports file.
@@ -210,16 +228,23 @@ def load_gps(df_list: List[pd.DataFrame]) -> pd.DataFrame:
     Returns:
         merged_dataframe(pd.DataFrame): DataFrame of merged gpsports and statsports.
     """
+    if not isinstance(file_names, list):
+        file_names = [file_names]
 
-    merged_dataframe = df_list[0].join(df_list[1 : len(df_list)])
-    merged_dataframe = merged_dataframe.sort_index().interpolate()
-    # merged_dataframe.index = merged_dataframe.set_index('Time')
-
+    playerid = 0 # TODO: 付与ロジックを書く
+    teamid = None # TODO 付与ロジックを書く
+    
+    df_list = []
+    for file_name in file_names:
+        gps_format = infer_gps_format(file_name)
+        dataframe = get_gps_loader(gps_format)(file_name, playerid, teamid)
+        df_list.append(dataframe)
+        
+        playerid += 1 #TODO: これではyamlから読み込むことができない
+        
+    merged_dataframe = df_list[0].join(df_list[1 : len(df_list)]) # これができるのは知らなかった
+    merged_dataframe = merged_dataframe.sort_index().interpolate() # 暗黙的にinterpolateするのが正解なのか？
     return merged_dataframe
-
-    # except IndexError:
-    #     merged_dataframe = funcs[0]()
-    #     return merged_dataframe
 
 
 def load_gps_from_yaml(yaml_path: str) -> pd.DataFrame:
@@ -234,23 +259,18 @@ def load_gps_from_yaml(yaml_path: str) -> pd.DataFrame:
     assert Path.exists(yaml_path)
     cfg = OmegaConf.load(yaml_path)
     df_list = []
-    for i in range(len(cfg["Device"])):
-        label, gps_dir = cfg["Device"][i].values()
-        if label == "STATSPORTS":
-            file_name_list = sorted(list(Path(gps_dir).glob("*.csv")), reverse=False)
-            for file_name in file_name_list:
-                print(file_name)
-                gps_df = load_statsports(str(file_name))
-                df_list.append(gps_df)
-
-        elif label == "GPSPORTS":
-            file_name_list = sorted(list(Path(gps_dir).glob("*.xlsx")), reverse=False)
-            for file_name in file_name_list:
-                gps_df = load_gpsports(str(file_name))
-                print(file_name)
-                df_list.append(gps_df)
-
-    merged_dataframe = load_gps(df_list)
+    for device in cfg.devices:
+        gps_format = device.gps_format
+        playerid = device.playerid
+        teamid = device.teamid
+        filepath = Path(device.filepath)
+        
+        dataframe = get_gps_loader(gps_format)(str(filepath), playerid, teamid)
+        df_list.append(dataframe)
+        
+    # merged_dataframe = load_gps(df_list)
+    merged_dataframe = df_list[0].join(df_list[1 : len(df_list)]) # これができるのは知らなかった
+    merged_dataframe = merged_dataframe.sort_index().interpolate() # 暗黙的にinterpolateするのが正解なのか？
     return merged_dataframe
 
 
