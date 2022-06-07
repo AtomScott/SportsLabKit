@@ -263,19 +263,13 @@ def load_gps_from_yaml(yaml_path: str) -> pd.DataFrame:
     assert Path.exists(yaml_path)
     cfg = OmegaConf.load(yaml_path)
     df_list = []
+    playerids, teamids, filepaths = [], [], []
     for device in cfg.devices:
-        gps_format = device.gps_format
-        playerid = device.playerid
-        teamid = device.teamid
-        filepath = Path(device.filepath)
+        playerids.append(device.playerid)
+        teamids.append(device.teamid)
+        filepaths.append(Path(device.filepath))
         
-        dataframe = get_gps_loader(gps_format)(str(filepath), playerid, teamid)
-        df_list.append(dataframe)
-        
-    # merged_dataframe = load_gps(df_list)
-    merged_dataframe = df_list[0].join(df_list[1 : len(df_list)]) # これができるのは知らなかった
-    merged_dataframe = merged_dataframe.sort_index().interpolate() # 暗黙的にinterpolateするのが正解なのか？
-    return merged_dataframe
+    return load_gps(filepaths, playerids, teamids)
 
 
 def get_split_time(
