@@ -6,6 +6,7 @@ import sys
 import time
 from pathlib import Path
 from typing import List, Optional, Tuple
+from itertools import zip_longest
 
 import cv2
 import ffmpeg
@@ -217,7 +218,7 @@ def get_gps_loader(format):
     raise ValueError(f"Unknown format {format}")
 
 
-def load_gps(file_names: list[str]) -> pd.DataFrame:
+def load_gps(file_names: list[str], playerids: list[int] = [], teamids:list[int] = []) -> pd.DataFrame:
     # load_gpsports: pd.DataFrame, load_statsports: pd.DataFrame,
     """GPSPORTSとSTATSPORTSのファイルのマージ # TODO: 修正
 
@@ -228,22 +229,25 @@ def load_gps(file_names: list[str]) -> pd.DataFrame:
     Returns:
         merged_dataframe(pd.DataFrame): DataFrame of merged gpsports and statsports.
     """
-    if not isinstance(file_names, list):
+    
+    if not isinstance(file_names, (list, tuple)):
         file_names = [file_names]
 
-    playerid = 0 # TODO: 付与ロジックを書く
-    teamid = None # TODO 付与ロジックを書く
+    if not isinstance(playerids, (list, tuple)):
+        playerids = [playerids]
+
+    if not isinstance(teamids, (list, tuple)):
+        teamids = [teamids]
     
     df_list = []
-    for file_name in file_names:
+    for i, (file_name, playerid, teamid) in enumerate(zip_longest(file_names, playerids, teamids)):
+        playerid = playerid if playerid is not None else i
         gps_format = infer_gps_format(file_name)
         dataframe = get_gps_loader(gps_format)(file_name, playerid, teamid)
         df_list.append(dataframe)
-        
-        playerid += 1 #TODO: これではyamlから読み込むことができない
-        
-    merged_dataframe = df_list[0].join(df_list[1 : len(df_list)]) # これができるのは知らなかった
-    merged_dataframe = merged_dataframe.sort_index().interpolate() # 暗黙的にinterpolateするのが正解なのか？
+                
+    merged_dataframe = df_list[0].join(df_list[1 : len(df_list)])
+    merged_dataframe = merged_dataframe.sort_index().interpolate()
     return merged_dataframe
 
 
