@@ -20,6 +20,10 @@ A Dataset and Tracking Algorithm for Soccer with Fish-eye and Drone Videos.
 
 ## Dataset Preview
 
+Below are low resoltion samples from the dataset we plan to release. The actual dataset will contain 4K (drone) and 8K (fisheye) footage!
+
+<img width="586" alt="image" src="https://user-images.githubusercontent.com/22371492/172513053-68ef75c4-435a-40e6-96fb-5a75319e32d6.png">
+
 ### Drone Video
 
 https://user-images.githubusercontent.com/22371492/172512347-9f441847-3a00-493d-8ca7-12de73d28b0d.mp4
