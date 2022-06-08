@@ -32,6 +32,7 @@ https://user-images.githubusercontent.com/22371492/172512347-9f441847-3a00-493d-
 
 https://user-images.githubusercontent.com/22371492/172512368-9f4adfb5-e7aa-4abb-b3e7-3c0d7d73eb08.mp4
 
+> **Note** The resolution for the fisheye camera may change after calibration.
 
 ## Dataset Release Schedule
 
