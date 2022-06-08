@@ -245,7 +245,7 @@ def load_gps(file_names: list[str], playerids: list[int] = [], teamids:list[int]
 
     if not isinstance(teamids, (list, tuple)):
         teamids = [teamids]
-    
+
     df_list = []
     for i, (file_name, playerid, teamid) in enumerate(zip_longest(file_names, playerids, teamids)):
         playerid = playerid if playerid is not None else i
@@ -257,7 +257,7 @@ def load_gps(file_names: list[str], playerids: list[int] = [], teamids:list[int]
 
     merged_dataframe = df_list[0].join(df_list[1 : len(df_list)]) # これができるのは知らなかった
     merged_dataframe = merged_dataframe.sort_index().interpolate() # 暗黙的にinterpolateするのが正解なのか？
-                
+
     merged_dataframe = df_list[0].join(df_list[1 : len(df_list)])
     merged_dataframe = merged_dataframe.sort_index().interpolate()
     return merged_dataframe
@@ -460,15 +460,68 @@ def get_Transforms(df: pd.DataFrame, H: np.ndarray) -> np.ndarray:
     # transpose to get (xs) and (ys)
     return xsys
 
-def visualization_gps(gps_file_name: str, save_path: str) -> None:
-
+def visualization_gps(kml_file_name: str, gps_file_name: str, save_path: str) -> None:
     """Visualize the gps file.
 
     Args:
+        kml_file_name(str): Path to the kml file to get homography matrix. ピッチのキーポイントの座標(kml)を指定
         gps_file_name (str) : Path to the gps file to visualize. #整形したGPSデータ(csv)を指定
         save_path (str) : Path to save the gps file
     """
-    pass
+    #図形のサイズ指定
+    team0_color = np.array((255, 255, 255)) / 255
+    team1_color = np.array((48, 188, 212))/255
+    circle_r = 10
+
+    H = get_homography_from_kml(str(kml_file_name)) #get homograpy matrix
+    gps_df = load_dataframe(str(gps_file_name)).reset_index(inplace=False) #args
+
+    # Plot trajectory
+    pitch = Pitch(
+        pitch_color="black",
+        line_color=(0.3, 0.3, 0.3),
+        pitch_type="custom",
+        pitch_length=105,
+        pitch_width=68,
+        label=False
+    )
+
+    ax = pitch.draw()
+    ax.invert_xaxis()
+    for i in tqdm(range(len(gps_df))):
+        test_df = gps_df[i : i+1]
+        df_list_frame = []
+        id = 0
+        for k in [0,1]:
+            for n in range(0, 22, 1):
+                teamid = k
+                playerid = n
+                try:
+                    split = test_df[f'{teamid}'][f'{playerid}'][['Lon', 'Lat']]
+                except KeyError:
+                    continue
+                try:
+                    xs, ys = xsys = get_Transforms(split, H)
+                except ValueError:
+                    print(f'{teamid}_{playerid}_ValueError')
+                    continue
+                # print(xs, ys)
+                w, h = 1, 1
+                df_list_frame.append([id, xs, ys, w, h])
+                id += 1
+        frame_df = pd.DataFrame(df_list_frame, columns=['id', 'x', 'y', 'w', 'h'])
+        scaler = 1 + (i - len(gps_df))/len(gps_df)
+        # print(scaler)
+        for _, row in frame_df.iterrows():
+            if row.id < 11:
+                ax.scatter(row.x + row.w / 2, row.y + row.h / 2, s=circle_r * scaler, color=team0_color, alpha=1 * scaler)
+            else:
+                ax.scatter(row.x + row.w / 2, row.y + row.h / 2, s=circle_r * scaler, color=team1_color, alpha=1 * scaler)
+
+    plt.savefig(save_path)
+    plt.close()
+    plt.cla()
+    plt.clf()
 
 
 def visualization_annotations(annotations_file_name: str, save_path: str) -> None:
