@@ -95,7 +95,7 @@ class CLI:
         **kwargs,
     ):
         """Calibrate a video using precomputed calibration parameters
-        
+
         Args:
             input (str): _description_
             npzfile (str): _description_
@@ -105,7 +105,7 @@ class CLI:
 
         Note:
             kwargs are passed to `make_video`, so it is recommended that you refere to the documentation for `make_video`.
-            
+
         """
         mtx, dist, mapx, mapy = np.load(npzfile).values()
 
@@ -130,7 +130,7 @@ class CLI:
         camera.save_calibrated_video(
             save_path=output,
             **kwargs,
-            )
+        )
         logger.info(f"Video saved to {output}")
 
     def calibrate(

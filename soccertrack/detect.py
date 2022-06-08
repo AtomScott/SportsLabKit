@@ -129,7 +129,7 @@ def yolov5_output_func(batch_output: Any) -> List[List[BoundingBox]]:
     Returns:
         List[List[BoundingBox]]: List of lists of bounding box objects
     """
-    
+
     bounding_boxes_list = []
     for frame_idx, dets in enumerate(batch_output.pandas().xyxy):
         bounding_boxes = []

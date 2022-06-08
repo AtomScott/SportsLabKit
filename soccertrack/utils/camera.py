@@ -101,7 +101,7 @@ class Camera:
         else:
             self.source_keypoints = None
             self.target_keypoints = None
-            
+
     def load_calibration_params(self):
         # self.mapx, self.mapy = find_intrinsic_camera_parameters(calibration_video_path, return_mappings=True)
         calibration_video_path = self.calibration_video_path
@@ -124,7 +124,7 @@ class Camera:
                 self.distortion_coefficients_path = (
                     calibration_video_path + ".distortion_coefficients.npy"
                 )
-                
+
                 # save this somewhere else
                 # np.save(self.camera_matrix_path, self.camera_matrix)
                 # np.save(self.distortion_coefficients_path, self.distortion_coefficients)
@@ -144,7 +144,9 @@ class Camera:
                     5,
                 )
 
-    def movie_iterator(self, calibrate: bool = True, crop: bool = True) -> Generator[NDArray, None, None]:
+    def movie_iterator(
+        self, calibrate: bool = True, crop: bool = True
+    ) -> Generator[NDArray, None, None]:
         """Create a movie iterator.
 
         Args:
@@ -158,7 +160,7 @@ class Camera:
         if not calibrate:
             for i, frame in enumerate(movie_iterator):
                 yield frame
-                
+
         for i, frame in enumerate(movie_iterator):
             frame = self.undistort_image(frame)
             if crop:
@@ -214,11 +216,7 @@ class Camera:
         movie_iterator = self.movie_iterator(calibrate=True)
         roi = self.roi
 
-        make_video(
-            movie_iterator, 
-            outpath=save_path,
-            **kwargs
-        )
+        make_video(movie_iterator, outpath=save_path, **kwargs)
 
     def visualize_candidate_detections(
         self,
@@ -274,7 +272,7 @@ class Camera:
                 for pitch_keypoint in self.source_keypoints:
                     cv.circle(frame, pitch_keypoint.astype(int), 1, (0, 0, 255), -1)
             output_frames.append(frame)
-        
+
         if len(output_frames) == 0:
             logger.error("No frames to save, exiting")
         else:
@@ -421,7 +419,7 @@ class Camera:
 
             _cx = sum(self.x_range) / 2
             _cy = sum(self.y_range) / 2
-            
+
             if (_cx, _cy) in keypoint_map:
                 cx, cy = keypoint_map[(_cx, _cy)]
             else:

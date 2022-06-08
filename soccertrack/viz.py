@@ -90,7 +90,7 @@ def visualize_cameras(
                 filter_complex += '" -map "[v]"'
 
             save_path = os.path.join(save_dir, "grid.mp4")
-            
+
             cmd = " ".join(
                 [
                     "ffmpeg",
@@ -104,7 +104,9 @@ def visualize_cameras(
 
             logger.debug(f"ffmpeg command: \n{cmd}")
             try:
-                output = subprocess.check_output(cmd, shell=True, stderr=subprocess.DEVNULL)
+                output = subprocess.check_output(
+                    cmd, shell=True, stderr=subprocess.DEVNULL
+                )
             except subprocess.CalledProcessError as e:
                 logger.critical(f"Error processing video.")
                 print(e)
@@ -118,7 +120,8 @@ def visualize_cameras(
                 logger.info(f"Saving {os.path.basename(tmp_path)}")
                 os.rename(tmp_path, os.path.join(save_dir, os.path.basename(tmp_path)))
 
-def get_xsys(detections: Iterable[CandidateDetection], cameras:Iterable[Camera]):
+
+def get_xsys(detections: Iterable[CandidateDetection], cameras: Iterable[Camera]):
     if isinstance(detections, dict):
         detections = list(detections.values())
 
@@ -127,7 +130,9 @@ def get_xsys(detections: Iterable[CandidateDetection], cameras:Iterable[Camera])
         if isinstance(dets, CandidateDetection):
             dets = [dets]
         else:
-            raise ValueError(f"{dets} is not a CandidateDetection or a list of CandidateDetections")
+            raise ValueError(
+                f"{dets} is not a CandidateDetection or a list of CandidateDetections"
+            )
         for pd in dets:
             if pd.camera.label == cameras[0].label:
                 px, py = cameras[0].video2pitch(np.array([pd._x, pd._y])).squeeze()
@@ -141,6 +146,7 @@ def get_xsys(detections: Iterable[CandidateDetection], cameras:Iterable[Camera])
             xs.append(px)
             ys.append(py)
     return xs, ys
+
 
 def visualize_cameras_to_pitch(
     cameras: Iterable[Camera],
@@ -161,7 +167,7 @@ def visualize_cameras_to_pitch(
     )
 
     if plot_keypoints:
-        kxs,kys =[],[]
+        kxs, kys = [], []
         for camera in cameras:
             for x, y in camera.source_keypoints:
                 x, y = camera.video2pitch(np.array([x, y])).squeeze()
@@ -170,24 +176,33 @@ def visualize_cameras_to_pitch(
 
     frames = []
     prev_xs, prev_ys = [], []
-    for candidate_detections_per_frame in tqdm(candidate_detections.values(), level="DEBUG", desc="Drawing pitch"):
+    for candidate_detections_per_frame in tqdm(
+        candidate_detections.values(), level="DEBUG", desc="Drawing pitch"
+    ):
         xs, ys = get_xsys(candidate_detections_per_frame, cameras)
 
         fig, ax = pitch.draw()
         ax.scatter(xs, ys, color="deeppink")
-        if plot_keypoints: ax.scatter(kxs, kys, color="red")
-        
+        if plot_keypoints:
+            ax.scatter(kxs, kys, color="red")
+
         len_afterimage = min(afterimage, len(prev_xs))
         if len_afterimage > 0:
             size = np.linspace(0.3, 1, len_afterimage) * 20
             alpha = np.linspace(0.2, 1, len_afterimage)
 
             for i in range(len_afterimage):
-                ax.scatter(prev_xs[-i], prev_ys[-i], color="deeppink", s=size[-i], alpha=alpha[-i])
+                ax.scatter(
+                    prev_xs[-i],
+                    prev_ys[-i],
+                    color="deeppink",
+                    s=size[-i],
+                    alpha=alpha[-i],
+                )
         fig.canvas.draw()
-        
+
         with io.BytesIO() as buff:
-            fig.savefig(buff, format='raw')
+            fig.savefig(buff, format="raw")
             buff.seek(0)
             data = np.frombuffer(buff.getvalue(), dtype=np.uint8)
         w, h = fig.canvas.get_width_height()
@@ -198,6 +213,4 @@ def visualize_cameras_to_pitch(
         prev_xs.append(xs)
         prev_ys.append(ys)
 
-
     make_video(frames, outpath=save_path)
-

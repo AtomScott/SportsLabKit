@@ -16,8 +16,8 @@ setup(
     license="MIT",
     install_requires=required,
     entry_points={
-        'console_scripts': [
-            'soccertrack = soccertrack.cli:main',
+        "console_scripts": [
+            "soccertrack = soccertrack.cli:main",
         ]
-    }
+    },
 )
