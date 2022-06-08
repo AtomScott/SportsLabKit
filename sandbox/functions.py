@@ -7,13 +7,17 @@ import time
 from pathlib import Path
 from typing import List, Optional, Tuple
 
-import cv2
+import cv2 as cv
 import ffmpeg
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import pysrt
 from omegaconf import OmegaConf
+import dateutil.parser
+from mplsoccer import Pitch
+from xml.etree import ElementTree
+from ast import literal_eval
 
 sys.path.append("../../")
 
@@ -233,15 +237,15 @@ def load_gps(file_names: list[str]) -> pd.DataFrame:
 
     playerid = 0 # TODO: 付与ロジックを書く
     teamid = None # TODO 付与ロジックを書く
-    
+
     df_list = []
     for file_name in file_names:
         gps_format = infer_gps_format(file_name)
         dataframe = get_gps_loader(gps_format)(file_name, playerid, teamid)
         df_list.append(dataframe)
-        
+
         playerid += 1 #TODO: これではyamlから読み込むことができない
-        
+
     merged_dataframe = df_list[0].join(df_list[1 : len(df_list)]) # これができるのは知らなかった
     merged_dataframe = merged_dataframe.sort_index().interpolate() # 暗黙的にinterpolateするのが正解なのか？
     return merged_dataframe
@@ -333,10 +337,63 @@ def get_split_time(
             break
 
     drone_df_match = pd.concat(df_list, ignore_index=True)
-    start_time = drone_df_match.iloc[start_frame]
-    end_time = drone_df_match.iloc[end_frame]
+    start_time = datetime.datetime.strptime(drone_df_match.iloc[start_frame]['timestamp'], "%Y-%m-%d %H:%M:%S.%f").time()
+    end_time = datetime.datetime.strptime(drone_df_match.iloc[end_frame]['timestamp'], "%Y-%m-%d %H:%M:%S.%f").time()
     return start_time, end_time
 
+def auto_string_parser(value:str):
+    # automatically parse values to correct type
+    if value.isdigit():
+        return int(value)
+    elif value.replace('.', '', 1).isdigit():
+        return float(value)
+    elif value.lower() == 'true':
+        return True
+    elif value.lower() == 'false':
+        return False
+    elif value.lower() == 'nan':
+        return np.nan
+    elif value.lower() == 'inf':
+        return np.inf
+    elif value.lower() == '-inf':
+        return -np.inf
+    else:
+        try:
+            return literal_eval(value)
+        except (ValueError, SyntaxError):
+            pass
+        try:
+            return dateutil.parser.parse(value)
+        except (ValueError, TypeError):
+            pass
+    return value
+
+
+def save_dataframe(df, path_or_buf):
+    
+    if df.attrs:
+        # write dataframe attributes to the csv file
+        with open(path_or_buf, 'w') as f:
+            for k, v in df.attrs.items():
+                f.write(f'#{k}:{v}\n')
+    
+    df.to_csv(path_or_buf, mode='a')
+    
+    
+def load_dataframe(path_or_buf):
+    attrs = {}
+    with open(path_or_buf, 'r') as f:
+        for line in f:
+            if line.startswith('#'):
+                k, v = line[1:].strip().split(':')
+                attrs[k] = auto_string_parser(v)
+            else:
+                break
+    
+    skiprows = len(attrs)
+    df = pd.read_csv(path_or_buf, header=[0,1,2], index_col=0, skiprows=skiprows)
+    df.attrs = attrs
+    return df
 
 def cut_gps_file(
     gps_file_name: str, start_time: int, end_time: int, save_dir: str
@@ -348,10 +405,54 @@ def cut_gps_file(
         gps_file_name (str) : Path to the gps file to cut.
         start_time (int) : Start time of split.
         end_time (int) : End time of split.
-        save_path (str) : Path to save the gps file.
+        save_dir (str) : Directory's path to save the cut gps file.
     """
     pass
 
+def get_homography_from_kml(kml_file_name: str) -> np.ndarray:
+
+    """Get homography matrix.
+
+    Args:
+        kml_file_name(str): Path to the kml file to get homography matrix.
+
+    Returns:
+        H(np.ndarray): Homography matrix.
+    """
+
+    # kmlfile = '/home/atom/SoccerTrack/notebooks/GPS_data/2022_02_20/pitch_annotation_tsukuba.kml'
+    tree = ElementTree.parse(kml_file_name)
+    src = []
+    dst = []
+    ns = "{http://www.opengis.net/kml/2.2}"
+    placemarks = tree.findall(".//%sPlacemark" % ns)
+    for placemark in placemarks:
+        label = placemark.find("./%sname" % ns).text
+        coordinates = placemark.find("./%sPoint/%scoordinates" % (ns,ns)).text.split(',')
+        lon, lat = coordinates[0], coordinates[1]
+        dst.append(eval(label))
+        src.append(eval(lon+','+ lat))
+    source_keypoints = np.asarray(src)
+    target_keypoints = np.asarray(dst)
+
+    H, *_ = cv.findHomography(source_keypoints, target_keypoints, cv.RANSAC, 5.0)
+    return H
+
+def get_Transforms(df: pd.DataFrame, H: np.ndarray) -> np.ndarray:
+    """Get Transforms from GPS data.
+
+    Args:
+        df(pd.DataFrame): GPS data.
+        H(np.ndarray): Homography matrix.
+
+    Returns:
+        xsys(np.ndarray): Transformed GPS information.
+    """
+    _xsys = np.expand_dims(df.values, axis=0).astype('float64')
+    xsys = cv.perspectiveTransform(_xsys, H).T.squeeze()
+
+    # transpose to get (xs) and (ys)
+    return xsys
 
 def visualization_gps(gps_file_name: str, save_path: str) -> None:
 
@@ -361,7 +462,6 @@ def visualization_gps(gps_file_name: str, save_path: str) -> None:
         gps_file_name (str) : Path to the gps file to visualize. #整形したGPSデータ(csv)を指定
         save_path (str) : Path to save the gps file
     """
-
     pass
 
 
@@ -374,7 +474,6 @@ def visualization_annotations(annotations_file_name: str, save_path: str) -> Non
         save_path (str) : Path to save the annotations file.
     """
     pass
-
 
 def upload2s3(
     integration_key: str, bucket_name: str, file_name: str
