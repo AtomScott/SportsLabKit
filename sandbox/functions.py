@@ -7,6 +7,8 @@ import time
 from pathlib import Path
 from typing import List, Optional, Tuple
 from itertools import zip_longest
+from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
+import io
 
 import cv2 as cv
 import ffmpeg
@@ -339,7 +341,7 @@ def get_split_time(
         try:
             last_row_append(df_list_idx=i)
         except IndexError:
-            print("IndexError")
+            print("IndexError") #<- 例外処理を消すor処理内容をより明示的に書く
             break
 
     drone_df_match = pd.concat(df_list, ignore_index=True)
@@ -376,16 +378,16 @@ def auto_string_parser(value:str):
 
 
 def save_dataframe(df, path_or_buf):
-    
+
     if df.attrs:
         # write dataframe attributes to the csv file
         with open(path_or_buf, 'w') as f:
             for k, v in df.attrs.items():
                 f.write(f'#{k}:{v}\n')
-    
+
     df.to_csv(path_or_buf, mode='a')
-    
-    
+
+
 def load_dataframe(path_or_buf):
     attrs = {}
     with open(path_or_buf, 'r') as f:
@@ -395,7 +397,7 @@ def load_dataframe(path_or_buf):
                 attrs[k] = auto_string_parser(v)
             else:
                 break
-    
+
     skiprows = len(attrs)
     df = pd.read_csv(path_or_buf, header=[0,1,2], index_col=0, skiprows=skiprows)
     df.attrs = attrs
@@ -460,9 +462,30 @@ def get_Transforms(df: pd.DataFrame, H: np.ndarray) -> np.ndarray:
     # transpose to get (xs) and (ys)
     return xsys
 
+def fig2img(fig, ax, dpi=180) -> np.ndarray:
+    """Convert a figure to a numpy array.
+
+    Args:
+        fig(matplotlib.figure.Figure): Figure to convert.
+        ax(matplotlib.axes.Axes): Axes to convert.
+        dpi(int): DPI of the figure.
+
+    Returns:
+        img(numpy.ndarray): Converted figure.
+    """
+    ax.invert_yaxis()
+    ax.axis('off')
+    canvas = FigureCanvas(fig)
+    canvas.draw()       # draw the canvas, cache the renderer
+    buf = io.BytesIO()  # インメモリのバイナリストリームを作成
+    fig.savefig(buf, format="png", dpi=dpi)  # matplotlibから出力される画像のバイナリデータをメモリに格納する.
+    buf.seek(0)  # ストリーム位置を先頭に戻る
+    img_arr = np.frombuffer(buf.getvalue(), dtype=np.uint8)  # メモリからバイナリデータを読み込み, numpy array 形式に変換
+    img = cv.imdecode(img_arr, 1)  # 画像のバイナリデータを復元する
+    return img
+
 def visualization_gps(kml_file_name: str, gps_file_name: str, save_path: str) -> None:
     """Visualize the gps file.
-
     Args:
         kml_file_name(str): Path to the kml file to get homography matrix. ピッチのキーポイントの座標(kml)を指定
         gps_file_name (str) : Path to the gps file to visualize. #整形したGPSデータ(csv)を指定
