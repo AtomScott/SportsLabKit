@@ -486,20 +486,19 @@ def fig2img(fig, ax, dpi=180) -> np.ndarray:
 
 def visualization_gps(kml_file_name: str, gps_file_name: str, save_path: str) -> None:
     """Visualize the gps file.
+
     Args:
         kml_file_name(str): Path to the kml file to get homography matrix. ピッチのキーポイントの座標(kml)を指定
         gps_file_name (str) : Path to the gps file to visualize. #整形したGPSデータ(csv)を指定
         save_path (str) : Path to save the gps file
     """
-    #図形のサイズ指定
-    team0_color = np.array((255, 255, 255)) / 255
-    team1_color = np.array((48, 188, 212))/255
-    circle_r = 10
-
+    gps_df = load_dataframe(gps_file_name).reset_index(inplace=False) #args
     H = get_homography_from_kml(str(kml_file_name)) #get homograpy matrix
-    gps_df = load_dataframe(str(gps_file_name)).reset_index(inplace=False) #args
 
-    # Plot trajectory
+    fps = 15    #<-引数で指定できればいいかも
+    alpha = 0.5 #<-透明度：これも引数
+    dpi =180    #<-matplotlibを画像化するときの解像度：これも引数
+
     pitch = Pitch(
         pitch_color="black",
         line_color=(0.3, 0.3, 0.3),
@@ -508,13 +507,20 @@ def visualization_gps(kml_file_name: str, gps_file_name: str, save_path: str) ->
         pitch_width=68,
         label=False
     )
+    fig, ax = pitch.draw()
+    img_w, img_h = fig.get_size_inches() * dpi
+    codec = cv.VideoWriter_fourcc(*'mp4v')
+    video = cv.VideoWriter(save_path, codec, fps, (int(img_w), int(img_h)))
 
-    ax = pitch.draw()
-    ax.invert_xaxis()
     for i in tqdm(range(len(gps_df))):
+        # Plot trajectory
+        img = fig2img(fig, ax) #<-matplotlibの画像化
+        invimg = cv.bitwise_not(img) #<-グレースケール画像を反転
+        overlay = invimg.copy()
         test_df = gps_df[i : i+1]
         df_list_frame = []
         id = 0
+
         for k in [0,1]:
             for n in range(0, 22, 1):
                 teamid = k
@@ -524,27 +530,37 @@ def visualization_gps(kml_file_name: str, gps_file_name: str, save_path: str) ->
                 except KeyError:
                     continue
                 try:
-                    xs, ys = xsys = get_Transforms(split, H)
-                except ValueError:
+                    xs, ys = get_Transforms(split, H)
+                except ValueError: #<-修正
                     print(f'{teamid}_{playerid}_ValueError')
                     continue
-                # print(xs, ys)
                 w, h = 1, 1
                 df_list_frame.append([id, xs, ys, w, h])
                 id += 1
         frame_df = pd.DataFrame(df_list_frame, columns=['id', 'x', 'y', 'w', 'h'])
-        scaler = 1 + (i - len(gps_df))/len(gps_df)
-        # print(scaler)
+
         for _, row in frame_df.iterrows():
             if row.id < 11:
-                ax.scatter(row.x + row.w / 2, row.y + row.h / 2, s=circle_r * scaler, color=team0_color, alpha=1 * scaler)
+                cv.circle(overlay,
+                center=(int(row.x * (img_w/(105+8))), int(row.y * (img_w/(105+8)))),
+                radius=10,
+                color=(255, 255, 255),
+                thickness=-1,
+                lineType=cv.LINE_4,
+                shift=0)
+                mat_img = cv.addWeighted(overlay, alpha, invimg, 1 - alpha, 0)
             else:
-                ax.scatter(row.x + row.w / 2, row.y + row.h / 2, s=circle_r * scaler, color=team1_color, alpha=1 * scaler)
+                cv.circle(overlay,
+                center=(int(row.x * (img_w/(105+8))), int(row.y * (img_w/(105+8)))),
+                radius=10,
+                color=(212, 188, 48),
+                thickness=-1,
+                lineType=cv.LINE_4,
+                shift=0)
+                mat_img = cv.addWeighted(overlay, alpha, invimg, 1 - alpha, 0)
+        video.write(mat_img)
 
-    plt.savefig(save_path)
-    plt.close()
-    plt.cla()
-    plt.clf()
+    video.release()# img
 
 
 def visualization_annotations(annotations_file_name: str, save_path: str) -> None:
