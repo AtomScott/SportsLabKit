@@ -9,56 +9,42 @@ A Dataset and Tracking Algorithm for Soccer with Fish-eye and Drone Videos.
 
 
 * [Project page](https://atomscott.github.io/SoccerTrack/)
-* [Documentation]()
-* [Dataset Download](https://atomscott.github.io/SoccerTrack/#download)
+* [Paper](https://openaccess.thecvf.com/content/CVPR2022W/CVSports/papers/Scott_SoccerTrack_A_Dataset_and_Tracking_Algorithm_for_Soccer_With_Fish-Eye_CVPRW_2022_paper.pdf)
+* ~~[Tracking Algorithm](https://github.com/AtomScott/SoccerTrack/tree/develop)~~(Work In Progress)
+* ~~[Documentation](https://soccertrack.readthedocs.io/)~~ (Work In Progress)
+* ~~[Dataset Download](https://atomscott.github.io/SoccerTrack/#download)~~ (Work In Progress)
 
-## Installation
+> **Note**
+> 
+> We are finalizing code and dataset for release by June 20th (Workshop date for CVSports'22)!  
 
-```
-pip install -e .
-```
+## Dataset Preview
 
-```
-pip install -e .
-```
+Below are low resoltion samples from the dataset we plan to release. The actual dataset will contain 4K (drone) and 8K (fisheye) footage!
 
-If install takes too long, try upgrading pip with `pip install --upgrade pip` and then try again.
-## User Guide
+<img width="586" alt="image" src="https://user-images.githubusercontent.com/22371492/172513053-68ef75c4-435a-40e6-96fb-5a75319e32d6.png">
 
-See the [User Guide](https://soccertrack.readthedocs.io/en/latest/user_guide.html) for more information.
+### Drone Video
 
-## Project Organization
+https://user-images.githubusercontent.com/22371492/172512347-9f441847-3a00-493d-8ca7-12de73d28b0d.mp4
 
-This project was based on the [cookiecutter data science template](https://drivendata.github.io/cookiecutter-data-science/), but some folders were removed. Below is a brief overview of the current project structure. 
+### Fisheye Video
 
-```
-    │
-    ├── docs               <- Sphinx project.
-    │
-    ├── notebooks          <- Jupyter notebooks for example usage.
-    │
-    ├── reports            <- Generated analysis including references
-    │
-    ├── soccertrack        <- Source code. See API Refence.
-    │
-    ├── data               <- (Only minimum stuff on github).
-    │   ├── external       <- Data from third party sources.
-    │   ├── interim        <- Intermediate data that has been transformed.
-    │   ├── processed      <- The final, canonical data sets for modeling.
-    │   └── raw            <- The original, immutable data dump.
-    │
-    └── models             <- Trained model weights (only minimum stuff on github).
-```
-## Data
+https://user-images.githubusercontent.com/22371492/172512368-9f4adfb5-e7aa-4abb-b3e7-3c0d7d73eb08.mp4
 
-Data is uploaded on 
+> **Note** The resolution for the fisheye camera may change after calibration.
+
+## Dataset Release Schedule
+
+| Date | Drone | Fisheye |
+|------|-------|---------|
+| 2022/6/20 | 15min | 15min   |
+| 2022/7/1  | 20min | 20min   |
+| 2022/8/1  | 30min | 30min   |
 
 ## Docker
 
 [Dockerhub](https://hub.docker.com/repository/docker/atomscott/soccertrack)
-
-### conda
-
 
 ## Roadmap
 
@@ -71,3 +57,14 @@ Data is uploaded on
 ## Contributing
 
 See the [Contributing Guide](https://soccertrack.readthedocs.io/en/latest/contributing.html) for more information.
+
+## Citation
+```
+@inproceedings{scott2022soccertrack,
+  title={SoccerTrack: A Dataset and Tracking Algorithm for Soccer With Fish-Eye and Drone Videos},
+  author={Scott, Atom and Uchida, Ikuma and Onishi, Masaki and Kameda, Yoshinari and Fukui, Kazuhiro and Fujii, Keisuke},
+  booktitle={Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition},
+  pages={3569--3579},
+  year={2022}
+}
+```
