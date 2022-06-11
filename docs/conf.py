@@ -112,6 +112,11 @@ html_theme = "furo"
 # documentation.
 html_theme_options = {
     "sidebar_hide_name": True,
+    "dark_css_variables": {
+        "color-brand-primary": "#0097A7",
+        "color-brand-content": "#0097A7",
+        "color-background-secondary": "#212528",
+    }
     # "icon_links": [
     #     {
     #         "name": "Github",
