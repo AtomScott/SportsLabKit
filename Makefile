@@ -156,7 +156,8 @@ help:
 
 .PHONY: docker
 docker:
-	docker build -t atomscott/soccertrack:latest . --no-cache
+	docker build -t atomscott/soccertrack:latest . 
+	docker run --gpus all -t atomscott/soccertrack:latest  nvidia-smi
 	docker run -t atomscott/soccertrack:latest echo "atomscott/soccertrack done"
 
 .PHONY: docker-push
@@ -164,6 +165,9 @@ docker-push:
 	docker login
 	docker push atomscott/soccertrack:latest
 
+.PHONY: docker-run
+docker-run:
+	docker run --rm -it -v $(PWD):/workspace atomscott/soccertrack:latest
 
 #################################################################################
 # Singularity                                                     #
@@ -171,3 +175,11 @@ docker-push:
 .PHONY: singularity-pull
 singularity-pull:
 	singularity pull docker://atomscott/soccertrack:latest
+
+
+#################################################################################
+# Poetry                                                     #
+#################################################################################
+.PHONY: requirements
+requirements:
+	poetry export -f requirements.txt --output requirements.txt
