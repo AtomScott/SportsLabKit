@@ -111,6 +111,7 @@ html_theme = "furo"
 # further.  For a list of options available for each theme, see the
 # documentation.
 html_theme_options = {
+    "sidebar_hide_name": True,
     # "icon_links": [
     #     {
     #         "name": "Github",
