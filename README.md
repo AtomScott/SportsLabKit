@@ -57,3 +57,14 @@ https://user-images.githubusercontent.com/22371492/172512368-9f4adfb5-e7aa-4abb-
 ## Contributing
 
 See the [Contributing Guide](https://soccertrack.readthedocs.io/en/latest/contributing.html) for more information.
+
+## Citation
+```
+@inproceedings{scott2022soccertrack,
+  title={SoccerTrack: A Dataset and Tracking Algorithm for Soccer With Fish-Eye and Drone Videos},
+  author={Scott, Atom and Uchida, Ikuma and Onishi, Masaki and Kameda, Yoshinari and Fukui, Kazuhiro and Fujii, Keisuke},
+  booktitle={Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition},
+  pages={3569--3579},
+  year={2022}
+}
+```
