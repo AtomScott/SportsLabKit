@@ -5,7 +5,7 @@ import dateutil.parser
 import numpy as np
 import pandas as pd
 from pandas._typing import FilePath, WriteBuffer
-
+from itertools import zip_longest
 
 def auto_string_parser(value: str) -> Any:
     """Auxiliary function to parse string values.

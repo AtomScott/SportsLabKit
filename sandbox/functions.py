@@ -262,6 +262,8 @@ def load_gps(file_names: list[str], playerids: list[int] = [], teamids:list[int]
 
     merged_dataframe = df_list[0].join(df_list[1 : len(df_list)])
     merged_dataframe = merged_dataframe.sort_index().interpolate()
+
+    # 座標変換する？
     return merged_dataframe
 
 
