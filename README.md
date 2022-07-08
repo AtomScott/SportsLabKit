@@ -10,9 +10,9 @@ A Dataset and Tracking Algorithm for Soccer with Fish-eye and Drone Videos.
 
 * [Project page](https://atomscott.github.io/SoccerTrack/)
 * [Paper](https://openaccess.thecvf.com/content/CVPR2022W/CVSports/papers/Scott_SoccerTrack_A_Dataset_and_Tracking_Algorithm_for_Soccer_With_Fish-Eye_CVPRW_2022_paper.pdf)
-* ~~[Tracking Algorithm](https://github.com/AtomScott/SoccerTrack/tree/develop)~~(Work In Progress)
-* ~~[Documentation](https://soccertrack.readthedocs.io/)~~ (Work In Progress)
-* ~~[Dataset Download](https://atomscott.github.io/SoccerTrack/#download)~~ (Work In Progress)
+* [Dataset Download](https://atomscott.github.io/SoccerTrack/#download) 🌟 NEW
+* [Tracking Algorithm](https://github.com/AtomScott/SoccerTrack) (Work In Progress)
+* [Documentation](https://soccertrack.readthedocs.io/) (Work In Progress)
 
 > **Note**
 > 
@@ -38,9 +38,14 @@ https://user-images.githubusercontent.com/22371492/172512368-9f4adfb5-e7aa-4abb-
 
 | Date | Drone | Fisheye |
 |------|-------|---------|
-| 2022/6/20 | 15min | 15min   |
-| 2022/7/1  | 20min | 20min   |
-| 2022/8/1  | 30min | 30min   |
+| ~~2022/6/20~~ | ~~10min~~ | ~~10min~~   |
+| ~~2022/7/1~~  | ~~15min~~ | ~~15min~~   |
+| ~~2022/8/1~~  | ~~20min~~ | ~~20min~~   |
+| ~~2022/9/1~~  | ~~30min~~ | ~~30min~~   |
+
+> 🥳 **NEWS** 🥳
+> 
+> We have finished annotating the first 30 minutes so it will be ready to download ahead of schedule!! 
 
 ## Docker
 
