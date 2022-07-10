@@ -26,11 +26,11 @@ Below are low resoltion samples from the dataset we plan to release. The actual 
 
 ### Drone Video
 
-https://user-images.githubusercontent.com/22371492/172512347-9f441847-3a00-493d-8ca7-12de73d28b0d.mp4
+https://user-images.githubusercontent.com/22371492/178085041-a8a2de85-bcd3-4c81-8b81-5ca93dbd4336.mp4
 
 ### Fisheye Video
 
-https://user-images.githubusercontent.com/22371492/172512368-9f4adfb5-e7aa-4abb-b3e7-3c0d7d73eb08.mp4
+https://user-images.githubusercontent.com/22371492/178085027-5d25781d-e3ed-4791-ad14-141b58187dcf.mp4
 
 > **Note** The resolution for the fisheye camera may change after calibration.
 
