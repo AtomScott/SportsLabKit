@@ -5,13 +5,16 @@ description = "A dataset and algorithm for multi-object tracking in sports"
 authors = ["Atom Scott <atom.james.scott@gmail.com>"]
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "3.8~3.11"
 omegaconf = "^2.2.2"
 pytest = "^7.1.2"
 ffmpeg-python = "^0.2.0"
 numpy = "^1.22.4"
 pandas = "^1.4.2"
 loguru = "^0.6.0"
+scipy = "^1.8.1"
+scikit-video = "^1.1.11"
+opencv-contrib-python = "^4.6.0"
 
 [tool.poetry.dev-dependencies]
 prospector = "^1.7.7"
