@@ -5,7 +5,7 @@ description = "A dataset and algorithm for multi-object tracking in sports"
 authors = ["Atom Scott <atom.james.scott@gmail.com>"]
 
 [tool.poetry.dependencies]
-python = "3.8~3.11"
+python = "^3.8"
 omegaconf = "^2.2.2"
 pytest = "^7.1.2"
 ffmpeg-python = "^0.2.0"
