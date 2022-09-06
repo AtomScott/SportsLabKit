@@ -205,6 +205,7 @@ class MOTSChallenge(_BaseDataset):
         read_data, ignore_data = self._load_simple_text_file(file, crowd_ignore_filter=crowd_ignore_filter,
                                                              is_zipped=self.data_is_zipped, zip_file=zip_file,
                                                              force_delimiters=' ')
+        
 
         # Convert data to required format
         num_timesteps = self.seq_lengths[seq]
@@ -352,7 +353,6 @@ class MOTSChallenge(_BaseDataset):
                 match_rows, match_cols = linear_sum_assignment(-matching_scores)
                 actually_matched_mask = matching_scores[match_rows, match_cols] > 0 + np.finfo('float').eps
                 match_cols = match_cols[actually_matched_mask]
-
                 unmatched_indices = np.delete(unmatched_indices, match_cols, axis=0)
 
             # For unmatched tracker dets, remove those that are greater than 50% within a crowd ignore region.

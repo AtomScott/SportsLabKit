@@ -86,8 +86,8 @@ class Evaluator:
                             res[curr_seq] = eval_sequence(curr_seq, dataset, tracker, class_list, metrics_list,
                                                           metric_names)
 
-                    # Combine results over all sequences and then over all classes
 
+                    # Combine results over all sequences and then over all classes
                     # collecting combined cls keys (cls averaged, det averaged, super classes)
                     combined_cls_keys = []
                     res['COMBINED_SEQ'] = {}

@@ -180,10 +180,8 @@ class HOTA(_BaseMetric):
 
     def plot_single_tracker_results(self, table_res, tracker, cls, output_folder):
         """Create plot of results"""
-
         # Only loaded when run to reduce minimum requirements
         from matplotlib import pyplot as plt
-
         res = table_res['COMBINED_SEQ']
         styles_to_plot = ['r', 'b', 'g', 'b--', 'b:', 'g--', 'g:', 'm']
         for name, style in zip(self.float_array_fields, styles_to_plot):
