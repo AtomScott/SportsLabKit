@@ -15,6 +15,7 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
+   soccertrack.io
    soccertrack.utils
 
 Submodules
@@ -23,4 +24,4 @@ Submodules
 .. toctree::
    :maxdepth: 4
 
-   soccertrack.detect
+   soccertrack.cli

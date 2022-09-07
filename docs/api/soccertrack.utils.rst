@@ -9,13 +9,22 @@ soccertrack.utils package
    :undoc-members:
    :show-inheritance:
 
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   soccertrack.utils.DataFrame
+   soccertrack.utils.camera
+
 Submodules
 ----------
 
 .. toctree::
    :maxdepth: 4
 
-   soccertrack.utils.camera
    soccertrack.utils.detection
    soccertrack.utils.logger
+   soccertrack.utils.tracking
    soccertrack.utils.utils

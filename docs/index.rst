@@ -9,6 +9,7 @@
         :hidden:
 
         Home <self>
+        Get Started <01_get_started>
         User Guide <user_guide>
         API Reference <api>
         Contributing <contributing>
