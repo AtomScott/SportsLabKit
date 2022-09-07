@@ -1,10 +1,11 @@
-import numpy as np
 import sys
-import random
-from typing import List, Optional, Tuple
+
+import numpy as np
+
 
 def _getArea(box):
     return (box[2] - box[0] + 1) * (box[3] - box[1] + 1)
+
 
 def _boxesIntersect(boxA, boxB):
     if boxA[0] > boxB[2]:
@@ -17,6 +18,7 @@ def _boxesIntersect(boxA, boxB):
         return False  # boxA is below boxB
     return True
 
+
 def _getIntersectionArea(boxA, boxB):
     xA = max(boxA[0], boxB[0])
     yA = max(boxA[1], boxB[1])
@@ -25,12 +27,14 @@ def _getIntersectionArea(boxA, boxB):
     # intersection area
     return (xB - xA + 1) * (yB - yA + 1)
 
+
 def _getUnionAreas(boxA, boxB, interArea=None):
     area_A = _getArea(boxA)
     area_B = _getArea(boxB)
     if interArea is None:
         interArea = _getIntersectionArea(boxA, boxB)
     return float(area_A + area_B - interArea)
+
 
 # 11-point interpolated average precision
 def ElevenPointInterpolatedAP(rec, prec):
@@ -54,7 +58,7 @@ def ElevenPointInterpolatedAP(rec, prec):
         pmax = 0
         # If there are recalls above r
         if argGreaterRecalls.size != 0:
-            pmax = max(mpre[argGreaterRecalls.min():])
+            pmax = max(mpre[argGreaterRecalls.min() :])
         recallValid.append(r)
         rhoInterp.append(pmax)
     # By definition AP = sum(max(precision whose recall is above r))/11
@@ -81,12 +85,13 @@ def ElevenPointInterpolatedAP(rec, prec):
     rhoInterp = [i[1] for i in cc]
     return [ap, rhoInterp, recallValues, None]
 
+
 def iou_score(bbox_det: tuple, bbox_gt: tuple) -> float:
     """calculate iou between two bbox
     Args:
-        bbox_det(tuple): bbox of detected object. 
+        bbox_det(tuple): bbox of detected object.
         bbox_gt(tuple): bbox of ground truth object
- 
+
     Returns:
         iou(float): iou_score between two bbox
 
@@ -103,7 +108,8 @@ def iou_score(bbox_det: tuple, bbox_gt: tuple) -> float:
     assert iou >= 0
     return iou
 
-def ap_score(bboxes_det_per_class, bboxes_gt_per_class, IOUThreshold ,ap_only):
+
+def ap_score(bboxes_det_per_class, bboxes_gt_per_class, IOUThreshold, ap_only):
     """calculate average precision
 
     Args:
@@ -113,7 +119,7 @@ def ap_score(bboxes_det_per_class, bboxes_gt_per_class, IOUThreshold ,ap_only):
         ap_only(bool): if True, return ap only. if False, return ap ,recall, precision, and so on.
     Returns:
         ap(float): average precision
-    
+
     Note:
         bboxes_det_per_class: [bbox_det_1, bbox_det_2, ...]
         bboxes_gt_per_class: [bbox_gt_1, bbox_gt_2, ...]
@@ -165,19 +171,34 @@ def ap_score(bboxes_det_per_class, bboxes_gt_per_class, IOUThreshold ,ap_only):
     # create dictionary with amount of gts for each image
     det = {key: np.zeros(len(gts[key])) for key in gts}
 
-    print("Evaluating class: %s (%d detections)" % (str(dects[0][CLASS_ID_IMDEX]), len(dects)))
+    print(
+        "Evaluating class: %s (%d detections)"
+        % (str(dects[0][CLASS_ID_IMDEX]), len(dects))
+    )
     # Loop through detections
     TP = np.zeros(len(dects))
     FP = np.zeros(len(dects))
     for d in range(len(dects)):
         # print('dect %s => %s' % (dects[d][0], dects[d][3],))
         # Find ground truth image
-        gt = gts[dects[d][IMAGE_NAME_INDEX]] if dects[d][IMAGE_NAME_INDEX] in gts else []
+        gt = (
+            gts[dects[d][IMAGE_NAME_INDEX]] if dects[d][IMAGE_NAME_INDEX] in gts else []
+        )
         iouMax = sys.float_info.min
 
         for j in range(len(gt)):
-            bbox_det = [dects[d][X1_INDEX], dects[d][Y1_INDEX], dects[d][X2_INDEX], dects[d][Y2_INDEX]]
-            bbox_gt = [gt[j][X1_INDEX], gt[j][Y1_INDEX], gt[j][X2_INDEX], gt[j][Y2_INDEX]]
+            bbox_det = [
+                dects[d][X1_INDEX],
+                dects[d][Y1_INDEX],
+                dects[d][X2_INDEX],
+                dects[d][Y2_INDEX],
+            ]
+            bbox_gt = [
+                gt[j][X1_INDEX],
+                gt[j][Y1_INDEX],
+                gt[j][X2_INDEX],
+                gt[j][Y2_INDEX],
+            ]
             iou = iou_score(bbox_det, bbox_gt)
             if iou > iouMax:
                 iouMax = iou
@@ -201,22 +222,19 @@ def ap_score(bboxes_det_per_class, bboxes_gt_per_class, IOUThreshold ,ap_only):
     # if method == MethodAveragePrecision.EveryPointInterpolation:
 
     if ap_only:
-        ap = {
-            'class': dects[0][CLASS_ID_IMDEX],
-            'AP': ap_
-            }
+        ap = {"class": dects[0][CLASS_ID_IMDEX], "AP": ap_}
         return ap
     else:
         ap = {
-            'class': dects[0][CLASS_ID_IMDEX],
-            'precision': prec,
-            'recall': rec,
-            'AP': ap_,
-            'interpolated precision': mpre_,
-            'interpolated recall': mrec_,
-            'total positives': npos,
-            'total TP': np.sum(TP),
-            'total FP': np.sum(FP)
+            "class": dects[0][CLASS_ID_IMDEX],
+            "precision": prec,
+            "recall": rec,
+            "AP": ap_,
+            "interpolated precision": mpre_,
+            "interpolated recall": mrec_,
+            "total positives": npos,
+            "total TP": np.sum(TP),
+            "total FP": np.sum(FP),
         }
         return ap
 
@@ -240,20 +258,31 @@ def map_score(bboxes_det, bboxes_gt, IOUThreshold) -> float:
     IMAGE_NAME_INDEX = 6
     ap_list = []
     class_list = []
-    #calculate ap
+    # calculate ap
     for bbox_det in bboxes_det:
         if bbox_det[CLASS_ID_IMDEX] not in class_list:
             class_list.append(bbox_det[CLASS_ID_IMDEX])
 
     classes = sorted(class_list)
     for class_id in classes:
-        bboxes_det_per_class = [detection_per_class for detection_per_class in bboxes_det if detection_per_class[CLASS_ID_IMDEX] == class_id]
-        bboxes_gt_per_class = [groundTruth_per_class for groundTruth_per_class in bboxes_gt if groundTruth_per_class[CLASS_ID_IMDEX] == class_id]
-        ap = ap_score(bboxes_det_per_class, bboxes_gt_per_class, IOUThreshold, ap_only=True)
-        print(f'ap: {ap}')
-        ap_list.append(ap['AP'])
-    #calculate map
+        bboxes_det_per_class = [
+            detection_per_class
+            for detection_per_class in bboxes_det
+            if detection_per_class[CLASS_ID_IMDEX] == class_id
+        ]
+        bboxes_gt_per_class = [
+            groundTruth_per_class
+            for groundTruth_per_class in bboxes_gt
+            if groundTruth_per_class[CLASS_ID_IMDEX] == class_id
+        ]
+        ap = ap_score(
+            bboxes_det_per_class, bboxes_gt_per_class, IOUThreshold, ap_only=True
+        )
+        print(f"ap: {ap}")
+        ap_list.append(ap["AP"])
+    # calculate map
     map = np.mean(ap_list)
     return map
+
 
 ### Object detection metrics ###
