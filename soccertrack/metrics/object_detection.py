@@ -4,7 +4,7 @@ import numpy as np
 
 
 def _getArea(box):
-    return (box[2] - box[0] + 1) * (box[3] - box[1] + 1)
+    return (box[2] - box[0]) * (box[3] - box[1])
 
 
 def _boxesIntersect(boxA, boxB):
@@ -25,7 +25,7 @@ def _getIntersectionArea(boxA, boxB):
     xB = min(boxA[2], boxB[2])
     yB = min(boxA[3], boxB[3])
     # intersection area
-    return (xB - xA + 1) * (yB - yA + 1)
+    return (xB - xA) * (yB - yA)
 
 
 def _getUnionAreas(boxA, boxB, interArea=None):
