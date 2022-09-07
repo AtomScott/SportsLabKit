@@ -1,6 +1,10 @@
-# syntax=docker/dockerfile:1
-FROM pytorchlightning/pytorch_lightning
+ARG python_image_v="python:3.10-buster"
+FROM ${python_image_v}
 
+WORKDIR /workspace
+
+RUN apt-get -y update
+RUN apt-get -y upgrade
 
 # Install ffmpeg
 RUN apt-get -y update
@@ -14,9 +18,22 @@ RUN pip install opencv-python
 # install gnu time
 RUN apt-get install time
 
-# install python requirements
-COPY requirements.txt requirements.txt
-RUN pip3 install -r requirements.txt
+# Install essential packages
+Run apt-get install --no-install-recommends -y curl build-essential 
 
-RUN git clone https://github.com/AtomScott/Python-Object-Detection-Metrics.git
-RUN pip install ./Python-Object-Detection-Metrics
+RUN DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get -y install tzdata
+RUN apt-get install -y git
+
+################
+# Install pandoc
+################
+
+RUN apt-get install -y pandoc
+
+EXPOSE 8000
+EXPOSE 8080
+
+COPY pyproject.toml .
+RUN pip install poetry
+RUN poetry install
+RUN rm pyproject.toml
