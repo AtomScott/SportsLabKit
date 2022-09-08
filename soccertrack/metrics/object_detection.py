@@ -1,13 +1,36 @@
+from __future__ import annotations
+
 import sys
+from typing import Any, Optional
 
 import numpy as np
 
 
-def _getArea(box):
-    return (box[2] - box[0] + 1) * (box[3] - box[1] + 1)
+def _getArea(box: list[int]) -> int:
+    """Return area of box.
+
+    Args:
+        box (list[int]): box of object
+
+    Returns:
+        area (int): area of box
+    """
+
+    area = (box[2] - box[0]) * (box[3] - box[1])
+    return area
 
 
-def _boxesIntersect(boxA, boxB):
+def _boxesIntersect(boxA: list[int], boxB: list[int]) -> bool:
+    """Checking the position of two boxes.
+
+    Args:
+        boxA (list[int]): box of object
+        boxB (list[int]): box of object
+
+    Returns:
+        bool: True if boxes intersect, False otherwise
+    """
+
     if boxA[0] > boxB[2]:
         return False  # boxA is right of boxB
     if boxB[0] > boxA[2]:
@@ -19,16 +42,28 @@ def _boxesIntersect(boxA, boxB):
     return True
 
 
-def _getIntersectionArea(boxA, boxB):
+def _getIntersectionArea(boxA: list[int], boxB: list[int]) -> int:
+    """Return intersection area of two boxes.
+
+    Args:
+        boxA (list[int]): box of object
+        boxB (list[int]): box of object
+
+    Returns:
+        intersection_area (int): area of intersection
+    """
     xA = max(boxA[0], boxB[0])
     yA = max(boxA[1], boxB[1])
     xB = min(boxA[2], boxB[2])
     yB = min(boxA[3], boxB[3])
+    intersection_area = (xB - xA + 1) * (yB - yA + 1)
     # intersection area
-    return (xB - xA + 1) * (yB - yA + 1)
+    return intersection_area
 
 
-def _getUnionAreas(boxA, boxB, interArea=None):
+def _getUnionAreas(
+    boxA: list[int], boxB: list[int], interArea: Optional[float] = None
+) -> float:
     area_A = _getArea(boxA)
     area_B = _getArea(boxB)
     if interArea is None:
@@ -37,18 +72,28 @@ def _getUnionAreas(boxA, boxB, interArea=None):
 
 
 # 11-point interpolated average precision
-def ElevenPointInterpolatedAP(rec, prec):
-    # def CalculateAveragePrecision2(rec, prec):
+def ElevenPointInterpolatedAP(rec: Any, prec: Any) -> list[Any]:
+    """Calculate 11-point interpolated average precision.
+
+    Args:
+        rec (np.ndarray[np.float64]): recall array
+        prec (np.ndarray[np.float64]): precision array
+
+    Returns:
+        Interp_ap_info (list[Any]): List containing information necessary for ap calculation
+
+
+    """
     mrec = []
     # mrec.append(0)
-    [mrec.append(e) for e in rec]
-    # mrec.append(1)
+    for e in rec:
+        mrec.append(e)
     mpre = []
-    # mpre.append(0)
-    [mpre.append(e) for e in prec]
-    # mpre.append(0)
+    for e in prec:
+        mpre.append(e)
+    # [mpre.append(e) for e in prec]
     recallValues = np.linspace(0, 1, 11)
-    recallValues = list(recallValues[::-1])
+    recallValues = recallValues[::-1]
     rhoInterp = []
     recallValid = []
     # For each recallValues (0, 0.1, 0.2, ... , 1)
@@ -66,36 +111,43 @@ def ElevenPointInterpolatedAP(rec, prec):
     # Generating values for the plot
     rvals = []
     rvals.append(recallValid[0])
-    [rvals.append(e) for e in recallValid]
+    for e in recallValid:
+        rvals.append(e)
+    # [rvals.append(e) for e in recallValid]
     rvals.append(0)
+
     pvals = []
     pvals.append(0)
-    [pvals.append(e) for e in rhoInterp]
+    for e in rhoInterp:
+        pvals.append(e)
+    # [pvals.append(e) for e in rhoInterp]
     pvals.append(0)
     # rhoInterp = rhoInterp[::-1]
     cc = []
-    for i in range(len(rvals)):
-        p = (rvals[i], pvals[i - 1])
+    for i, rval in enumerate(rvals):
+        p = [rval, pvals[i - 1]]
         if p not in cc:
             cc.append(p)
-        p = (rvals[i], pvals[i])
+        p = [rval, pvals[i]]
         if p not in cc:
             cc.append(p)
-    recallValues = [i[0] for i in cc]
-    rhoInterp = [i[1] for i in cc]
-    return [ap, rhoInterp, recallValues, None]
+    recallValue = [i[0] for i in cc]
+    # recallValues = cc[:, 0]
+    rhoInter = [i[1] for i in cc]
+    # rhoInterp = cc[:, 1]
+    Interp_ap_info = [ap, rhoInter, recallValue, None]
+    return Interp_ap_info
 
 
-def iou_score(bbox_det: tuple, bbox_gt: tuple) -> float:
-    """calculate iou between two bbox
+def iou_score(bbox_det: list[int], bbox_gt: list[int]) -> float:
+    """Calculate iou between two bbox.
+
     Args:
-        bbox_det(tuple): bbox of detected object.
-        bbox_gt(tuple): bbox of ground truth object
+        list[int]: bbox of detected object.
+        list[int]: bbox of ground truth object
 
     Returns:
         iou(float): iou_score between two bbox
-
-    Note:
 
     """
     # if boxes dont intersect
@@ -109,8 +161,13 @@ def iou_score(bbox_det: tuple, bbox_gt: tuple) -> float:
     return iou
 
 
-def ap_score(bboxes_det_per_class, bboxes_gt_per_class, IOUThreshold, ap_only):
-    """calculate average precision
+def ap_score(
+    bboxes_det_per_class: list[Any],
+    bboxes_gt_per_class: list[Any],
+    IOUThreshold: float,
+    ap_only: bool,
+) -> dict[str, Any]:
+    """Calculate average precision.
 
     Args:
         bboxes_det_per_class(list): bbox of detected object per class.
@@ -154,50 +211,55 @@ def ap_score(bboxes_det_per_class, bboxes_gt_per_class, IOUThreshold, ap_only):
     X2_INDEX = 2
     Y2_INDEX = 3
     CONFIDENCE_INDEX = 4
-    CLASS_ID_IMDEX = 5
+    CLASS_ID_INDEX = 5
     IMAGE_NAME_INDEX = 6
 
     iouMax_list = []
-    gts = {}
+    gts: dict[str, Any] = {}
     npos = 0
     for g in bboxes_gt_per_class:
         npos += 1
         gts[g[IMAGE_NAME_INDEX]] = gts.get(g[IMAGE_NAME_INDEX], []) + [g]
+    # print(gts)
 
-    # sort detections by decreasing confidence
-    dects = sorted(bboxes_det_per_class, key=lambda conf: conf[4], reverse=True)
+    def sort_key(x: list[Any]) -> Any:
+        """Sort key.
 
-    # print("dects: ", dects)
+        Args:
+            x(list): bbox of detected object per class.
+
+        Returns:
+            confidence(float): confidence of bbox
+        """
+        CONFIDENCE_score = x[CONFIDENCE_INDEX]
+        return CONFIDENCE_score
+
+    dect = sorted(bboxes_det_per_class, key=sort_key, reverse=True)
     # create dictionary with amount of gts for each image
-    det = {key: np.zeros(len(gts[key])) for key in gts}
+    det = {key: np.zeros(len(gt)) for key, gt in gts.items()}
 
-    print(
-        "Evaluating class: %s (%d detections)"
-        % (str(dects[0][CLASS_ID_IMDEX]), len(dects))
-    )
+    print(f"Evaluating class: {str(dect[0][CLASS_ID_INDEX])} ({len(dect)} detections)")
     # Loop through detections
-    TP = np.zeros(len(dects))
-    FP = np.zeros(len(dects))
-    for d in range(len(dects)):
+    TP = np.zeros(len(dect))
+    FP = np.zeros(len(dect))
+    for d, dect in enumerate(dect):
         # print('dect %s => %s' % (dects[d][0], dects[d][3],))
         # Find ground truth image
-        gt = (
-            gts[dects[d][IMAGE_NAME_INDEX]] if dects[d][IMAGE_NAME_INDEX] in gts else []
-        )
+        gt = gts[dect[IMAGE_NAME_INDEX]] if dect[IMAGE_NAME_INDEX] in gts else []
         iouMax = sys.float_info.min
 
-        for j in range(len(gt)):
+        for j, gt_elem in enumerate(gt):
             bbox_det = [
-                dects[d][X1_INDEX],
-                dects[d][Y1_INDEX],
-                dects[d][X2_INDEX],
-                dects[d][Y2_INDEX],
+                dect[X1_INDEX],
+                dect[Y1_INDEX],
+                dect[X2_INDEX],
+                dect[Y2_INDEX],
             ]
             bbox_gt = [
-                gt[j][X1_INDEX],
-                gt[j][Y1_INDEX],
-                gt[j][X2_INDEX],
-                gt[j][Y2_INDEX],
+                gt_elem[X1_INDEX],
+                gt_elem[Y1_INDEX],
+                gt_elem[X2_INDEX],
+                gt_elem[Y2_INDEX],
             ]
             iou = iou_score(bbox_det, bbox_gt)
             if iou > iouMax:
@@ -208,7 +270,7 @@ def ap_score(bboxes_det_per_class, bboxes_gt_per_class, IOUThreshold, ap_only):
         # Assign detection as true positive/don't care/false positive
         if iouMax >= IOUThreshold:
             TP[d] = 1  # count as true positive
-            det[dects[d][IMAGE_NAME_INDEX]][jmax] = 1  # flag as already 'seen'
+            det[dect[IMAGE_NAME_INDEX]][jmax] = 1  # flag as already 'seen'
         else:
             FP[d] = 1  # count as false positive
 
@@ -222,11 +284,11 @@ def ap_score(bboxes_det_per_class, bboxes_gt_per_class, IOUThreshold, ap_only):
     # if method == MethodAveragePrecision.EveryPointInterpolation:
 
     if ap_only:
-        ap = {"class": dects[0][CLASS_ID_IMDEX], "AP": ap_}
-        return ap
+        ap = {"class": dect[CLASS_ID_INDEX], "AP": ap_}
+
     else:
         ap = {
-            "class": dects[0][CLASS_ID_IMDEX],
+            "class": dect[CLASS_ID_INDEX],
             "precision": prec,
             "recall": rec,
             "AP": ap_,
@@ -236,26 +298,29 @@ def ap_score(bboxes_det_per_class, bboxes_gt_per_class, IOUThreshold, ap_only):
             "total TP": np.sum(TP),
             "total FP": np.sum(FP),
         }
-        return ap
+    return ap
 
 
-def map_score(bboxes_det, bboxes_gt, IOUThreshold) -> float:
-    """calculate mean average precision
+def map_score(
+    bboxes_det: list[Any], bboxes_gt: list[Any], IOUThreshold: float
+) -> float:
+    """Calculate mean average precision.
+
     Args:
-        bboxes_det(list): bbox of detected object.
-        bboxes_gt(list): bbox of ground truth object
-        IOUThreshold(float): iou threshold
+        bboxes_det(list[Any]): bbox of detected object.
+        bboxes_gt(list[Any]): bbox of ground truth object
+        IOUThreshold(list[Any]): iou threshold
 
     Returns:
-        map_score(float): mean average precision
+        map_score(Any): mean average precision
     """
-    X1_INDEX = 0
-    Y1_INDEX = 1
-    X2_INDEX = 2
-    Y2_INDEX = 3
-    CONFIDENCE_INDEX = 4
+    # X1_INDEX = 0
+    # Y1_INDEX = 1
+    # X2_INDEX = 2
+    # Y2_INDEX = 3
+    # CONFIDENCE_INDEX = 4
     CLASS_ID_IMDEX = 5
-    IMAGE_NAME_INDEX = 6
+    # IMAGE_NAME_INDEX = 6
     ap_list = []
     class_list = []
     # calculate ap
@@ -282,7 +347,7 @@ def map_score(bboxes_det, bboxes_gt, IOUThreshold) -> float:
         ap_list.append(ap["AP"])
     # calculate map
     map = np.mean(ap_list)
-    return map
+    return float(map)
 
 
 ### Object detection metrics ###
