@@ -1,7 +1,2 @@
 name: Prospector Check
-  # You may pin to the exact commit or the version.
-  # uses: jpetrucciani/prospector-check@3d96b647de5e259a1dea77e12770b048bfa611d7
   uses: jpetrucciani/prospector-check@1.7.7
-  with:
-    # Optional prospector flags (refer to `prospector --help`)
-    prospector_flags: # optional, default is 
