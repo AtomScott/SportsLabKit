@@ -157,8 +157,15 @@ help:
 .PHONY: docker
 docker:
 	docker build -t atomscott/soccertrack:latest . 
-	docker run --gpus all -t atomscott/soccertrack:latest  nvidia-smi
 	docker run -t atomscott/soccertrack:latest echo "atomscott/soccertrack done"
+# docker run --platform linux/amd64 -t atomscott/soccertrack:latest echo "atomscott/soccertrack done"
+# if cpu dont user --gpus all
+# if m1 mac add --platform linux/amd64 before the image name
+
+.PHONY: docker-cpu
+docker-check-gpu:
+	docker run --gpus all -t atomscott/soccertrack:latest  nvidia-smi
+
 
 .PHONY: docker-push
 docker-push:

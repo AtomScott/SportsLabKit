@@ -38,3 +38,18 @@ The sections below outline the steps in each case.
 1. create the pull request, e.g. following the instructions [here](https://help.github.com/articles/creating-a-pull-request/).
 
 In case you feel like you've made a valuable contribution, but you don't know how to write or run tests for it, or how to generate the documentation: don't let this discourage you from making the pull request; we can help you! Just go ahead and submit the pull request, but keep in mind that you might be asked to append additional commits to your pull request.
+
+### How to setup a local server to view the docs
+
+When contibuting to documentation, a good way to check your changes is to view the docs locally. This can be done by setting up a local server. We also recommend docker installation for dev usage.
+
+1. `cd` into the docs folder.
+2. Make changes to the documentation.
+3. Run `make html`. This will build the documentation locally.
+4. Run `make serve` and visit the [port 8000](http://[::]:8000/). You should be able to view the newly built documentation
+5. If the changes look good, commit and push the changes to your fork.
+6. Make a pull request.
+
+> **Note**
+> 
+> SoccerTrack is in early development and is not yet ready for production use. We are working on a stable release and will update this README when it is ready. In the meantime, we welcome any feedback or contributions. If you have any questions or something is unclear, please feel free to open an issue.
