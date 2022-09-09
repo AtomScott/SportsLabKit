@@ -1,13 +1,15 @@
+from __future__ import annotations
+
 import numpy as np
 from scipy.optimize import linear_sum_assignment
 
 
-###def mainを消すときは削除###
-import sys
-sys.path.append('../../')
+# ###def mainを消すときは削除###
+# import sys
+# sys.path.append('../../')
 
-from sandbox.mot_eval_scripts.create_dummy_data import create_raw_dummy_data, create_dummy_data
-######
+# from sandbox.mot_eval_scripts.create_dummy_data import create_raw_dummy_data, create_dummy_data
+# ######
 
 def identity_score( data):
     """Calculates ID metrics for one sequence"""
@@ -79,13 +81,13 @@ def identity_score( data):
     return res
 
 
-def main():
-    #create dummy data
-    bboxes_track, bboxes_gt = create_raw_dummy_data()
-    data = create_dummy_data(bboxes_track, bboxes_gt)
+# def main():
+#     #create dummy data
+#     bboxes_track, bboxes_gt = create_raw_dummy_data()
+#     data = create_dummy_data(bboxes_track, bboxes_gt)
 
-    identity = identity_score(data)
-    print(identity)
+#     identity = identity_score(data)
+#     print(identity)
 
-if __name__ == '__main__':
-    main()
+# if __name__ == '__main__':
+#     main()
