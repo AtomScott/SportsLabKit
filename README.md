@@ -3,6 +3,8 @@
 ![](https://raw.githubusercontent.com/AtomScott/SoccerTrack/gh-pages/img/title-banner.png)
 
 [![Documentation Status](https://readthedocs.org/projects/soccertrack/badge/?version=latest)](https://soccertrack.readthedocs.io/en/latest/?badge=latest) [![Codacy Badge](https://app.codacy.com/project/badge/Grade/b121ddfb4e244b6d88096840bdcfa1a2)](https://www.codacy.com/gh/AtomScott/SoccerTrack/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=AtomScott/SoccerTrack&amp;utm_campaign=Badge_Grade)
+[![Kaggle](https://kaggle.com/static/images/open-in-kaggle.svg)](https://www.kaggle.com/datasets/atomscott/soccertrack)
+[![PWC](https://img.shields.io/badge/%7C-Papers%20with%20Code-lightblue)](https://paperswithcode.com/dataset/soccertrack-dataset)
 
 
 A Dataset and Tracking Algorithm for Soccer with Fish-eye and Drone Videos.
