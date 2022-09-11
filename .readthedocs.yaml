@@ -15,6 +15,7 @@ build:
     # rust: "1.55"
     # golang: "1.17"
   jobs:
+    # https://github.com/readthedocs/readthedocs.org/issues/4912#issuecomment-1143587902
     post_install:
       - pip install poetry==1.2.0b1
       - poetry config virtualenvs.create false
