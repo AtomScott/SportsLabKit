@@ -40,10 +40,14 @@ Below are low resolution samples from the soccertrack dataset we plan to release
   <source src="https://user-images.githubusercontent.com/22371492/178085041-a8a2de85-bcd3-4c81-8b81-5ca93dbd4336.mp4" type="video/mp4">
 </video>
 
+https://user-images.githubusercontent.com/22371492/178085041-a8a2de85-bcd3-4c81-8b81-5ca93dbd4336.mp4
+
 ### Fisheye Video
 <video style='max-width:640px' controls>
   <source src="https://user-images.githubusercontent.com/22371492/178085027-5d25781d-e3ed-4791-ad14-141b58187dcf.mp4" type="video/mp4">
 </video>
+
+https://user-images.githubusercontent.com/22371492/178085027-5d25781d-e3ed-4791-ad14-141b58187dcf.mp4
 
 
 > **Note** The resolution for the fisheye camera may change after calibration.
