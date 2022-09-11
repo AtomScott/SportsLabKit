@@ -19,7 +19,7 @@ A Dataset and Tracking Algorithm for Soccer with Fish-eye and Drone Videos.
 
 ## Dataset Details
 
- * | **Wide-View Camera** | **Top-View Camera** | **GNSS** 
+ -/- | **Wide-View Camera** | **Top-View Camera** | **GNSS** 
 ---|---|---|---
  Device | Z CAM E2-F8 | DJI Mavic 3 | STATSPORTS APEX 10 Hz 
  Resolution | 8K (7,680 × 4,320 pixel) | 4K (3,840 × 2,160 pixesl) | Abs. err. in 20-m run: 0.22 ± 0.20 m  
