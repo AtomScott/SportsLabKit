@@ -6,7 +6,7 @@ import numpy as np
 from scipy.optimize import linear_sum_assignment
 
 from soccertrack import BBoxDataFrame
-from soccertrack.io.file import df2list, list2dict
+from soccertrack.utils.utils import df2list, list2dict
 
 # ###def mainを消すときは削除###
 # import sys
