@@ -6,15 +6,7 @@ import numpy as np
 from scipy.optimize import linear_sum_assignment
 
 from soccertrack import BBoxDataFrame
-from soccertrack.utils.utils import df2list, list2dict
-
-# ###def mainを消すときは削除###
-# import sys
-# sys.path.append('../../')
-
-# from sandbox.mot_eval_scripts.create_dummy_data import create_raw_dummy_data, create_dummy_data
-# ######
-
+from soccertrack.utils.utils import list2dict
 
 def mota_score(bboxes_track: BBoxDataFrame, bboxes_gt: BBoxDataFrame) -> dict[str, Any]:
     """Calculates CLEAR metrics for one sequence.
@@ -29,8 +21,8 @@ def mota_score(bboxes_track: BBoxDataFrame, bboxes_gt: BBoxDataFrame) -> dict[st
 
     """
 
-    track_list = df2list(bboxes_track)
-    gt_list = df2list(bboxes_gt)
+    track_list = bboxes_track.to_list()
+    gt_list = bboxes_gt.to_list()
 
     data = list2dict(track_list, gt_list)
 
@@ -189,15 +181,3 @@ def mota_score(bboxes_track: BBoxDataFrame, bboxes_gt: BBoxDataFrame) -> dict[st
     )
 
     return res
-
-
-# def main():
-#     #create dummy data
-#     bboxes_track, bboxes_gt = create_raw_dummy_data()
-#     data = create_dummy_data(bboxes_track, bboxes_gt)
-
-#     mota = mota_score(data)
-#     print(mota)
-
-# if __name__ == '__main__':
-#     main()

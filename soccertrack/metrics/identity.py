@@ -6,14 +6,7 @@ import numpy as np
 from scipy.optimize import linear_sum_assignment
 
 from soccertrack import BBoxDataFrame
-from soccertrack.utils.utils import df2list, list2dict
-
-# ###def mainを消すときは削除###
-# import sys
-# sys.path.append('../../')
-
-# from sandbox.mot_eval_scripts.create_dummy_data import create_raw_dummy_data, create_dummy_data
-# ######
+from soccertrack.utils.utils import list2dict
 
 
 def identity_score(
@@ -31,8 +24,8 @@ def identity_score(
 
     """
 
-    track_list = df2list(bboxes_track)
-    gt_list = df2list(bboxes_gt)
+    track_list = bboxes_track.to_list()
+    gt_list = bboxes_gt.to_list()
 
     data = list2dict(track_list, gt_list)
 
@@ -106,15 +99,3 @@ def identity_score(
         1.0, res["IDTP"] + 0.5 * res["IDFP"] + 0.5 * res["IDFN"]
     )
     return res
-
-
-# def main():
-#     #create dummy data
-#     bboxes_track, bboxes_gt = create_raw_dummy_data()
-#     data = create_dummy_data(bboxes_track, bboxes_gt)
-
-#     identity = identity_score(data)
-#     print(identity)
-
-# if __name__ == '__main__':
-#     main()

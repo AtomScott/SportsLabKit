@@ -6,15 +6,7 @@ import numpy as np
 from scipy.optimize import linear_sum_assignment
 
 from soccertrack import BBoxDataFrame
-from soccertrack.utils.utils import df2list, list2dict
-
-# ###def mainを消すときは削除###
-# import sys
-# sys.path.append('../../')
-
-# from sandbox.mot_eval_scripts.create_dummy_data import create_raw_dummy_data, create_dummy_data
-# ######
-
+from soccertrack.utils.utils import list2dict
 
 def hota_score(bboxes_track: BBoxDataFrame, bboxes_gt: BBoxDataFrame) -> dict[str, Any]:
     """Calculates the HOTA metrics for one sequence.
@@ -26,8 +18,8 @@ def hota_score(bboxes_track: BBoxDataFrame, bboxes_gt: BBoxDataFrame) -> dict[st
     Returns:
         dict[str, Any]: HOTA metrics
     """
-    track_list = df2list(bboxes_track)
-    gt_list = df2list(bboxes_gt)
+    track_list = bboxes_track.to_list()
+    gt_list = bboxes_gt.to_list()
 
     data = list2dict(track_list, gt_list)
 
@@ -195,15 +187,3 @@ def hota_score(bboxes_track: BBoxDataFrame, bboxes_gt: BBoxDataFrame) -> dict[st
     res["HOTA_FN"] = np.mean(res["HOTA_FN"])
 
     return res
-
-
-# def main():
-#     #create dummy data
-#     bboxes_track, bboxes_gt = create_raw_dummy_data()
-#     data = create_dummy_data(bboxes_track, bboxes_gt)
-
-#     hota = hota_score(data)
-#     print(hota)
-
-# if __name__ == '__main__':
-#     main()
