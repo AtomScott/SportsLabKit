@@ -357,15 +357,18 @@ def load_mot(filename: _pathlike) -> GPSDataFrame:
 
     df_list = []
     for playerid, group in groups:
+        group['conf'] = 1.0
+        group['class_id'] = int(0) # TODO: classid of person
         if playerid == 23:
+            group['class_id'] = int(32) # TODO: classid of ball
             teamid = 3
             playerid = 0
         elif 11 < playerid < 23:
             teamid = 1
             playerid = playerid - 11
-        bbox_cols = ["bb_left", "bb_top", "bb_width", "bb_height"]
+        bbox_cols = ['bb_left', 'bb_top', 'bb_width', 'bb_height', 'conf', 'class_id']
         idx = pd.MultiIndex.from_arrays(
-            [[int(teamid)] * 4, [int(playerid)] * 4, bbox_cols],
+            [[int(teamid)] * 6, [int(playerid)] * 6, bbox_cols],
         )
 
         bbox_df = BBoxDataFrame(group[bbox_cols].values, index=group.index, columns=idx)

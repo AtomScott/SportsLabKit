@@ -4,6 +4,7 @@ import sys
 from typing import Any, Optional
 
 import numpy as np
+import pandas as pd
 
 
 def _getArea(box: list[int]) -> int:
@@ -56,7 +57,7 @@ def _getIntersectionArea(boxA: list[int], boxB: list[int]) -> int:
     yA = max(boxA[1], boxB[1])
     xB = min(boxA[2], boxB[2])
     yB = min(boxA[3], boxB[3])
-    intersection_area = (xB - xA + 1) * (yB - yA + 1)
+    intersection_area = (xB - xA) * (yB - yA)
     # intersection area
     return intersection_area
 
@@ -206,20 +207,20 @@ def ap_score(
         IMAGE_NAME_INDEX = 6
 
     """
-    X1_INDEX = 0
-    Y1_INDEX = 1
-    X2_INDEX = 2
-    Y2_INDEX = 3
-    CONFIDENCE_INDEX = 4
-    CLASS_ID_INDEX = 5
-    IMAGE_NAME_INDEX = 6
+    X1_INDEX = 1
+    Y1_INDEX = 2
+    X2_INDEX = 3
+    Y2_INDEX = 4
+    CONFIDENCE_INDEX = 5
+    CLASS_ID_INDEX = 6
+    FRAME_INDEX = 0
 
     iouMax_list = []
     gts: dict[str, Any] = {}
     npos = 0
     for g in bboxes_gt_per_class:
         npos += 1
-        gts[g[IMAGE_NAME_INDEX]] = gts.get(g[IMAGE_NAME_INDEX], []) + [g]
+        gts[g[FRAME_INDEX]] = gts.get(g[FRAME_INDEX], []) + [g]
     # print(gts)
 
     def sort_key(x: list[Any]) -> Any:
@@ -245,7 +246,7 @@ def ap_score(
     for d, dect in enumerate(dect):
         # print('dect %s => %s' % (dects[d][0], dects[d][3],))
         # Find ground truth image
-        gt = gts[dect[IMAGE_NAME_INDEX]] if dect[IMAGE_NAME_INDEX] in gts else []
+        gt = gts[dect[FRAME_INDEX]] if dect[FRAME_INDEX] in gts else []
         iouMax = sys.float_info.min
 
         for j, gt_elem in enumerate(gt):
@@ -270,7 +271,7 @@ def ap_score(
         # Assign detection as true positive/don't care/false positive
         if iouMax >= IOUThreshold:
             TP[d] = 1  # count as true positive
-            det[dect[IMAGE_NAME_INDEX]][jmax] = 1  # flag as already 'seen'
+            det[dect[FRAME_INDEX]][jmax] = 1  # flag as already 'seen'
         else:
             FP[d] = 1  # count as false positive
 
@@ -300,16 +301,13 @@ def ap_score(
         }
     return ap
 
-
-def map_score(
-    bboxes_det: list[Any], bboxes_gt: list[Any], IOUThreshold: float
-) -> float:
+def map_score(det_df: pd.DataFrame, gt_df: pd.DataFrame, IOUThreshold: float) -> float:
     """Calculate mean average precision.
 
     Args:
-        bboxes_det(list[Any]): bbox of detected object.
-        bboxes_gt(list[Any]): bbox of ground truth object
-        IOUThreshold(list[Any]): iou threshold
+        det_df(pd.DataFrame): dataframe of detected object.
+        gt_df(pd.DataFrame): dataframe of ground truth object.
+        IOUThreshold(float): iou threshold
 
     Returns:
         map_score(Any): mean average precision
@@ -319,26 +317,31 @@ def map_score(
     # X2_INDEX = 2
     # Y2_INDEX = 3
     # CONFIDENCE_INDEX = 4
-    CLASS_ID_IMDEX = 5
+    CLASS_ID_INDEX = 6
     # IMAGE_NAME_INDEX = 6
+
+    # convert to 2-dim list from df
+    bboxes_det = det_df.to_list(xywh=True)
+    bboxes_gt = gt_df.to_list(xywh=True)
+
     ap_list = []
     class_list = []
     # calculate ap
     for bbox_det in bboxes_det:
-        if bbox_det[CLASS_ID_IMDEX] not in class_list:
-            class_list.append(bbox_det[CLASS_ID_IMDEX])
+        if bbox_det[CLASS_ID_INDEX] not in class_list:
+            class_list.append(bbox_det[CLASS_ID_INDEX])
 
     classes = sorted(class_list)
     for class_id in classes:
         bboxes_det_per_class = [
             detection_per_class
             for detection_per_class in bboxes_det
-            if detection_per_class[CLASS_ID_IMDEX] == class_id
+            if detection_per_class[CLASS_ID_INDEX] == class_id
         ]
         bboxes_gt_per_class = [
             groundTruth_per_class
             for groundTruth_per_class in bboxes_gt
-            if groundTruth_per_class[CLASS_ID_IMDEX] == class_id
+            if groundTruth_per_class[CLASS_ID_INDEX] == class_id
         ]
         ap = ap_score(
             bboxes_det_per_class, bboxes_gt_per_class, IOUThreshold, ap_only=True
@@ -348,6 +351,3 @@ def map_score(
     # calculate map
     map = np.mean(ap_list)
     return float(map)
-
-
-### Object detection metrics ###
