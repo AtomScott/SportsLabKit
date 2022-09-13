@@ -11,9 +11,10 @@ Get Started
         01_get_started/installation
         01_get_started/dataset_preparation
 
-.. contents:: Table of Contents
-    :depth: 3
-    :class: this-will-duplicate-information-and-it-is-still-useful-here
+.. container:: button
+
+    :doc:`Getting started <getting_started>` :doc:`Documentation <docs>`
+    :doc:`About GeoPandas <about>` :doc:`Community <community>`
 
 
 Easy Installation (Pip)

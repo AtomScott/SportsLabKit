@@ -6,10 +6,30 @@
 
 ..  toctree::
         :maxdepth: 2
+        :caption: Get Started
+        :hidden:
+        :glob:
+
+        01_get_started/installation.rst
+        01_get_started/dataset_preparation.rst
+
+..  toctree::
+        :maxdepth: 2
+        :caption: Get Started
         :hidden:
 
-        Home <self>
-        Get Started <01_get_started>
-        User Guide <user_guide>
-        API Reference <api>
-        Contributing <contributing>
+        02_user_guide
+
+..  toctree::
+        :maxdepth: 2
+        :caption: API Reference
+        :hidden:
+
+        03_api
+
+..  toctree::
+        :maxdepth: 1
+        :caption: Dev
+        :hidden:
+
+        Contributing <04_contributing>
