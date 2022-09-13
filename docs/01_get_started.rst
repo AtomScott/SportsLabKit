@@ -2,11 +2,19 @@
 Get Started
 ***********
 
+--------------
+
 ..  toctree::
         :maxdepth: 2
         :hidden:
 
         01_get_started/installation
+        01_get_started/dataset_preparation
+
+.. contents:: Table of Contents
+    :depth: 3
+    :class: this-will-duplicate-information-and-it-is-still-useful-here
+
 
 Easy Installation (Pip)
 ******************************
@@ -22,4 +30,3 @@ Now you can install using `pip <https://pypi.org/project/SoccerTrack/>`_ using t
     TODO: This is not supported yet. Please git clone the repo and build from source.
 
 See `Installation <01_get_started/installation.rst>`_ for installation with other methods such as conda and docker.
-

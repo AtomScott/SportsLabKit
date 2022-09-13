@@ -16,6 +16,10 @@ scipy = "^1.8.1"
 scikit-video = "^1.1.11"
 opencv-contrib-python = "^4.6.0"
 rich = "^12.5.1"
+sphinx-autodoc-typehints = "^1.19.2"
+furo = "^2022.6.21"
+nbsphinx = "^0.8.9"
+ipython = "^8.5.0"
 
 [tool.poetry.dev-dependencies]
 prospector = "^1.7.7"

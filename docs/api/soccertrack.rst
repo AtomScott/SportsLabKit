@@ -16,6 +16,7 @@ Subpackages
    :maxdepth: 4
 
    soccertrack.io
+   soccertrack.metrics
    soccertrack.utils
 
 Submodules
