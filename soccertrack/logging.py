@@ -6,8 +6,8 @@ from typing import Dict, Iterable, Any
 
 import __main__ as main
 from loguru import logger
-from rich import inspect
-from tqdm.auto import tqdm
+import rich
+from tqdm.rich import tqdm
 
 
 class LoggerMixin:
@@ -137,11 +137,11 @@ def inspect(*args, level: str = "INFO", **kwargs) -> None:
 
     LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO")
     enable = logger.level(LOG_LEVEL).no <= logger.level(level.upper()).no
-    if enable:
+    if args[0].__name__ == "inspect":
+        rich.inspect(rich.inspect, *args[1:], **kwargs)
+    elif enable:
         logger.log(level, "Inspecting: {}".format(args))
-        inspect(*args, **kwargs)
-    else:
-        return None
+        rich.inspect(*args, **kwargs)        
 
 
 """
@@ -152,12 +152,11 @@ LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO").upper()
 
 
 level_filter = LevelFilter(LOG_LEVEL)
-
 config = {
     "handlers": [
         {
             "sink": sys.stdout,
-            "format": "<level>{extra[classname]}{function}:{line}\t{level.icon}| {message} </level>",
+            "format": "<level>{extra[classname]}{function}:{line:04d}  {level.icon}| {message} </level>",
             "colorize": True,
             "filter": level_filter,
         },

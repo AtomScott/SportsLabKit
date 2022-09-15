@@ -11,6 +11,7 @@
         :glob:
 
         01_get_started/installation.rst
+        notebooks/01_get_started/introduction_to_soccertrack.ipynb
         01_get_started/dataset_preparation.rst
 
 ..  toctree::
@@ -18,7 +19,7 @@
         :caption: Get Started
         :hidden:
 
-        02_user_guide
+        notebooks/detect_and_track/detect_and_track.ipynb
 
 ..  toctree::
         :maxdepth: 2
@@ -33,3 +34,4 @@
         :hidden:
 
         Contributing <04_contributing>
+        notebooks/04_dev/logging-demo.ipynb

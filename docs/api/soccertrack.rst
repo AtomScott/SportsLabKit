@@ -26,3 +26,4 @@ Submodules
    :maxdepth: 4
 
    soccertrack.cli
+   soccertrack.logging
