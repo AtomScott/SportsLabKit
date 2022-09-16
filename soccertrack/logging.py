@@ -2,12 +2,10 @@
 
 import os
 import sys
-from typing import Dict, Iterable, Any
+from typing import Any, Iterable, Mapping
 
 import __main__ as main
 from loguru import logger
-from rich import inspect
-from tqdm.auto import tqdm
 
 
 class LoggerMixin:
@@ -22,13 +20,12 @@ def is_interactive() -> bool:
 
     Returns:
         bool: True if running in an interactive environment
-
     """
 
     return not hasattr(main, "__file__")
 
 
-def patcher(record: Dict[str, Any]) -> Dict[str, Any]:
+def patcher(record: Mapping[str, Any]) -> Mapping[str, Any]:
     """Customize loguru's log format.
 
     See the Loguru docs for details on `record` here, https://loguru.readthedocs.io/en/stable/api/logger.html.
@@ -38,7 +35,6 @@ def patcher(record: Dict[str, Any]) -> Dict[str, Any]:
 
     Returns:
         Dict: Loguru record
-
     """
     if record.get("function") == "<module>":
         if is_interactive():
@@ -57,11 +53,10 @@ class LevelFilter:
 
         Args:
             level (str, optional): Logging level to filter on. Defaults to "INFO".
-
         """
         self._level = level
 
-    def __call__(self, record: Dict[str, Any]) -> bool:
+    def __call__(self, record: Mapping[str, Any]) -> bool:
         """Filter log records based on logging level.
 
         Args:
@@ -69,7 +64,6 @@ class LevelFilter:
 
         Returns:
             bool: True if record is at or above the logging level
-
         """
         levelno = logger.level(self.level).no
         return record["level"].no >= levelno
@@ -94,12 +88,11 @@ class LevelFilter:
         self._level = level
 
 
-def set_log_level(level: str):
+def set_log_level(level: str) -> Any:
     """Set the logging level for the logger.
 
     Args:
         level (str): Logging level to set
-
     """
     level_filter.level = level
     os.environ["LOG_LEVEL"] = level
@@ -115,9 +108,8 @@ def tqdm(*args, level: str = "INFO", **kwargs) -> Iterable:
 
     Returns:
         Iterable: Iterable from tqdm progress bar
-
     """
-    from tqdm.auto import tqdm
+    from tqdm.rich import tqdm  # noqa
 
     LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO")
     enable = logger.level(LOG_LEVEL).no <= logger.level(level.upper()).no
@@ -132,32 +124,32 @@ def inspect(*args, level: str = "INFO", **kwargs) -> None:
         *args: Arguments to pass to rich.inspect
         **kwargs: Keyword arguments to pass to rich.inspect
         level (str, optional): Logging level to set. Defaults to "INFO".
-
     """
+    from rich import inspect
 
     LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO")
     enable = logger.level(LOG_LEVEL).no <= logger.level(level.upper()).no
-    if enable:
-        logger.log(level, "Inspecting: {}".format(args))
+    
+    if hasattr(args[0], __name__):
+        if args[0].__name__ == "inspect" and enable:
+            inspect(inspect, *args[1:], **kwargs)
+    elif enable:
+        logger.log(level, f"Inspecting: {args}")
         inspect(*args, **kwargs)
-    else:
-        return None
 
 
-"""
-Code that runs on `import .logger` 
-"""
+# Code that runs on `import .logger`
+
 logger.remove()
 LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO").upper()
 
 
 level_filter = LevelFilter(LOG_LEVEL)
-
 config = {
     "handlers": [
         {
             "sink": sys.stdout,
-            "format": "<level>{extra[classname]}{function}:{line}\t{level.icon}| {message} </level>",
+            "format": "<level>{extra[classname]}{function}:{line:04d}  {level.icon}| {message} </level>",
             "colorize": True,
             "filter": level_filter,
         },

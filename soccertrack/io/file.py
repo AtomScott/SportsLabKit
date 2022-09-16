@@ -14,7 +14,7 @@ from omegaconf import OmegaConf
 
 from soccertrack import BBoxDataFrame, GPSDataFrame
 
-_pathlike = Union[str, os.PathLike[str]]
+_pathlike = Union[str, "os.PathLike[str]"]
 
 
 def auto_string_parser(value: str) -> Any:
@@ -478,7 +478,9 @@ def load_df(filename: _pathlike) -> Union[BBoxDataFrame, GPSDataFrame]:
     """
 
     gps_format = infer_bbox_format(filename)
-    return get_bbox_loader(gps_format)(filename)
+    df = BBoxDataFrame(get_bbox_loader(gps_format)(filename))
+    df.rename_axis(["TeamID", "PlayerID", "Attributes"], axis=1, inplace=True)
+    return df
 
 
 # def load_bboxes_from_yaml(yaml_path: _pathlike) -> BBoxDataFrame:

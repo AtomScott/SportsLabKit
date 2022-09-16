@@ -174,7 +174,7 @@ docker-push:
 
 .PHONY: docker-run
 docker-run:
-	docker run --rm -it -v $(PWD):/workspace atomscott/soccertrack:latest
+	docker run --rm -it -v $(PWD):/workspace atomscott/soccertrack:latest bash
 
 #################################################################################
 # Singularity                                                     #
