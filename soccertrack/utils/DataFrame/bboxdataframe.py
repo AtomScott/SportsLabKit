@@ -12,6 +12,8 @@ import cv2 as _cv2
 from hashlib import md5 as _md5
 from PIL import ImageFont
 import random
+from tqdm import tqdm
+from soccertrack.utils.utils import MovieIterator, make_video
 
 _LOC = _path.realpath(_path.join(_os.getcwd(),_path.dirname(__file__)))
 
@@ -165,6 +167,29 @@ class BBoxDataFrame(SoccerTrackMixin, pd.DataFrame):
 
         return frame
 
+    def visualize_bbox(self, video_path:str) -> None:
+        """Visualize bounding boxes on a video.
+        Args:
+            video_path (str): Path to the video file.
+        
+        Returns:
+            None
+        """
+        ####### How to use（任意のタイミングで削除して頂いて構いません）######
+        # test_movie_path  = '/home/guest/dev_repo/SoccerTrack/x_ignore/test_data/F_20200220_1_0000_0030.mp4'
+        # data_path  = '/home/guest/dev_repo/SoccerTrack/x_ignore/test_data/F_20200220_1_0000_0030.csv'
+        # save_dir = './test_data/'
+
+        # bboxdf = load_df(data_path)
+        # img_ = bboxdf.visualize_bbox(test_movie_path)
+
+        # save_path = os.path.join(save_dir, 'bbox_.mp4')
+        # make_video(img_, save_path) ###make_video関数に、ジェネレータを渡す
+
+        movie_iterator = MovieIterator(video_path)
+        for frame_idx ,frame in tqdm(enumerate(movie_iterator)):
+            img_ = self.visualize_frame(frame_idx, frame)
+            yield img_
 
 def add(image, left, top, right, bottom, label=None, color=None):
     _DEFAULT_COLOR_NAME = "purple"
@@ -209,10 +234,6 @@ def add(image, left, top, right, bottom, label=None, color=None):
         thickness = 1  # 文字の太さ
 
         (label_width, label_height), baseline = _cv2.getTextSize(label, fontface, fontscale, thickness)
-
-        # label_image =  _get_label_image(label, color_text, color)
-        # label_height, label_width, _ = label_image.shape
-
         rectangle_height, rectangle_width = 1 + label_height, 1 + label_width
 
         rectangle_bottom = top
