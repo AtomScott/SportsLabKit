@@ -129,8 +129,10 @@ def inspect(*args, level: str = "INFO", **kwargs) -> None:
 
     LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO")
     enable = logger.level(LOG_LEVEL).no <= logger.level(level.upper()).no
-    if args[0].__name__ == "inspect":
-        inspect(inspect, *args[1:], **kwargs)
+    
+    if hasattr(args[0], __name__):
+        if args[0].__name__ == "inspect" and enable:
+            inspect(inspect, *args[1:], **kwargs)
     elif enable:
         logger.log(level, f"Inspecting: {args}")
         inspect(*args, **kwargs)
