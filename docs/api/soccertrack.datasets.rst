@@ -15,4 +15,4 @@ Submodules
 .. toctree::
    :maxdepth: 4
 
-   soccertrack.datasets.kaggle
+   soccertrack.datasets.downloader
