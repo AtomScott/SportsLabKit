@@ -15,6 +15,7 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
+   soccertrack.datasets
    soccertrack.io
    soccertrack.metrics
    soccertrack.utils

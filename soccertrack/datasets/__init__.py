@@ -2,7 +2,9 @@ import os
 
 from soccertrack.logging import logger
 
-__all__ = ["available", "get_path"]
+from .downloader import KaggleDownloader
+
+__all__ = ["available", "get_path", "KaggleDownloader"]
 
 _module_path = os.path.dirname(__file__)
 _available_dir = [p for p in next(os.walk(_module_path))[1] if not p.startswith("__")]

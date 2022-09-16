@@ -5,12 +5,10 @@ import platform
 from pathlib import Path
 from typing import Any, Optional, Union
 
-import click
-
 from soccertrack.logging import inspect, logger
 
 _pathlike = Union[str, Path]
-_module_path = os.path.dirname(__file__)
+_module_path = Path(__file__).parent
 
 
 class KaggleDownloader:
@@ -35,10 +33,10 @@ class KaggleDownloader:
     def download(
         self,
         file_name: Optional[str] = None,
-        path: Optional[_pathlike] = None,
+        path: Optional[_pathlike] = _module_path,
         force: bool = False,
-        quiet: bool = True,
-        unzip: bool = False,
+        quiet: bool = False,
+        unzip: bool = True,
     ) -> None:
         """Download the dataset from Kaggle.
 
@@ -47,9 +45,10 @@ class KaggleDownloader:
             path (Optional[_pathlike], optional): Path to download the data to. If None, downloads to soccertrack/datasets/data. Defaults to None.
             force (bool, optional): If True, overwrites the existing file. Defaults to False.
             quiet (bool, optional): If True, suppresses the output. Defaults to True.
-            unzip (bool, optional): If True, unzips the file. Defaults to False.
+            unzip (bool, optional): If True, unzips the file. Defaults to True.
         """
 
+        path = Path(path)
         if file_name is None:
             self.api.dataset_download_files(
                 f"{self.dataset_owner}/{self.dataset_name}",
@@ -59,12 +58,23 @@ class KaggleDownloader:
                 unzip=unzip,
             )
         else:
-            self.api.dataset_download_files(
+            self.api.dataset_download_file(
                 f"{self.dataset_owner}/{self.dataset_name}",
+                file_name=file_name,
                 path=path,
                 force=force,
                 quiet=quiet,
             )
+            
+        if file_name is None and unzip:
+            file_name = 'soccertrack'
+        if file_name is None and not unzip:
+            file_name += 'soccertrack.zip'
+        else:
+            file_name = Path(file_name).name
+        
+        save_path = path / file_name
+        return save_path
 
 
 def get_platform() -> str:
@@ -88,41 +98,67 @@ def get_platform() -> str:
     return platforms[platform.system().lower()]
 
 
+def confirm(msg: str) -> bool:
+    """Confirm the user input."""
+    logger.info(msg + " [y/n]")
+    val = input()
+    logger.info(f"You entered: {val}")
+    if val.lower() in ["y", "yes"]:
+        return True
+    elif val.lower() in ["n", "no"]:
+        return False
+    else:
+        logger.error("Invalid input. Please try again.")
+        return confirm(msg)
+
+
+def prompt(msg: str, type: Any) -> Any:
+    """Prompt the user for input."""
+    logger.info(msg)
+    val = input()
+    logger.info(f"You entered: {val}")
+    try:
+        return type(val)
+    except ValueError:
+        logger.error("Invalid input. Please try again.")
+        return prompt(msg, type)
+
+
 def show_authenticate_message() -> Any:
     """Show the instructions to authenticate the Kaggle API key."""
     logger.info("Please authenticate with your Kaggle account.")
-    has_account = click.confirm("\tDo you have a Kaggle account?", abort=False)
+    has_account = confirm("Do you have a Kaggle account?")
 
     if has_account:
         platform = get_platform()
-        username = click.prompt("\tPlease enter your kaggle username", type=str)
-        print(
-            f"\tPlease go to https://www.kaggle.com/{username}/account and follow these steps:"
+        username = prompt("Please enter your kaggle username", type=str)
+        logger.info(
+            f"Please go to https://www.kaggle.com/{username}/account and follow these steps:"
         )
-        print('\t\t1. Scroll and click the "Create API Token" section.')
-        print('\t\t2. A file named "kaggle.json" will be downloaded.')
+        logger.info('1. Scroll and click the "Create API Token" section.')
+        logger.info('2. A file named "kaggle.json" will be downloaded.')
 
         if platform in ["linux", "mac"]:
-            print("\t\t3. Move the file to ~/.kaggle/kaggle.json")
+            logger.info("3. Move the file to ~/.kaggle/kaggle.json")
         elif platform == "windows":
-            print(
-                "\t\t3. Move the file to C:\\Users\\<Windows-username>\\.kaggle\\kaggle.json"
+            logger.info(
+                "3. Move the file to C:\\Users\\<Windows-username>\\.kaggle\\kaggle.json"
             )
         else:
-            print(
-                "\t\t3. Move the file to ~/.kaggle/kaggle.json  folder in Mac and Linux or to C:\\Users\\<Windows-username>\\.kaggle\\kaggle.json  on windows."
+            logger.info(
+                "3. Move the file to ~/.kaggle/kaggle.json  folder in Mac and Linux or to C:\\Users\\<Windows-username>\\.kaggle\\kaggle.json  on windows."
             )
 
-        click.confirm(
-            "\tHave you completed the steps above? Type N to abort", abort=True
-        )
+        if not confirm("Have you completed the steps above? Type N to abort."):
+            logger.info("Aborting.")
+            return None
 
         return authenticate(show_message=False)
 
-    print(
-        "\tPlease create a Kaggle account and follow the instructions on the following:"
+    logger.info(
+        "Please create a Kaggle account and follow the instructions on the following:"
     )
-    print("\thttps://www.kaggle.com/")
+    logger.info("https://www.kaggle.com/")
     return None
 
 
@@ -130,14 +166,16 @@ def authenticate(show_message: bool = True) -> Any:
     """Authenticate the Kaggle API key."""
     try:
         from kaggle.api.kaggle_api_extended import KaggleApi  # noqa
+
+        api = KaggleApi()
+        api.authenticate()
+        logger.info('Authentication successful.')
     except OSError:
         logger.error("Kaggle API key not found. Showing instructions to authenticate.")
         if show_message:
             return show_authenticate_message()
         return None
 
-    api = KaggleApi()
-    api.authenticate()
     return api
 
 

@@ -12,14 +12,14 @@
 
         01_get_started/installation.rst
         notebooks/01_get_started/introduction_to_soccertrack.ipynb
-        01_get_started/dataset_preparation.rst
+        notebooks/01_get_started/dataset_preparation.rst
 
 ..  toctree::
         :maxdepth: 2
-        :caption: Get Started
+        :caption: User Guide
         :hidden:
 
-        notebooks/detect_and_track/detect_and_track.ipynb
+        02_user_guide
 
 ..  toctree::
         :maxdepth: 2
