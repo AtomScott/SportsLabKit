@@ -28,3 +28,4 @@ Submodules
 
    soccertrack.cli
    soccertrack.logging
+   soccertrack.tracker

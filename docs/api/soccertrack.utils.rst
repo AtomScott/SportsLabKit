@@ -25,5 +25,6 @@ Submodules
    :maxdepth: 4
 
    soccertrack.utils.detection
+   soccertrack.utils.track
    soccertrack.utils.tracking
    soccertrack.utils.utils
