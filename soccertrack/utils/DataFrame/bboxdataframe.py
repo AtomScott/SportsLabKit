@@ -37,8 +37,6 @@ _COLOR_NAME_TO_RGB = dict(
 
 _COLOR_NAMES = list(_COLOR_NAME_TO_RGB)
 
-_DEFAULT_COLOR_NAME = "purple"
-
 # _FONT_PATH = _os.path.join(_LOC, "Ubuntu-B.ttf")
 # _FONT_HEIGHT = 45
 # _FONT = ImageFont.truetype(None, _FONT_HEIGHT)
@@ -68,6 +66,12 @@ X2_INDEX = 3
 Y2_INDEX = 4
 W_INDEX = 3
 H_INDEX = 4
+
+color_list = []
+i = 0
+while i < 1000:
+    color_list.append(_COLOR_NAMES[random.randint(0, len(_COLOR_NAMES) - 1)])
+    i += 1
 
 class BBoxDataFrame(SoccerTrackMixin, pd.DataFrame):
     @property
@@ -129,13 +133,21 @@ class BBoxDataFrame(SoccerTrackMixin, pd.DataFrame):
         BB_WIDTH_INDEX = 2
         BB_HEIGHT_INDEX = 3
 
+        # color_list =[]
+        # unique_obj_ids = self.columns.get_level_values('PlayerID').unique()
+        # for obj_id in unique_obj_ids:
+        # color = _COLOR_NAMES[random.randint(0, len(_COLOR_NAMES) - 1)]
+        # print(color_list)
+
         unique_team_ids = self.columns.get_level_values('TeamID').unique()
         for team_id in unique_team_ids:
             bboxdf_team = self.xs(team_id, level='TeamID', axis=1)
+            # print('------team_id------', team_id)
 
             unique_team_ids = bboxdf_team.columns.get_level_values('PlayerID').unique()
-            for player_id in unique_team_ids:
-                color = _COLOR_NAMES[random.randint(0, len(_COLOR_NAMES) - 1)]
+            for idx, player_id in enumerate(unique_team_ids):
+                color = color_list[idx]
+
                 bboxdf_player = bboxdf_team.xs(player_id, level='PlayerID', axis=1)
                 bboxdf_player = bboxdf_player.reset_index(drop=True)
                 bbox = bboxdf_player.loc[frame_idx]
@@ -155,6 +167,8 @@ class BBoxDataFrame(SoccerTrackMixin, pd.DataFrame):
 
 
 def add(image, left, top, right, bottom, label=None, color=None):
+    _DEFAULT_COLOR_NAME = "purple"
+
     if type(image) is not np.ndarray:
         raise TypeError("'image' parameter must be a numpy.ndarray")
     try:
