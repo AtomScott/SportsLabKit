@@ -11,6 +11,7 @@ from tqdm import tqdm
 
 from ..utils import MovieIterator
 from .base import SoccerTrackMixin
+from ..logging import logger
 
 # https://clrs.cc/
 _COLOR_NAME_TO_RGB = dict(
@@ -62,7 +63,7 @@ while i < 1000:
     i += 1
 
 
-class BBoxDataFrame(SoccerTrackMixin, pd.DataFrame):  # type: ignore
+class BBoxDataFrame(SoccerTrackMixin, pd.DataFrame):
     @property
     def _constructor(self: pd.DataFrame) -> Type[BBoxDataFrame]:
         """Return the constructor for the DataFrame.
@@ -83,10 +84,8 @@ class BBoxDataFrame(SoccerTrackMixin, pd.DataFrame):  # type: ignore
         Args:
             df (BBoxDataFrame): BBoxDataFrame
             xywh (bool): If True, convert to x1y1x2y2 format. Defaults to True.
-
         Returns:
             bbox_2dim_list(list): 2-dim list
-
         Note:
             Description of each element in bbox_2dim_list.
             The elements of the final included bbox_2dim_list are as follows:
@@ -100,7 +99,6 @@ class BBoxDataFrame(SoccerTrackMixin, pd.DataFrame):  # type: ignore
                 class_id(int) : Class ID. In the normal case, follow the value of the coco image dataset.
                 obj_id(int) : Object ID. This id is a unique integer value for each track
                             (corresponding to each column in the BBoxDataframe) that is used when evaluating tracking.
-
             The BBoxDataframe input to this function contains information other than frame_id and obj_id in advance.
             This function adds the obj_id column and converts the BBoxDataframe to a list.
         """
@@ -159,7 +157,6 @@ class BBoxDataFrame(SoccerTrackMixin, pd.DataFrame):  # type: ignore
             self (BBoxDataFrame): BBoxDataFrame object.
             frame_idx (int): Frame ID.
             frame (np.ndarray): Frame image.
-
         Returns:
             frame(np.ndarray): Frame image with bounding box.
         """
@@ -176,30 +173,27 @@ class BBoxDataFrame(SoccerTrackMixin, pd.DataFrame):  # type: ignore
             unique_team_ids = bboxdf_team.columns.get_level_values("PlayerID").unique()
             for idx, player_id in enumerate(unique_team_ids):
                 color = color_list[idx]
-
                 bboxdf_player = bboxdf_team.xs(player_id, level="PlayerID", axis=1)
                 bboxdf_player = bboxdf_player.reset_index(drop=True)
                 bbox = bboxdf_player.loc[frame_idx]
-                if not np.isnan(bbox[BB_LEFT_INDEX]) and not np.isnan(
-                    bbox[BB_TOP_INDEX]
-                ):
+                
+                if not bbox.isnull().values.any():
                     bb_left = bbox[BB_LEFT_INDEX]
                     bb_top = bbox[BB_TOP_INDEX]
                     bb_right = bb_left + bbox[BB_WIDTH_INDEX]
                     bb_bottom = bb_top + bbox[BB_HEIGHT_INDEX]
 
-                    frame = add(
-                        frame,
-                        int(bb_left),
-                        int(bb_top),
-                        int(bb_right),
-                        int(bb_bottom),
-                        label=f"{team_id}_{player_id}",
-                        color=color,
+                    x, y, x2, y2 = list(
+                        [int(bb_left), int(bb_top), int(bb_right), int(bb_bottom)]
                     )
+                    logger.debug(f'x:{x}, y:{y}, x2:{x2}, y2:{y2}, label:{team_id}-{player_id}, color:{color}')
+                    frame = add(
+                        frame, x, y, x2, y2, label=f"{team_id}_{player_id}", color=color
+                    )
+
         return frame
 
-    def visualize_bbox(self: BBoxDataFrame, video_path: str) -> Iterator[np.ndarray]:
+    def visualize_bbox(self, video_path: str) -> Iterator[np.ndarray]:
         """Visualize bounding boxes on a video.
 
         Args:
@@ -215,7 +209,7 @@ class BBoxDataFrame(SoccerTrackMixin, pd.DataFrame):  # type: ignore
 
 
 def add(
-    img: np.ndarray,
+    image: np.ndarray,
     left: int,
     top: int,
     right: int,
@@ -233,21 +227,19 @@ def add(
         bottom (int): Bounding box bottom coordinate.
         label (str): Label.
         color (str): Color.
-
     Returns:
         img (np.ndarray): Image with bounding box and label.
     """
-
     _DEFAULT_COLOR_NAME = "purple"
 
-    if not isinstance(img, np.ndarray):
+    if isinstance(image, np.ndarray) is False:
         raise TypeError("'image' parameter must be a numpy.ndarray")
     try:
         left, top, right, bottom = int(left), int(top), int(right), int(bottom)
     except ValueError as e:
         raise TypeError("'left', 'top', 'right' & 'bottom' must be a number") from e
 
-    if label and not isinstance(label, str):
+    if label and isinstance(label, str) is False:
         raise TypeError("'label' must be a str")
 
     if label and not color:
@@ -258,7 +250,7 @@ def add(
     if not color:
         color = _DEFAULT_COLOR_NAME
 
-    if not isinstance(color, str):
+    if isinstance(color, str) is False:
         raise TypeError("'color' must be a str")
 
     if color not in _COLOR_NAME_TO_RGB:
@@ -268,11 +260,11 @@ def add(
     colors = [_rgb_to_bgr(item) for item in _COLOR_NAME_TO_RGB[color]]
     color_value, _ = colors
 
-    img = cv2.rectangle(img, (left, top), (right, bottom), color, 2)
+    image = cv2.rectangle(image, (left, top), (right, bottom), color_value, 2)
 
     if label:
 
-        _, image_width, _ = img.shape
+        _, image_width, _ = image.shape
         fontface = cv2.FONT_HERSHEY_TRIPLEX
         fontscale = 0.5
         thickness = 1
@@ -298,17 +290,17 @@ def add(
 
         label_left = rectangle_left + 1
         label_bottom = label_top + label_height
-        # label_right = label_left + label_width
+        # _ = label_left + label_width
 
         rec_left_top = (rectangle_left, rectangle_top)
         rec_right_bottom = (rectangle_right, rectangle_bottom)
 
-        cv2.rectangle(img, rec_left_top, rec_right_bottom, color_value, -1)
+        cv2.rectangle(image, rec_left_top, rec_right_bottom, color_value, -1)
 
         # image[label_top:label_bottom, label_left:label_right, :] = label
 
         cv2.putText(
-            img,
+            image,
             text=label,
             org=(label_left, int((label_bottom))),
             fontFace=fontface,
@@ -317,4 +309,4 @@ def add(
             thickness=thickness,
             lineType=cv2.LINE_4,
         )
-    return img
+    return image

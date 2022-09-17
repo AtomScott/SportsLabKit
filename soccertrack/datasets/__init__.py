@@ -10,7 +10,7 @@ _module_path = os.path.dirname(__file__)
 _available_dir = [p for p in next(os.walk(_module_path))[1] if not p.startswith("__")]
 _available_csv = {"soccertrack sample": "soccertrack_sample.csv"}
 _available_mp4 = {
-    "soccertrack sample": "https://drive.google.com/file/d/12FsUhV5gR60wBaPbq-yQw1WeprnsajHA/view?usp=sharing"
+    "soccertrack sample": "https://drive.google.com/file/d/1Vxc1NXwLiD3T6cqmlbjgjr-9umDty5Va/view?usp=sharing"
 }
 available = _available_dir + list(_available_csv.keys())
 

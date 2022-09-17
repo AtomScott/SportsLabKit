@@ -144,6 +144,15 @@ class Camera:
                     5,
                 )
 
+    def iter_frames(self, calibrate: bool = False, crop: bool = False) -> Generator[NDArray, None, None]:
+        """Iterate over frames of video.
+
+        Yields:
+            NDArray: frame of video.
+        """
+        for frame in MovieIterator(self.video_path):
+            yield frame
+            
     def movie_iterator(self, calibrate: bool = True, crop: bool = True) -> Generator[NDArray, None, None]:
         """Create a movie iterator.
 

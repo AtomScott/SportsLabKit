@@ -15,6 +15,7 @@ def all_logging_disabled(highest_level=logging.CRITICAL):
 with all_logging_disabled():
     from vidgear.gears import WriteGear, CamGear
 
-from soccertrack.utils import GPSDataFrame, BBoxDataFrame
+from soccertrack.dataframe import GPSDataFrame, BBoxDataFrame
 from soccertrack.io import load_df
 import soccertrack.datasets  # noqa
+from soccertrack.camera import Camera
