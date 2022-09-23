@@ -113,3 +113,11 @@ See the [Contributing Guide](https://soccertrack.readthedocs.io/en/latest/contri
   year={2022}
 }
 ```
+
+## Acknowledgements
+
+Part of the tracking module has been adapted from [motpy](https://github.com/wmuron/motpy). We would like to thank the authors for their work.
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=atomscott/soccertrack&type=Date)](https://star-history.com/#atomscott/soccertrack&Date)

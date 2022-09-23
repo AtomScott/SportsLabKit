@@ -42,7 +42,11 @@ format:
 
 ## Lint using flake8
 lint:
-	flake8 src
+	poetry run docformatter --in-place -r $(i)
+	poetry run black $(i)
+	poetry run isort $(i)
+	poetry run prospector --profile profile.prospector.yaml $(i)
+
 
 ## Upload Data to S3
 sync_data_to_s3:
@@ -174,7 +178,7 @@ docker-push:
 
 .PHONY: docker-run
 docker-run:
-	docker run --rm -it -v $(PWD):/workspace atomscott/soccertrack:latest
+	docker run --rm -it -v $(PWD):/workspace atomscott/soccertrack:latest bash
 
 #################################################################################
 # Singularity                                                     #
@@ -187,6 +191,6 @@ singularity-pull:
 #################################################################################
 # Poetry                                                     #
 #################################################################################
-.PHONY: requirements
-requirements:
-	poetry export -f requirements.txt --output requirements.txt
+# .PHONY: requirements
+# requirements:
+# 	poetry export -f requirements.txt --output requirements.txt

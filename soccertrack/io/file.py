@@ -14,7 +14,7 @@ from omegaconf import OmegaConf
 
 from soccertrack import BBoxDataFrame, GPSDataFrame
 
-_pathlike = Union[str, os.PathLike[str]]
+_pathlike = Union[str, "os.PathLike[str]"]
 
 
 def auto_string_parser(value: str) -> Any:
