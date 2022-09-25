@@ -7,11 +7,13 @@ from typing import Iterable, Optional
 
 import cv2 as cv
 import numpy as np
+import pandas as pd
 from numpy.typing import NDArray
 from omegaconf import OmegaConf
 from PIL import Image
 from soccertrack.logging import logger, tqdm
 from vidgear.gears import WriteGear
+from scipy.spatial.distance import cdist
 
 OmegaConf.register_new_resolver(
     "now", lambda x: datetime.now().strftime(x), replace=True
@@ -91,7 +93,6 @@ def load_config(yaml_path: str) -> OmegaConf:
 
     # TODO: add validation
     return cfg
-
 
 def write_config(yaml_path: str, cfg: OmegaConf) -> None:
     """Write config to yaml file.
@@ -227,7 +228,7 @@ def make_video(
     )
 
     # loop over
-    for frame in tqdm(frames, desc=f"Writing video", level="INFO"):
+    for frame in frames:
 
         # simulating RGB frame for example
         frame_rgb = frame[:, :, ::-1]
