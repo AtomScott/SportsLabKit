@@ -139,8 +139,6 @@ class BBoxDataFrame(SoccerTrackMixin, pd.DataFrame):
         Returns:
             frame(np.ndarray): Frame image with bounding box.
         """
-        self.index: pd.MultiIndex
-
         frame_df = self.loc[self.index == frame_idx].copy()
         for index, group in frame_df.groupby(level=("TeamID", "PlayerID"), axis=1):
             group_stack = group.to_long_df().reset_index()

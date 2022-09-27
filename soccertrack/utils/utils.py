@@ -7,61 +7,17 @@ from typing import Iterable, Optional
 
 import cv2 as cv
 import numpy as np
-import pandas as pd
 from numpy.typing import NDArray
 from omegaconf import OmegaConf
 from PIL import Image
-from soccertrack.logging import logger, tqdm
+from soccertrack.utils import logger, tqdm
 from vidgear.gears import WriteGear
-from scipy.spatial.distance import cdist
 
 OmegaConf.register_new_resolver(
     "now", lambda x: datetime.now().strftime(x), replace=True
 )
 
-from ast import literal_eval
-from typing import Any, Union
 
-import dateutil.parser
-import numpy as np
-import pandas as pd
-from pandas._typing import FilePath, WriteBuffer
-from itertools import zip_longest
-
-def auto_string_parser(value: str) -> Any:
-    """Auxiliary function to parse string values.
-
-    Args:
-        value (str): String value to parse.
-
-    Returns:
-        value (any): Parsed string value.
-    """
-    # automatically parse values to correct type
-    if value.isdigit():
-        return int(value)
-    if value.replace(".", "", 1).isdigit():
-        return float(value)
-    if value.lower() == "true":
-        return True
-    if value.lower() == "false":
-        return False
-    if value.lower() == "nan":
-        return np.nan
-    if value.lower() == "inf":
-        return np.inf
-    if value.lower() == "-inf":
-        return -np.inf
-
-    try:
-        return literal_eval(value)
-    except (ValueError, SyntaxError):
-        pass
-    try:
-        return dateutil.parser.parse(value)
-    except (ValueError, TypeError):
-        pass
-    return value
 def count_iter_items(iterable: Iterable) -> int:
     """Consume an iterable not reading it into memory; return the number of items.
 
@@ -93,6 +49,7 @@ def load_config(yaml_path: str) -> OmegaConf:
 
     # TODO: add validation
     return cfg
+
 
 def write_config(yaml_path: str, cfg: OmegaConf) -> None:
     """Write config to yaml file.
