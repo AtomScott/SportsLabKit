@@ -109,9 +109,8 @@ def tqdm(*args, level: str = "INFO", **kwargs) -> Iterable:
     Returns:
         Iterable: Iterable from tqdm progress bar
     """
-    # from tqdm.rich import tqdm  # noqa
-    from tqdm import tqdm
-
+    from tqdm.rich import tqdm  # noqa
+    
     LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO")
     enable = logger.level(LOG_LEVEL).no <= logger.level(level.upper()).no
     kwargs.update({"disable": not enable})
