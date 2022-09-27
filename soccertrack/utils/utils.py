@@ -28,8 +28,10 @@ from itertools import zip_longest
 
 def auto_string_parser(value: str) -> Any:
     """Auxiliary function to parse string values.
+
     Args:
         value (str): String value to parse.
+
     Returns:
         value (any): Parsed string value.
     """
@@ -60,8 +62,10 @@ def auto_string_parser(value: str) -> Any:
     return value
 def count_iter_items(iterable: Iterable) -> int:
     """Consume an iterable not reading it into memory; return the number of items.
+
     Args:
         iterable (Iterable): Iterable object
+
     Returns:
         int: Number of items
     """
@@ -72,8 +76,10 @@ def count_iter_items(iterable: Iterable) -> int:
 
 def load_config(yaml_path: str) -> OmegaConf:
     """Load config from yaml file.
+
     Args:
         yaml_path (str): Path to yaml file
+
     Returns:
         OmegaConf: Config object loaded from yaml file
     """
@@ -89,6 +95,7 @@ def load_config(yaml_path: str) -> OmegaConf:
 
 def write_config(yaml_path: str, cfg: OmegaConf) -> None:
     """Write config to yaml file.
+
     Args:
         yaml_path (str): Path to yaml file
         cfg (OmegaConf): Config object
@@ -99,8 +106,10 @@ def write_config(yaml_path: str, cfg: OmegaConf) -> None:
 
 def pil2cv(image: Image.Image) -> NDArray[np.uint8]:
     """Convert PIL image to OpenCV image.
+
     Args:
         image (Image.Image): PIL image
+
     Returns:
         NDArray[np.uint8]: Numpy Array (OpenCV image)
     """
@@ -116,8 +125,10 @@ def pil2cv(image: Image.Image) -> NDArray[np.uint8]:
 
 def cv2pil(image: NDArray[np.uint8]) -> Image.Image:
     """Convert OpenCV image to PIL image.
+
     Args:
         image (NDArray[np.uint8]): Numpy Array (OpenCV image)
+
     Returns:
         Image.Image: PIL image
     """
@@ -147,6 +158,7 @@ def make_video(
     logging: bool = False,
 ) -> None:
     """Make video from a list of opencv format frames.
+
     Args:
         frames (Iterable[NDArray[np.uint8]]): List of opencv format frames
         outpath (str): Path to output video file
@@ -156,6 +168,7 @@ def make_video(
             slower preset will provide better compression (compression is quality
             per filesize). Use the slowest preset that you have patience for.
             The available presets in descending order of speed are:
+
             - ultrafast
             - superfast
             - veryfast
@@ -165,7 +178,9 @@ def make_video(
             - slow
             - slower
             - veryslow
+
             Defaults to `medium`.
+
         crf (int): Constant Rate Factor. Use the crf (Constant Rate Factor)
             parameter to control the output quality. The lower crf, the higher
             the quality (range: 0-51). Visually lossless compression corresponds
@@ -226,8 +241,10 @@ def make_video(
 class MovieIterator:
     def __init__(self, path: str):
         """Very simple iterator class for movie files.
+
         Args:
             path (str): Path to movie file
+
         Attributes:
             video_fps (int): Frames per second
             video_frame_count (int): Total number of frames
@@ -235,8 +252,10 @@ class MovieIterator:
             img_width (int): Width of frame
             img_height (int): Height of frame
             path (str): Path to movie file
+
         Raises:
             FileNotFoundError: If file does not exist
+
         """
         if not os.path.isfile(path):
             raise FileNotFoundError
@@ -269,6 +288,7 @@ class MovieIterator:
 class ImageIterator:
     def __init__(self, path: str):
         """Very simple iterator class for image files.
+
         Args:
             path (str): Path to image file
         """
@@ -301,12 +321,14 @@ class ImageIterator:
 
 def merge_dict_of_lists(d1: dict, d2: dict) -> dict:
     """Merge two dicts of lists.
+
     Parameters
     ----------
     d1 : dict
         The first dict to merge.
     d2 : dict
         The second dict to merge.
+
     Returns
     -------
     dict
