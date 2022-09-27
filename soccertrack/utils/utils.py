@@ -4,6 +4,7 @@ import os
 from collections import deque
 from datetime import datetime
 from typing import Iterable, Optional
+
 import cv2 as cv
 import numpy as np
 from numpy.typing import NDArray
@@ -11,11 +12,14 @@ from omegaconf import OmegaConf
 from PIL import Image
 from soccertrack.logging import logger, tqdm
 from vidgear.gears import WriteGear
+
 OmegaConf.register_new_resolver(
     "now", lambda x: datetime.now().strftime(x), replace=True
 )
+
 from ast import literal_eval
 from typing import Any, Union
+
 import dateutil.parser
 import numpy as np
 import pandas as pd
@@ -44,6 +48,7 @@ def auto_string_parser(value: str) -> Any:
         return np.inf
     if value.lower() == "-inf":
         return -np.inf
+
     try:
         return literal_eval(value)
     except (ValueError, SyntaxError):
@@ -60,19 +65,10 @@ def count_iter_items(iterable: Iterable) -> int:
     Returns:
         int: Number of items
     """
-
-    
-        
-          
-    
-
-        
-    
-    @@ -76,10 +72,8 @@ def count_iter_items(iterable: Iterable) -> int:
-  
     counter = itertools.count()
     deque(zip(iterable, counter), maxlen=0)  # (consume at C speed)
     return next(counter)
+
 
 def load_config(yaml_path: str) -> OmegaConf:
     """Load config from yaml file.
@@ -81,41 +77,25 @@ def load_config(yaml_path: str) -> OmegaConf:
     Returns:
         OmegaConf: Config object loaded from yaml file
     """
-
-    
-        
-          
-    
-
-        
-    
-    @@ -95,7 +89,6 @@ def load_config(yaml_path: str) -> OmegaConf:
-  
     assert os.path.exists(yaml_path)
     cfg = OmegaConf.load(yaml_path)
+
     cfg.outdir = cfg.outdir  # prevent multiple interpolations
     os.makedirs(cfg.outdir, exist_ok=True)
+
     # TODO: add validation
     return cfg
+
 
 def write_config(yaml_path: str, cfg: OmegaConf) -> None:
     """Write config to yaml file.
     Args:
         yaml_path (str): Path to yaml file
         cfg (OmegaConf): Config object
-
-    
-        
-          
-    
-
-        
-    
-    @@ -106,10 +99,8 @@ def write_config(yaml_path: str, cfg: OmegaConf) -> None:
-  
     """
     assert os.path.exists(yaml_path)
     OmegaConf.save(cfg, yaml_path)
+
 
 def pil2cv(image: Image.Image) -> NDArray[np.uint8]:
     """Convert PIL image to OpenCV image.
@@ -124,16 +104,6 @@ def pil2cv(image: Image.Image) -> NDArray[np.uint8]:
     Returns:
         NDArray[np.uint8]: Numpy Array (OpenCV image)
     """
-
-    
-        
-          
-    
-
-        
-    
-    @@ -125,10 +116,8 @@ def pil2cv(image: Image.Image) -> NDArray[np.uint8]:
-  
     new_image = np.array(image, dtype=np.uint8)
     if new_image.ndim == 2:  # モノクロ
         pass
@@ -143,6 +113,7 @@ def pil2cv(image: Image.Image) -> NDArray[np.uint8]:
         new_image = cv.cvtColor(new_image, cv.COLOR_RGBA2BGRA)
     return new_image
 
+
 def cv2pil(image: NDArray[np.uint8]) -> Image.Image:
     """Convert OpenCV image to PIL image.
     Args:
@@ -150,21 +121,6 @@ def cv2pil(image: NDArray[np.uint8]) -> Image.Image:
     Returns:
         Image.Image: PIL image
     """
-
-    
-          
-            
-    
-
-          
-          
-            
-    
-
-          
-    
-    @@ -158,7 +147,6 @@ def make_video(
-  
     new_image = image.copy()
     if new_image.ndim == 2:  # モノクロ
         pass
@@ -174,6 +130,8 @@ def cv2pil(image: NDArray[np.uint8]) -> Image.Image:
         new_image = cv.cvtColor(new_image, cv.COLOR_BGRA2RGBA)
     new_image = Image.fromarray(new_image)
     return new_image
+
+
 def make_video(
     frames: Iterable[NDArray[np.uint8]],
     outpath: str,
@@ -192,16 +150,6 @@ def make_video(
     Args:
         frames (Iterable[NDArray[np.uint8]]): List of opencv format frames
         outpath (str): Path to output video file
-
-    
-        
-          
-    
-
-        
-    
-    @@ -168,7 +156,6 @@ def make_video(
-  
         vcodec (str): Video codec.
         preset (str): Video encoding preset. A preset is a collection of options
             that will provide a certain encoding speed to compression ratio. A
@@ -211,16 +159,6 @@ def make_video(
             - ultrafast
             - superfast
             - veryfast
-
-    
-        
-          
-    
-
-        
-    
-    @@ -178,9 +165,7 @@ def make_video(
-  
             - faster
             - fast
             - medium (default preset)
@@ -231,21 +169,6 @@ def make_video(
         crf (int): Constant Rate Factor. Use the crf (Constant Rate Factor)
             parameter to control the output quality. The lower crf, the higher
             the quality (range: 0-51). Visually lossless compression corresponds
-
-    
-          
-            
-    
-
-          
-          
-            
-    
-
-          
-    
-    @@ -241,21 +226,17 @@ def make_video(
-  
             to -crf 18. Use the preset parameter to control the speed of the
             compression process. Defaults to `23`.
         ss (int): Start-time of the clip in seconds. Defaults to `0`.
@@ -260,6 +183,7 @@ def make_video(
         * functionality to use PIL image
         * reconsider compression (current compression is not good)
     """
+
     scale_filter = f"scale={width}:{height}"
     print(input_framerate)
     output_params = {
@@ -280,18 +204,25 @@ def make_video(
         }.items()
         if v is not None
     }
+
     logger.debug(f"output_params: {output_params}")
     os.makedirs(os.path.dirname(outpath), exist_ok=True)
     writer = WriteGear(
         output_filename=outpath, compression_mode=True, logging=logging, **output_params
     )
+
     # loop over
     for frame in tqdm(frames, desc=f"Writing video", level="INFO"):
+
         # simulating RGB frame for example
         frame_rgb = frame[:, :, ::-1]
+
         # writing RGB frame to writer
         writer.write(frame_rgb, rgb_mode=True)  # activate RGB Mode
+
     writer.close()
+
+
 class MovieIterator:
     def __init__(self, path: str):
         """Very simple iterator class for movie files.
@@ -310,20 +241,6 @@ class MovieIterator:
         if not os.path.isfile(path):
             raise FileNotFoundError
 
-    
-          
-            
-    
-
-          
-          
-            
-    
-
-          
-    
-    @@ -288,7 +269,6 @@ def __next__(self) -> NDArray[np.uint8]:
-  
         vcInput = cv.VideoCapture(path)
         self.vcInput = vcInput
         self.video_fps: int = round(vcInput.get(cv.CAP_PROP_FPS))
@@ -332,10 +249,13 @@ class MovieIterator:
         self.img_height = round(vcInput.get(cv.CAP_PROP_FRAME_HEIGHT))
         self.path = path
         self._index = 0
+
     def __len__(self) -> int:
         return self.video_frame_count
+
     def __iter__(self) -> "MovieIterator":
         return self
+
     def __next__(self) -> NDArray[np.uint8]:
         if self._index < len(self):
             ret, img = self.vcInput.read()
@@ -344,29 +264,17 @@ class MovieIterator:
                 return img
             logger.debug("Unexpected end.")  # <- Not sure why this happens
         raise StopIteration
+
+
 class ImageIterator:
     def __init__(self, path: str):
         """Very simple iterator class for image files.
         Args:
             path (str): Path to image file
         """
-
-    
-          
-            
-    
-
-          
-          
-            
-    
-
-          
-    
-    @@ -321,14 +301,12 @@ def __next__(self) -> NDArray[np.uint8]:
-  
         assert os.path.isdir(path), f"{path} is not a directory."
         self.path = path
+
         imgs = []
         valid_images = [".jpg", ".gif", ".png", ".tga"]
         for f in os.listdir(path):
@@ -376,16 +284,20 @@ class ImageIterator:
             imgs.append(cv.imread(os.path.join(path, f)))
         self.imgs = imgs
         self._index = 0
+
     def __len__(self) -> int:
         return len(self.imgs)
+
     def __iter__(self) -> "ImageIterator":
         return self
+
     def __next__(self) -> NDArray[np.uint8]:
         if self._index < len(self):
             img = self.imgs[self._index]
             self._index += 1
             return img
         raise StopIteration
+
 
 def merge_dict_of_lists(d1: dict, d2: dict) -> dict:
     """Merge two dicts of lists.
@@ -398,26 +310,13 @@ def merge_dict_of_lists(d1: dict, d2: dict) -> dict:
     Returns
     -------
     dict
-
-    
-          
-            
-    
-
-          
-          
-            
-    
-
-          
-    
-    @@ -368,4 +346,4 @@ def merge_dict_of_lists(d1: dict, d2: dict) -> dict:
-  
         The merged dict.
     """
     keys = set(d1.keys()).union(d2.keys())
     ret = {k: list(d1.get(k, [])) + list(d2.get(k, [])) for k in keys}
     return ret
+
+
 # Due to memory consumption concerns, the function below has been replaced by the function that uses vidgear above.
 # ===
 # def make_video(images: list, fps: int, outpath: str = 'video.mp4'):
@@ -430,6 +329,7 @@ def merge_dict_of_lists(d1: dict, d2: dict) -> dict:
 #     fps : int
 #         The FPS of the video
 #     """
+
 #     def convert(img):
 #         if isinstance(img, Image.Image):
 #             return pil2cv(img)
@@ -437,9 +337,11 @@ def merge_dict_of_lists(d1: dict, d2: dict) -> dict:
 #             return img
 #         else:
 #             raise ValueError(type(img))
+
 #     h, w = convert(images[0]).shape[:2]
 #     fourcc = cv.VideoWriter_fourcc('M','J','P','G')
 #     video = cv.VideoWriter(filename=outpath+'.mp4', fourcc=fourcc, fps=fps, frameSize=(w, h))
+
 #     for img in tqdm(images, total=len(images)):
 #         video.write(img)
 #     video.release()
