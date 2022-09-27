@@ -228,7 +228,7 @@ def make_video(
     )
 
     # loop over
-    for frame in frames:
+    for frame in tqdm(frames, desc=f"Writing video", level="INFO"):
 
         # simulating RGB frame for example
         frame_rgb = frame[:, :, ::-1]
