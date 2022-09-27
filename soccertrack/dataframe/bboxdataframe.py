@@ -1,9 +1,11 @@
 from __future__ import annotations
+from audioop import add
 
 import random
 from hashlib import md5
 from typing import Any, Iterator, Optional, Type
 from warnings import simplefilter
+from soccertrack.utils import make_video
 
 import cv2
 import numpy as np
@@ -14,7 +16,6 @@ from ..logging import logger
 from ..utils import MovieIterator
 from .base import SoccerTrackMixin
 
-simplefilter(action="ignore", category=pd.errors.PerformanceWarning)
 
 # https://clrs.cc/
 _COLOR_NAME_TO_RGB = dict(
@@ -35,23 +36,23 @@ _COLOR_NAME_TO_RGB = dict(
     gray=((168, 168, 168), (0, 0, 0)),
     silver=((220, 220, 220), (0, 0, 0)),
 )
-FRAME_INDEX = 0
-BB_LEFT_INDEX = 1
-BB_TOP_INDEX = 2
-BB_RIGHT_INDEX = 3
-BB_BOTTOM_INDEX = 4
-BB_WIDTH_INDEX = 3
-BB_HEIGHT_INDEX = 4
-LABEL_INDEX = 7
+# FRAME_INDEX = 0
+# BB_LEFT_INDEX = 1
+# BB_TOP_INDEX = 2
+# BB_RIGHT_INDEX = 3
+# BB_BOTTOM_INDEX = 4
+# BB_WIDTH_INDEX = 3
+# BB_HEIGHT_INDEX = 4
+# LABEL_INDEX = 7
 
 _COLOR_NAMES = list(_COLOR_NAME_TO_RGB)
 
 
-color_list = []
-i = 0
-while i < 1000:
-    color_list.append(_COLOR_NAMES[random.randint(0, len(_COLOR_NAMES) - 1)])
-    i += 1
+# color_list = []
+# i = 0
+# while i < 1000:
+#     color_list.append(_COLOR_NAMES[random.randint(0, len(_COLOR_NAMES) - 1)])
+#     i += 1
 
 
 def _rgb_to_bgr(color: tuple[int, ...]) -> list[Any]:
@@ -140,22 +141,39 @@ class BBoxDataFrame(SoccerTrackMixin, pd.DataFrame):
             frame(np.ndarray): Frame image with bounding box.
         """
         frame_df = self.loc[self.index == frame_idx].copy()
-        for index, group in frame_df.groupby(level=("TeamID", "PlayerID"), axis=1):
-            group_stack = group.to_long_df().reset_index()
-            #Check if pandas lines do not contain nan
-            if not group_stack.isnull().values.any():
-                TeamID, PlayerID = index
-                x1, y1, w, h = group_stack[['bb_left', 'bb_top', 'bb_width', 'bb_height']].values[0]
-                logger.debug(
-                f"x:{int(x1)}, y:{int(y1)}, x2:{int(x1 + w)}, y2:{int(y1 + h)}, label:{TeamID}-{PlayerID}, color:{color_list[int(PlayerID)]}"
-                )
-                frame = add_bbox_to_frame(
-                    frame, int(x1), int(y1), int(x1 + w), int(y1 + h), label=f"{TeamID}-{PlayerID}", color=color_list[int(PlayerID)]
-                )
+        long_df = frame_df.to_long_df()
+        
+        for index, row in long_df.iterrows():
+            row_idx, team_id, player_id = list(map(int, index))
+            if row.isnull().any():
+                logger.warning(f"NaN value found at row {row_idx}, team {team_id}, player {player_id}. Skipping...")
+                continue
+            
+            x1, y1, w, h = row[['bb_left', 'bb_top', 'bb_width', 'bb_height']].values.astype(int)
+            x2, y2 = x1 + w, y1 + h
+            
+            label = f'{team_id}_{player_id}'
+            color = _COLOR_NAMES[player_id % len(_COLOR_NAMES)]
+            
+            logger.debug(f"x1: {x1}, y1: {y1}, x2: {x2}, y2: {y2}, label: {label}, color: {color}")
+            frame = add_bbox_to_frame(frame, x1, y1, x2, y2, label, color)
+            
+        # for index, group in frame_df.groupby(level=("TeamID", "PlayerID"), axis=1):
+        #     group_stack = group.to_long_df().reset_index()
+        #     #Check if pandas lines do not contain nan
+        #     if not group_stack.isnull().values.any():
+        #         TeamID, PlayerID = index
+        #         x1, y1, w, h = group_stack[['bb_left', 'bb_top', 'bb_width', 'bb_height']].values[0]
+        #         logger.debug(
+        #         f"x:{int(x1)}, y:{int(y1)}, x2:{int(x1 + w)}, y2:{int(y1 + h)}, label:{TeamID}-{PlayerID}, color:{color_list[int(PlayerID)]}"
+        #         )
+        #         frame = add_bbox_to_frame(
+        #             frame, int(x1), int(y1), int(x1 + w), int(y1 + h), label=f"{TeamID}-{PlayerID}", color=color_list[int(PlayerID)]
+        #         )
         return frame
 
 
-    def visualize_frames(self, video_path: str) -> Iterator[np.ndarray]:
+    def visualize_frames(self, video_path: str, save_path:str) -> None:
         """Visualize bounding boxes on a video.
 
         Args:
@@ -165,10 +183,13 @@ class BBoxDataFrame(SoccerTrackMixin, pd.DataFrame):
             None
         """
 
-        movie_iterator = MovieIterator(video_path)
-        for frame_idx, frame in tqdm(enumerate(movie_iterator)):
-            img_ = self.visualize_frame(frame_idx, frame)
-            yield img_
+        def generator():
+            movie_iterator = MovieIterator(video_path)
+            for frame_idx, frame in enumerate(movie_iterator):
+                img_ = self.visualize_frame(frame_idx, frame)
+                yield img_
+            
+        make_video(generator(), save_path)
 
 def add_bbox_to_frame(
     image: np.ndarray,
