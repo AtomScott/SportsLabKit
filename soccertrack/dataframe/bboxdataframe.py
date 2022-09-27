@@ -141,10 +141,6 @@ class BBoxDataFrame(SoccerTrackMixin, pd.DataFrame):
         """
         self.index: pd.MultiIndex
 
-        ###(2022/09/27 削除予定 (see.https://github.com/AtomScott/SoccerTrack/pull/32/files/b3a0bcfa88d774e5def4434c4aa13dbe69d602b3..0a332501fd33f253a6e0583138418f6d2c5b57d5#r979639780))
-        if self.index[0] != 0:
-            self.index = self.index - self.index[0]
-        ###
         frame_df = self.loc[self.index == frame_idx].copy()
         for index, group in frame_df.groupby(level=("TeamID", "PlayerID"), axis=1):
             group_stack = group.to_long_df().reset_index()
