@@ -212,4 +212,3 @@ if __name__ == "__main__":
     logger.error("Error")
     logger.critical("Critical")
 
-    
