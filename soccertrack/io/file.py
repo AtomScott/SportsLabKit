@@ -14,7 +14,7 @@ from omegaconf import OmegaConf
 
 from soccertrack import BBoxDataFrame, CoordinatesDataFrame
 
-_pathlike = Union[str, "os.PathLike[str]"]
+_pathlike = Union[str, os.PathLike]
 
 
 def auto_string_parser(value: str) -> Any:
@@ -434,9 +434,9 @@ def load_mot(filename: _pathlike) -> CoordinatesDataFrame:
         elif 11 < playerid < 23:
             teamid = 1
             playerid = playerid - 11
-        bbox_cols = ["bb_left", "bb_top", "bb_width", "bb_height", "conf", "class_id"]
+        bbox_cols = ["bb_left", "bb_top", "bb_width", "bb_height", "conf"]
         idx = pd.MultiIndex.from_arrays(
-            [[int(teamid)] * 6, [int(playerid)] * 6, bbox_cols],
+            [[int(teamid)] * 5, [int(playerid)] * 5, bbox_cols],
         )
 
         bbox_df = BBoxDataFrame(group[bbox_cols].values, index=group.index, columns=idx)
@@ -475,6 +475,18 @@ def load_soccertrack_bbox(
     skiprows = len(attrs)
     df = pd.read_csv(filename, header=[0, 1, 2], index_col=0, skiprows=skiprows)
     df.attrs = attrs
+
+    # add conf and class_id
+    id_list = []
+    for column in df.columns:
+        team_id = column[0]
+        player_id = column[1]
+        id_list.append((team_id, player_id))
+
+    for id in sorted(set(id_list)):
+        df.loc[:, (id[0], id[1], "conf")] = 1.0
+    df = df[df.sort_index(axis=1, level=[0, 1], ascending=[True, True]).columns]
+
     return df
 
 

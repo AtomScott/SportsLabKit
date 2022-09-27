@@ -1,17 +1,17 @@
 from __future__ import annotations
 
-import random
 from hashlib import md5
-from typing import Any, Iterator, Optional, Type
+from typing import Any, Optional, Type
 
 import cv2
 import numpy as np
 import pandas as pd
-from tqdm import tqdm
 
+from soccertrack.utils import make_video
+
+from ..logging import logger
 from ..utils import MovieIterator
 from .base import SoccerTrackMixin
-from ..logging import logger
 
 # https://clrs.cc/
 _COLOR_NAME_TO_RGB = dict(
@@ -44,26 +44,39 @@ def _rgb_to_bgr(color: tuple[int, ...]) -> list[Any]:
 
     Returns:
         list: BGR color.
-
     """
     return list(reversed(color))
 
 
-BB_LEFT_INDEX = 1
-BB_TOP_INDEX = 2
-BB_RIGHT_INDEX = 3
-BB_BOTTOM_INDEX = 4
-BB_WIDTH_INDEX = 3
-BB_HEIGHT_INDEX = 4
-
-color_list = []
-i = 0
-while i < 1000:
-    color_list.append(_COLOR_NAMES[random.randint(0, len(_COLOR_NAMES) - 1)])
-    i += 1
-
-
 class BBoxDataFrame(SoccerTrackMixin, pd.DataFrame):
+    """Bounding box data frame.
+
+    Args:
+        pd.DataFrame (pd.DataFrame): Pandas DataFrame object.
+
+    Returns:
+        BBoxDataFrame: Bounding box data frame.
+
+    Note:
+        The bounding box data frame is a pandas DataFrame object with the following MultiIndex structure:
+        Level 0: Team ID(str)
+        Level 1: Player ID(str)
+        Level 2: Attribute
+
+        and the following attributes:
+            frame (float): Frame ID.
+            bb_left (float): Bounding box left coordinate.
+            bb_top (float): Bounding box top coordinate.
+            bb_width (float): Bounding box width.
+            bb_height (float): Bounding box height.
+            conf (float): Confidence of the bounding box.
+
+        Since SoccerTrack basically only handles ball and person classes, class_id, etc.
+        are not included in the BBoxDataframe for simplicity.
+        However, they are needed for visualization and calculation of evaluation indicators,
+        so they are generated as needed in additional attributes.
+    """
+
     @property
     def _constructor(self: pd.DataFrame) -> Type[BBoxDataFrame]:
         """Return the constructor for the DataFrame.
@@ -75,78 +88,6 @@ class BBoxDataFrame(SoccerTrackMixin, pd.DataFrame):
             BBoxDataFrame: BBoxDataFrame object.
         """
         return BBoxDataFrame
-
-        # df: pd.DataFrame
-
-    def to_list(self: BBoxDataFrame, xywh: bool = True) -> list[list[float]]:
-        """Convert a dataframe column to a 2-dim list for evaluation of object detection.
-
-        Args:
-            df (BBoxDataFrame): BBoxDataFrame
-            xywh (bool): If True, convert to x1y1x2y2 format. Defaults to True.
-        Returns:
-            bbox_2dim_list(list): 2-dim list
-        Note:
-            Description of each element in bbox_2dim_list.
-            The elements of the final included bbox_2dim_list are as follows:
-            bbox_cols(list) : ['frame_id', 'bb_left', 'bb_top', 'bb_right', 'bb_bottom','conf', 'class_id' ,'obj_id']
-                frame_id(int) : Frame ID
-                bb_left(float) : Bounding box left coordinate
-                bb_top(float) : Bounding box top coordinate
-                bb_right(float) : Bounding box right coordinate
-                bb_bottom(float) : Bounding box bottom coordinate
-                conf(float) : Confidence score
-                class_id(int) : Class ID. In the normal case, follow the value of the coco image dataset.
-                obj_id(int) : Object ID. This id is a unique integer value for each track
-                            (corresponding to each column in the BBoxDataframe) that is used when evaluating tracking.
-            The BBoxDataframe input to this function contains information other than frame_id and obj_id in advance.
-            This function adds the obj_id column and converts the BBoxDataframe to a list.
-        """
-
-        # append_object_id
-        obj_id = 0
-        id_list = []
-        for column in self.columns:
-            team_id = column[0]
-            player_id = column[1]
-            id_list.append((team_id, player_id))
-        for id in sorted(set(id_list)):
-            self.loc[
-                :, (id[0], id[1], "obj_id")
-            ] = obj_id  # Add obj_id column for each player's Attribute
-            obj_id += 1
-        df_sort = self[
-            self.sort_index(axis=1, level=[0, 1], ascending=[True, True]).columns
-        ]
-        # Create two-dimensional lists from dataframes
-        bbox_2dim_list = []
-        bbox_cols = [
-            "bb_left",
-            "bb_top",
-            "bb_width",
-            "bb_height",
-            "conf",
-            "class_id",
-            "obj_id",
-        ]
-        num_cols = len(bbox_cols)
-        df2list = df_sort.values.tolist()
-
-        for frame_id, frame_raw in enumerate(df2list):
-            for idx in range(0, len(frame_raw), num_cols):
-                if not any(
-                    pd.isnull(frame_raw[idx : idx + num_cols])
-                ):  # extract nan rows
-                    bbox_2dim_list.append([frame_id] + frame_raw[idx : idx + num_cols])
-
-        # bbox_2dim_list = [x for x in bbox_2dim_list if not any(pd.isnull(x))]
-
-        for bbox in bbox_2dim_list:
-            if xywh:
-                bbox[BB_RIGHT_INDEX] = bbox[BB_WIDTH_INDEX] + bbox[BB_LEFT_INDEX]
-                bbox[BB_BOTTOM_INDEX] = bbox[BB_HEIGHT_INDEX] + bbox[BB_TOP_INDEX]
-
-        return bbox_2dim_list
 
     def visualize_frame(
         self: BBoxDataFrame, frame_idx: int, frame: np.ndarray
@@ -160,40 +101,29 @@ class BBoxDataFrame(SoccerTrackMixin, pd.DataFrame):
         Returns:
             frame(np.ndarray): Frame image with bounding box.
         """
+        frame_df = self.loc[self.index == frame_idx]
 
-        BB_LEFT_INDEX = 0
-        BB_TOP_INDEX = 1
-        BB_WIDTH_INDEX = 2
-        BB_HEIGHT_INDEX = 3
+        for (team_id, player_id), player_df in frame_df.iter_players():
+            if player_df.isnull().any(axis=None):
+                logger.warning(
+                    f"NaN value found at frame {frame_idx}, team {team_id}, player {player_id}. Skipping..."
+                )
+                continue
 
-        unique_team_ids = self.columns.get_level_values("TeamID").unique()
-        for team_id in unique_team_ids:
-            bboxdf_team = self.xs(team_id, level="TeamID", axis=1)
+            x1, y1, w, h = player_df.loc[frame_idx, ['bb_left', 'bb_top', 'bb_width', 'bb_height']].values.astype(int)
+            x2, y2 = x1 + w, y1 + h
 
-            unique_team_ids = bboxdf_team.columns.get_level_values("PlayerID").unique()
-            for idx, player_id in enumerate(unique_team_ids):
-                color = color_list[idx]
-                bboxdf_player = bboxdf_team.xs(player_id, level="PlayerID", axis=1)
-                bboxdf_player = bboxdf_player.reset_index(drop=True)
-                bbox = bboxdf_player.loc[frame_idx]
-                
-                if not bbox.isnull().values.any():
-                    bb_left = bbox[BB_LEFT_INDEX]
-                    bb_top = bbox[BB_TOP_INDEX]
-                    bb_right = bb_left + bbox[BB_WIDTH_INDEX]
-                    bb_bottom = bb_top + bbox[BB_HEIGHT_INDEX]
+            label = f"{team_id}_{player_id}"
+            color = _COLOR_NAMES[int(player_id) % len(_COLOR_NAMES)]
 
-                    x, y, x2, y2 = list(
-                        [int(bb_left), int(bb_top), int(bb_right), int(bb_bottom)]
-                    )
-                    logger.debug(f'x:{x}, y:{y}, x2:{x2}, y2:{y2}, label:{team_id}-{player_id}, color:{color}')
-                    frame = add(
-                        frame, x, y, x2, y2, label=f"{team_id}_{player_id}", color=color
-                    )
+            logger.debug(
+                f"x1: {x1}, y1: {y1}, x2: {x2}, y2: {y2}, label: {label}, color: {color}"
+            )
+            frame = add_bbox_to_frame(frame, x1, y1, x2, y2, label, color)
 
         return frame
 
-    def visualize_bbox(self, video_path: str) -> Iterator[np.ndarray]:
+    def visualize_frames(self, video_path: str, save_path: str) -> None:
         """Visualize bounding boxes on a video.
 
         Args:
@@ -202,13 +132,17 @@ class BBoxDataFrame(SoccerTrackMixin, pd.DataFrame):
         Returns:
             None
         """
-        movie_iterator = MovieIterator(video_path)
-        for frame_idx, frame in tqdm(enumerate(movie_iterator)):
-            img_ = self.visualize_frame(frame_idx, frame)
-            yield img_
+
+        def generator():
+            movie_iterator = MovieIterator(video_path)
+            for frame_idx, frame in enumerate(movie_iterator):
+                img_ = self.visualize_frame(frame_idx, frame)
+                yield img_
+
+        make_video(generator(), save_path)
 
 
-def add(
+def add_bbox_to_frame(
     image: np.ndarray,
     left: int,
     top: int,
@@ -290,14 +224,11 @@ def add(
 
         label_left = rectangle_left + 1
         label_bottom = label_top + label_height
-        # _ = label_left + label_width
 
         rec_left_top = (rectangle_left, rectangle_top)
         rec_right_bottom = (rectangle_right, rectangle_bottom)
 
         cv2.rectangle(image, rec_left_top, rec_right_bottom, color_value, -1)
-
-        # image[label_top:label_bottom, label_left:label_right, :] = label
 
         cv2.putText(
             image,
