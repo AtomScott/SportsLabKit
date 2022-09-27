@@ -89,22 +89,6 @@ class BBoxDataFrame(SoccerTrackMixin, pd.DataFrame):
         """
         return BBoxDataFrame
 
-    def get_id(self: BBoxDataFrame) -> list[tuple[Any, Any]]:
-        """Get the team id and player id of the DataFrame.
-
-        Args:
-            self (BBoxDataFrame): BBoxDataFrame object.
-
-        Returns:
-            id_list(list[tuple[Any, Any]]): List of team id and player id.
-        """
-        id_list = []
-        for column in self.columns:
-            team_id = column[0]
-            player_id = column[1]
-            id_list.append((team_id, player_id))
-        return id_list
-
     def visualize_frame(
         self: BBoxDataFrame, frame_idx: int, frame: np.ndarray
     ) -> np.ndarray:
@@ -117,24 +101,20 @@ class BBoxDataFrame(SoccerTrackMixin, pd.DataFrame):
         Returns:
             frame(np.ndarray): Frame image with bounding box.
         """
-        frame_df = self.loc[self.index == frame_idx].copy()
-        long_df = frame_df.to_long_df()
+        frame_df = self.loc[self.index == frame_idx]
 
-        for index, row in long_df.iterrows():
-            row_idx, team_id, player_id = list(map(int, index))
-            if row.isnull().any():
+        for (team_id, player_id), player_df in frame_df.iter_players():
+            if player_df.isnull().any(axis=None):
                 logger.warning(
-                    f"NaN value found at row {row_idx}, team {team_id}, player {player_id}. Skipping..."
+                    f"NaN value found at frame {frame_idx}, team {team_id}, player {player_id}. Skipping..."
                 )
                 continue
 
-            x1, y1, w, h = row[
-                ["bb_left", "bb_top", "bb_width", "bb_height"]
-            ].values.astype(int)
+            x1, y1, w, h = player_df.loc[frame_idx, ['bb_left', 'bb_top', 'bb_width', 'bb_height']].values.astype(int)
             x2, y2 = x1 + w, y1 + h
 
             label = f"{team_id}_{player_id}"
-            color = _COLOR_NAMES[player_id % len(_COLOR_NAMES)]
+            color = _COLOR_NAMES[int(player_id) % len(_COLOR_NAMES)]
 
             logger.debug(
                 f"x1: {x1}, y1: {y1}, x2: {x2}, y2: {y2}, label: {label}, color: {color}"
