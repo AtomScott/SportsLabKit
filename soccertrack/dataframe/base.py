@@ -33,7 +33,7 @@ class SoccerTrackMixin(object):
         if apply_func is None:
             apply_func = lambda x: x
         for index, group in self.groupby(level=("TeamID", "PlayerID"), axis=1):
-            yield index, apply_func(group)
+            yield index, apply_func(group.droplevel(level=("TeamID", "PlayerID"), axis=1))
 
     def iter_teams(self, apply_func=None):
         """Iterate over the teams of the dataframe.
@@ -44,7 +44,7 @@ class SoccerTrackMixin(object):
         if apply_func is None:
             apply_func = lambda x: x
         for index, group in self.groupby(level="TeamID", axis=1):
-            yield index, apply_func(group)
+            yield index, apply_func(group.droplevel(level=("TeamID"), axis=1))
 
     def iter_attributes(self, apply_func=None):
         """Iterate over the attributes of the dataframe.
@@ -55,7 +55,7 @@ class SoccerTrackMixin(object):
         if apply_func is None:
             apply_func = lambda x: x
         for index, group in self.groupby(level="Attributes", axis=1):
-            yield index, apply_func(group)
+            yield index, apply_func(group.droplevel(level=("Attributes"), axis=1))
 
     def to_long_df(self, level="Attributes"):
         """Convert a dataframe to a long format.

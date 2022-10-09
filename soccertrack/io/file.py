@@ -12,7 +12,7 @@ import numpy as np
 import pandas as pd
 from omegaconf import OmegaConf
 
-from soccertrack import BBoxDataFrame, GPSDataFrame
+from soccertrack import BBoxDataFrame, CoordinatesDataFrame
 
 _pathlike = Union[str, os.PathLike]
 
@@ -83,14 +83,14 @@ def load_gpsports(
     filename: _pathlike,
     playerid: Optional[int] = None,
     teamid: Optional[int] = None,
-) -> GPSDataFrame:
-    """Load GPSDataFrame from GPSPORTS file.
+) -> CoordinatesDataFrame:
+    """Load CoordinatesDataFrame from GPSPORTS file.
 
     Args:
         filename(str): Path to gpsports file.
 
     Returns:
-        gpsports_dataframe(GPSDataFrame): DataFrame of gpsports file.
+        gpsports_dataframe(CoordinatesDataFrame): DataFrame of gpsports file.
     """
     # read_gpsdata
     raw_df = pd.read_excel(
@@ -110,7 +110,9 @@ def load_gpsports(
     )
 
     # Change single column to multi-column
-    gpsports_dataframe = GPSDataFrame(raw_df.values, index=raw_df.index, columns=idx)
+    gpsports_dataframe = CoordinatesDataFrame(
+        raw_df.values, index=raw_df.index, columns=idx
+    )
     gpsports_dataframe.index = gpsports_dataframe.index.map(
         lambda x: x.time()
     )  # remove date
@@ -121,14 +123,14 @@ def load_statsports(
     filename: _pathlike,
     playerid: Optional[int] = None,
     teamid: Optional[int] = None,
-) -> GPSDataFrame:
-    """Load GPSDataFrame from STATSPORTS file.
+) -> CoordinatesDataFrame:
+    """Load CoordinatesDataFrame from STATSPORTS file.
 
     Args:
         filename(str): Path to statsports file.
 
     Returns:
-        statsports_dataframe(GPSDataFrame): DataFrame of statsports file.
+        statsports_dataframe(CoordinatesDataFrame): DataFrame of statsports file.
     """
     raw_df = (
         pd.read_csv(filename)
@@ -148,10 +150,44 @@ def load_statsports(
     )
 
     # change multicolumn
-    statsports_dataframe = GPSDataFrame(raw_df.values, index=raw_df.index, columns=idx)
+    statsports_dataframe = CoordinatesDataFrame(
+        raw_df.values, index=raw_df.index, columns=idx
+    )
     statsports_dataframe.index = statsports_dataframe.index.map(lambda x: x.time())
 
     return statsports_dataframe
+
+
+def load_soccertrack_coordinates(
+    filename: _pathlike,
+    playerid: Optional[int] = None,
+    teamid: Optional[int] = None,
+) -> CoordinatesDataFrame:
+    """Load CoordinatesDataFrame from soccertrack coordinates file.
+
+    Args:
+        filename(str): Path to soccertrack coordinates file.
+
+    Returns:
+        soccertrack_coordinates_dataframe(CoordinatesDataFrame): DataFrame of soccertrack coordinates file.
+    """
+    attrs = {}
+    with open(filename, "r", encoding="utf-8") as f:
+        for line in f:
+            if line.startswith("#"):
+                k, v = line[1:].strip().split(":")
+                attrs[k] = auto_string_parser(v)
+            else:
+                break
+
+    skiprows = len(attrs)
+    df = pd.read_csv(filename, header=[0, 1, 2], index_col=0, skiprows=skiprows)
+    df.attrs = attrs
+    return df
+
+
+def is_soccertrack_coordinates(filename: _pathlike) -> bool:
+    return True
 
 
 def infer_gps_format(filename: _pathlike) -> str:
@@ -163,6 +199,8 @@ def infer_gps_format(filename: _pathlike) -> str:
 
     filename = str(filename)
 
+    if is_soccertrack_coordinates(filename):
+        return "soccertrack"
     if filename.endswith(".xlsx"):
         return "gpsports"
     if filename.endswith(".csv"):
@@ -172,21 +210,51 @@ def infer_gps_format(filename: _pathlike) -> str:
 
 def get_gps_loader(
     format: str,
-) -> Callable[[_pathlike, int, int], GPSDataFrame]:
+) -> Callable[[_pathlike, int, int], CoordinatesDataFrame]:
     """Get GPS loader function for a given format.
 
     Args:
         format (str): GPS format.
 
     Returns:
-        Callable[[_pathlike, int, int], GPSDataFrame]: GPS loader function.
+        Callable[[_pathlike, int, int], CoordinatesDataFrame]: GPS loader function.
     """
     format = format.lower()
     if format == "gpsports":
         return load_gpsports
     if format == "statsports":
         return load_statsports
+    if format == "soccertrack":
+        return load_soccertrack_coordinates
     raise ValueError(f"Unknown format {format}")
+
+
+def load_coordinates(
+    filename: _pathlike,
+    format: Optional[str] = None,
+    playerid: Optional[int] = None,
+    teamid: Optional[int] = None,
+) -> CoordinatesDataFrame:
+    """Load CoordinatesDataFrame from file.
+
+    Args:
+        filename (Union[str, bytes, os.PathLike[Any]]): Filename to load from.
+        format (Optional[str], optional): Format of GPS data. Defaults to None.
+        playerid (Optional[int], optional): Player ID. Defaults to None.
+        teamid (Optional[int], optional): Team ID. Defaults to None.
+
+    Raises:
+        ValueError: If format is not provided and could not be inferred.
+
+    Returns:
+        CoordinatesDataFrame: DataFrame of GPS data.
+    """
+    if format is None:
+        format = infer_gps_format(filename)
+    loader = get_gps_loader(format)
+    df = CoordinatesDataFrame(loader(filename))
+    df.rename_axis(["TeamID", "PlayerID", "Attributes"], axis=1, inplace=True)
+    return df
 
 
 def load_gps(
@@ -198,15 +266,15 @@ def load_gps(
     ],
     playerids: Union[Sequence[int], int] = (),
     teamids: Union[Sequence[int], int] = (),
-) -> GPSDataFrame:
+) -> CoordinatesDataFrame:
     """Load GPS data from multiple files.
 
     Args:
-        gpsports_dataframe(GPSDataFrame): DataFrame of gpsports file.
-        statsports_dataframe(GPSDataFrame): DataFrame of statsports file.
+        gpsports_dataframe(CoordinatesDataFrame): DataFrame of gpsports file.
+        statsports_dataframe(CoordinatesDataFrame): DataFrame of statsports file.
 
     Returns:
-        merged_dataframe(GPSDataFrame): DataFrame of merged gpsports and statsports.
+        merged_dataframe(CoordinatesDataFrame): DataFrame of merged gpsports and statsports.
     """
 
     if not isinstance(filenames, Sequence):
@@ -244,14 +312,14 @@ def load_gps(
     return merged_dataframe
 
 
-def load_gps_from_yaml(yaml_path: str) -> GPSDataFrame:
+def load_gps_from_yaml(yaml_path: str) -> CoordinatesDataFrame:
     """Load GPS data from a YAML file.
 
     Args:
         yaml_path(str): Path to yaml file.
 
     Returns:
-        merged_dataframe(GPSDataFrame): DataFrame of merged gpsports and statsports.
+        merged_dataframe(CoordinatesDataFrame): DataFrame of merged gpsports and statsports.
     """
 
     cfg = OmegaConf.load(yaml_path)
@@ -264,14 +332,14 @@ def load_gps_from_yaml(yaml_path: str) -> GPSDataFrame:
     return load_gps(filepaths, playerids, teamids)
 
 
-def load_labelbox(filename: _pathlike) -> GPSDataFrame:
-    """Load labelbox format file to GPSDataFrame.
+def load_labelbox(filename: _pathlike) -> CoordinatesDataFrame:
+    """Load labelbox format file to CoordinatesDataFrame.
 
     Args:
         filename(str): Path to gpsports file.
 
     Returns:
-        gpsports_dataframe(GPSDataFrame): DataFrame of gpsports file.
+        gpsports_dataframe(CoordinatesDataFrame): DataFrame of gpsports file.
 
     Notes:
         出力するDataFrameの列は以下の通り
@@ -333,14 +401,14 @@ def load_labelbox(filename: _pathlike) -> GPSDataFrame:
     return merged_dataframe
 
 
-def load_mot(filename: _pathlike) -> GPSDataFrame:
-    """Load MOT format file to GPSDataFrame.
+def load_mot(filename: _pathlike) -> CoordinatesDataFrame:
+    """Load MOT format file to CoordinatesDataFrame.
 
     Args:
         filename(str): Path to statsports file.
 
     Returns:
-        statsports_dataframe(GPSDataFrame): DataFrame of statsports file.
+        statsports_dataframe(CoordinatesDataFrame): DataFrame of statsports file.
 
     Notes:
         出力するDataFrameの列は以下の通り
@@ -358,9 +426,9 @@ def load_mot(filename: _pathlike) -> GPSDataFrame:
     df_list = []
     for playerid, group in groups:
         group["conf"] = 1.0
-        # group["class_id"] = 0  # TODO: classid of person
+        group["class_id"] = int(0)  # TODO: classid of person
         if playerid == 23:
-            # group["class_id"] = 32  # TODO: classid of ball
+            group["class_id"] = int(32)  # TODO: classid of ball
             teamid = 3
             playerid = 0
         elif 11 < playerid < 23:
@@ -385,7 +453,7 @@ def load_mot(filename: _pathlike) -> GPSDataFrame:
     return merged_dataframe
 
 
-def load_bbox(
+def load_soccertrack_bbox(
     filename: _pathlike,
 ) -> pd.DataFrame:
     """Load a dataframe from a file.
@@ -431,19 +499,14 @@ def is_mot(filename: _pathlike) -> bool:
     Returns:
         is_mot(bool): True if the file is MOT format.
     """
-    with open(filename, "r", encoding="utf-8") as f:
-        reader = csv.reader(f)
-        first_line = next(reader)
+    try:
+        with open(filename, "r", encoding="utf-8") as f:
+            reader = csv.reader(f)
+            first_line = next(reader)
 
-    return [
-        "frame",
-        "id",
-        "bb_left",
-        "bb_top",
-        "bb_width",
-        "bb_height",
-    ] == first_line
-
+        return ["frame", "id", "bb_left", "bb_top", "bb_width", "bb_height"] == first_line
+    except Exception:
+        return False
 
 def infer_bbox_format(filename: _pathlike) -> str:
     """Try to infer the format of a given bounding box file.
@@ -482,23 +545,47 @@ def get_bbox_loader(
     if format == "labelbox":
         return load_labelbox
     if format == "soccertrack_bbox":
-        return load_bbox
+        return load_soccertrack_bbox
     raise ValueError(f"Unknown format {format}")
 
 
-def load_df(filename: _pathlike) -> Union[BBoxDataFrame, GPSDataFrame]:
-    """Loads either a BBoxDataFrame or a GPSDataFrame from a file.
+def load_bbox(filename: _pathlike) -> BBoxDataFrame:
+    """Load a BBoxDataFrame from a file.
+
+    Args:
+        filename(_pathlike): Path to bounding box file.
+
+    Returns:
+        bbox(BBoxDataFrame): BBoxDataFrame loaded from the file.
+    """
+
+    df_format = infer_bbox_format(filename)
+    df = BBoxDataFrame(get_bbox_loader(df_format)(filename))
+    df.rename_axis(["TeamID", "PlayerID", "Attributes"], axis=1, inplace=True)
+    return df
+
+
+def load_df(
+    filename: _pathlike, df_type: str = "bbox"
+) -> Union[BBoxDataFrame, CoordinatesDataFrame]:
+    """Loads either a BBoxDataFrame or a CoordinatesDataFrame from a file.
 
     Args:
         filename(Uinon[str, os.PathLike[Any]]): Path to file.
+        df_type(str): Type of dataframe to load. Either 'bbox' or 'coordinates'.
 
     Returns:
-        dataframe(Union[BBoxDataFrame, GPSDataFrame]): DataFrame of file.
+        dataframe(Union[BBoxDataFrame, CoordinatesDataFrame]): DataFrame of file.
     """
+    if df_type == "bbox":
+        df = load_bbox(filename)
+    elif df_type == "coordinates":
+        df = load_coordinates(filename)
+    else:
+        raise ValueError(
+            f"Unknown dataframe type {df_type}, must be 'bbox' or 'coordinates'"
+        )
 
-    gps_format = infer_bbox_format(filename)
-    df = BBoxDataFrame(get_bbox_loader(gps_format)(filename))
-    df.rename_axis(["TeamID", "PlayerID", "Attributes"], axis=1, inplace=True)
     return df
 
 
