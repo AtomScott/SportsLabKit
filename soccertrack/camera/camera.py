@@ -20,7 +20,6 @@ from xml.etree import ElementTree
 import cv2 as cv
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
-from podm.utils.enumerators import BBFormat
 from sklearn.decomposition import PCA
 
 from soccertrack.utils import (
