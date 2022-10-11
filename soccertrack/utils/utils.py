@@ -3,6 +3,7 @@ import itertools
 import os
 from collections import deque
 from datetime import datetime
+from pathlib import Path
 from typing import Iterable, Optional
 
 import cv2 as cv
@@ -147,6 +148,7 @@ def make_video(
     frames: Iterable[NDArray[np.uint8]],
     outpath: str,
     vcodec: str = "libx264",
+    pix_fmt: str = "yuv420p",
     preset: str = "medium",
     crf: Optional[int] = None,
     ss: Optional[int] = None,
@@ -200,11 +202,11 @@ def make_video(
     """
 
     scale_filter = f"scale={width}:{height}"
-    print(input_framerate)
     output_params = {
         k: v
         for k, v in {
             "-vcodec": vcodec,
+            "-pix_fmt": pix_fmt,
             # encoding quality
             "-crf": crf,
             "-preset": preset,
@@ -221,7 +223,9 @@ def make_video(
     }
 
     logger.debug(f"output_params: {output_params}")
-    os.makedirs(os.path.dirname(outpath), exist_ok=True)
+    
+    if not Path(outpath).parent.exists():
+        os.makedirs(os.path.dirname(outpath), exist_ok=True)
     writer = WriteGear(
         output_filename=outpath, compression_mode=True, logging=logging, **output_params
     )
@@ -260,6 +264,7 @@ class MovieIterator:
         if not os.path.isfile(path):
             raise FileNotFoundError
 
+        path = str(path)
         vcInput = cv.VideoCapture(path)
         self.vcInput = vcInput
         self.video_fps: int = round(vcInput.get(cv.CAP_PROP_FPS))

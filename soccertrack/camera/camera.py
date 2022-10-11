@@ -71,7 +71,7 @@ class Camera:
         """
         self.label = label
 
-        self.video_path = video_path
+        self.video_path = str(video_path)
         self.calibration_method = calibration_method
 
         self.camera_matrix = camera_matrix
@@ -143,6 +143,21 @@ class Camera:
                     5,
                 )
 
+    def get_frame(self, frame_idx: int) -> np.ndarray:
+        """Get frame from video.
+
+        Args:
+            frame (int): frame
+        
+        Returns:
+            np.ndarray: frame
+        """
+        cap = cv.VideoCapture(self.video_path)
+        cap.set(cv.CAP_PROP_POS_FRAMES, frame_idx)
+        ret, frame = cap.read()
+        cap.release()
+        return frame
+            
     def iter_frames(self, calibrate: bool = False, crop: bool = False) -> Generator[NDArray, None, None]:
         """Iterate over frames of video.
 
