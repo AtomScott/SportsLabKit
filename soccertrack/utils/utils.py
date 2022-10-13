@@ -6,6 +6,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Iterable, Optional
 
+import cv2
 import cv2 as cv
 import numpy as np
 from numpy.typing import NDArray
@@ -143,6 +144,10 @@ def cv2pil(image: NDArray[np.uint8]) -> Image.Image:
     new_image = Image.fromarray(new_image)
     return new_image
 
+def get_fps(path):
+    path = str(path)
+    cap = cv2.VideoCapture(path)
+    return cap.get(cv2.CAP_PROP_FPS)
 
 def make_video(
     frames: Iterable[NDArray[np.uint8]],

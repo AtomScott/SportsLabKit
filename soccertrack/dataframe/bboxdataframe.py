@@ -10,7 +10,7 @@ import pandas as pd
 from soccertrack.utils import make_video
 
 from ..logging import logger
-from ..utils import MovieIterator
+from ..utils import MovieIterator, get_fps
 from .base import SoccerTrackMixin
 
 # https://clrs.cc/
@@ -101,6 +101,8 @@ class BBoxDataFrame(SoccerTrackMixin, pd.DataFrame):
         Returns:
             frame(np.ndarray): Frame image with bounding box.
         """
+        if frame_idx not in self.index:
+            return frame
         frame_df = self.loc[self.index == frame_idx]
 
         for (team_id, player_id), player_df in frame_df.iter_players():
@@ -139,7 +141,9 @@ class BBoxDataFrame(SoccerTrackMixin, pd.DataFrame):
                 img_ = self.visualize_frame(frame_idx, frame)
                 yield img_
 
-        make_video(generator(), save_path)
+        input_framerate = get_fps(video_path)
+
+        make_video(generator(), save_path, input_framerate=input_framerate)
 
 
 def add_bbox_to_frame(
