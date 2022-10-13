@@ -109,7 +109,11 @@ class BBoxDataFrame(SoccerTrackMixin, pd.DataFrame):
                     f"NaN value found at frame {frame_idx}, team {team_id}, player {player_id}. Skipping..."
                 )
                 continue
-
+            
+            logger.debug(f"Visualizing frame {frame_idx}, team {team_id}, player {player_id}")
+            if frame_idx not in player_df.index:
+                logger.debug(f"Frame {frame_idx} not found in player_df")
+                continue
             x1, y1, w, h = player_df.loc[frame_idx, ['bb_left', 'bb_top', 'bb_width', 'bb_height']].values.astype(int)
             x2, y2 = x1 + w, y1 + h
 
