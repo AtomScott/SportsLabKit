@@ -14,7 +14,7 @@ _available_dir = {
     'wide-view': _module_path / 'wide-view',
 }
 
-for d, path in _available_dir.items():
+for d, path in _available_dir.copy().items():
     if not path.exists():
         _available_dir.pop(d)
     

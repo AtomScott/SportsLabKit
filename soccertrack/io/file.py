@@ -12,7 +12,7 @@ import numpy as np
 import pandas as pd
 from omegaconf import OmegaConf
 
-from soccertrack import BBoxDataFrame, CoordinatesDataFrame
+from ..dataframe import BBoxDataFrame, CoordinatesDataFrame
 
 _pathlike = Union[str, os.PathLike]
 
