@@ -1,3 +1,10 @@
+[IMPORTANT (2022/11/03)]
+After receving reports of erronues data, we have fixed and reuploaded a majority of SoccerTrack. However, there is still work to do.
+In the meantime, we have created a spreadsheet to keep everyone updated on our progress.
+[Spreadsheet Link](https://docs.google.com/spreadsheets/d/1V4TF84nIZWtYBrT6oNhAc3tp01QCBn41aadp96vfWww/edit#gid=208157415)
+
+---
+
 # SoccerTrack
 
 ![](https://raw.githubusercontent.com/AtomScott/SoccerTrack/gh-pages/img/title-banner.png)
