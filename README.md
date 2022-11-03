@@ -1,10 +1,3 @@
-[IMPORTANT (2022/11/03)]
-After receving reports of erronues data, we have fixed and reuploaded a majority of SoccerTrack. However, there is still work to do.
-In the meantime, we have created a spreadsheet to keep everyone updated on our progress.
-[Spreadsheet Link](https://docs.google.com/spreadsheets/d/1V4TF84nIZWtYBrT6oNhAc3tp01QCBn41aadp96vfWww/edit#gid=208157415)
-
----
-
 # SoccerTrack
 
 ![](https://raw.githubusercontent.com/AtomScott/SoccerTrack/gh-pages/img/title-banner.png)
@@ -13,7 +6,14 @@ In the meantime, we have created a spreadsheet to keep everyone updated on our p
 [![Kaggle](https://kaggle.com/static/images/open-in-kaggle.svg)](https://www.kaggle.com/datasets/atomscott/soccertrack)
 [![PWC](https://img.shields.io/badge/%7C-Papers%20with%20Code-lightblue)](https://paperswithcode.com/dataset/soccertrack-dataset)
 
+**[IMPORTANT (2022/11/03)]**
 
+After receving reports of erroneous  data, we have fixed and reuploaded a majority of SoccerTrack. We are also adding videos with visualized bounding boxes so that you can be sure that the data is good. The visualizations can be found in the viz_results directory under Top-view/Wide-view (see [Kaggle](https://www.kaggle.com/datasets/atomscott/soccertrack)).
+
+However, there is still work to do. In the meantime, we have created a spreadsheet to keep everyone updated on our progress.
+[Spreadsheet Link](https://docs.google.com/spreadsheets/d/1V4TF84nIZWtYBrT6oNhAc3tp01QCBn41aadp96vfWww/edit#gid=208157415)
+
+---
 A Dataset and Tracking Algorithm for Soccer with Fish-eye and Drone Videos.
 
 
