@@ -1,4 +1,10 @@
 x_ignore/*
+external/*
+soccertrack/datasets/GNSS
+soccertrack/datasets/top-view
+soccertrack/datasets/wide-view
+soccertrack/datasets/*.json
+
 data/results/*
 
 *.pt
