@@ -6,6 +6,7 @@ from typing import Any, Optional, Type
 import cv2
 import numpy as np
 import pandas as pd
+from pathlib import Path
 
 from soccertrack.utils import make_video
 
@@ -90,7 +91,10 @@ class BBoxDataFrame(SoccerTrackMixin, pd.DataFrame):
         return BBoxDataFrame
 
     def visualize_frame(
-        self: BBoxDataFrame, frame_idx: int, frame: np.ndarray
+        self: BBoxDataFrame,
+        frame_idx: int,
+        frame: np.ndarray,
+        draw_frame_id: bool = False,
     ) -> np.ndarray:
         """Visualize the bounding box of the specified frame.
 
@@ -98,6 +102,7 @@ class BBoxDataFrame(SoccerTrackMixin, pd.DataFrame):
             self (BBoxDataFrame): BBoxDataFrame object.
             frame_idx (int): Frame ID.
             frame (np.ndarray): Frame image.
+            draw_frame_id (bool, optional): Whether to draw the frame ID. Defaults to False.
         Returns:
             frame(np.ndarray): Frame image with bounding box.
         """
@@ -111,12 +116,21 @@ class BBoxDataFrame(SoccerTrackMixin, pd.DataFrame):
                     f"NaN value found at frame {frame_idx}, team {team_id}, player {player_id}. Skipping..."
                 )
                 continue
-            
-            logger.debug(f"Visualizing frame {frame_idx}, team {team_id}, player {player_id}")
+
+            logger.debug(
+                f"Visualizing frame {frame_idx}, team {team_id}, player {player_id}"
+            )
             if frame_idx not in player_df.index:
                 logger.debug(f"Frame {frame_idx} not found in player_df")
                 continue
-            x1, y1, w, h = player_df.loc[frame_idx, ['bb_left', 'bb_top', 'bb_width', 'bb_height']].values.astype(int)
+
+            attributes = player_df.loc[
+                frame_idx, ["bb_left", "bb_top", "bb_width", "bb_height"]
+            ]
+
+            x1, y1, w, h = player_df.loc[
+                frame_idx, ["bb_left", "bb_top", "bb_width", "bb_height"]
+            ].values.astype(int)
             x2, y2 = x1 + w, y1 + h
 
             label = f"{team_id}_{player_id}"
@@ -127,9 +141,11 @@ class BBoxDataFrame(SoccerTrackMixin, pd.DataFrame):
             )
             frame = add_bbox_to_frame(frame, x1, y1, x2, y2, label, color)
 
+        if draw_frame_id:
+            frame = add_frame_id_to_frame(frame, frame_idx)
         return frame
 
-    def visualize_frames(self, video_path: str, save_path: str) -> None:
+    def visualize_frames(self, video_path: str, save_path: str, **kwargs) -> None:
         """Visualize bounding boxes on a video.
 
         Args:
@@ -142,12 +158,89 @@ class BBoxDataFrame(SoccerTrackMixin, pd.DataFrame):
         def generator():
             movie_iterator = MovieIterator(video_path)
             for frame_idx, frame in enumerate(movie_iterator):
-                img_ = self.visualize_frame(frame_idx, frame)
+                img_ = self.visualize_frame(frame_idx, frame, **kwargs)
                 yield img_
 
         input_framerate = get_fps(video_path)
 
         make_video(generator(), save_path, input_framerate=input_framerate)
+
+    def to_yolo_format(self):
+        """Convert a dataframe to the YOLO format.
+
+        Returns:
+            pd.DataFrame: Dataframe in YOLO format.
+        """
+        raise NotImplementedError
+
+    def to_yolov5_format(
+        self,
+        mapping: dict[dict[Any, Any], dict[Any, Any]] = None,
+        na_class: int = 0,
+        h: int = None,
+        w: int = None,
+        save_dir: str = None,
+    ):
+        """Convert a dataframe to the YOLOv5 format.
+
+        Converts a dataframe to the YOLOv5 format. The specification for each line is as follows:
+        <class_id> <x_center> <y_center> <width> <height>
+
+        * One row per object
+        * Each row is class x_center y_center width height format.
+        * Box coordinates must be normalized by the dimensions of the image (i.e. have values between 0 and 1)
+        * Class numbers are zero-indexed (start from 0).
+
+        Args:
+            mapping (dict, optional): Mappings from team_id and player_id to class_id. Should contain one or two nested dictionaries like {'TeamID':{0:1}, 'PlayerID':{0:1}}. Defaults to None. If None,the class_id will be inferred from the team_id and player_id and set such that players=0 and ball=1.
+            na_class (int, optional): Class ID for NaN values. Defaults to 0.
+            h (int, optional): Height of the image. Unnecessary if the dataframe has height metadata. Defaults to None.
+            w (int, optional): Width of the image. Unnecessary if the dataframe has width metadata. Defaults to None.
+            save_dir (str, optional): If specified, saves a text file for each frame in the specified directory. Defaults to None.
+        Returns:
+            list: list of shape (N, M, 5) in YOLOv5 format. Where N is the number of frames, M is the number of objects in the frame, and 5 is the number of attributes (class_id, x_center, y_center, width, height).
+        """
+
+        if mapping is None:
+            mapping = {"TeamID": {3: 1}, "PlayerID": {}}
+
+        if save_dir is not None:
+            save_dir = Path(save_dir)
+            save_dir.mkdir(parents=True, exist_ok=True)
+
+        df = self.to_long_df().reset_index()
+
+        team_mappings = df["TeamID"].map(mapping["TeamID"])
+        player_mappings = df["PlayerID"].map(mapping["PlayerID"])
+        df["class"] = (
+            player_mappings.combine_first(team_mappings).fillna(na_class).astype(int)
+        )
+
+        df["x"] = df["bb_left"] + df["bb_width"] / 2
+        df["y"] = df["bb_top"] + df["bb_height"] / 2
+
+        return_values = []
+        groups = df.groupby("frame")
+        for frame_num, group in groups:
+            vals = group[["class", "x", "y", "bb_width", "bb_height"]].values
+            vals /= np.array([1, w, h, w, h])
+
+            return_values.append(vals)
+
+            if save_dir is not None:
+                filename = f"{frame_num:06d}.txt"
+                save_path = save_dir / filename
+                np.savetxt(save_path, vals, fmt="%d %f %f %f %f")
+
+        return return_values
+
+    def to_mot_format(self):
+        """Convert a dataframe to the MOT format.
+
+        Returns:
+            pd.DataFrame: Dataframe in MOT format.
+        """
+        raise NotImplementedError
 
 
 def add_bbox_to_frame(
@@ -248,4 +341,48 @@ def add_bbox_to_frame(
             thickness=thickness,
             lineType=cv2.LINE_4,
         )
+    return image
+
+
+def add_frame_id_to_frame(image: np.ndarray, frame_id: int) -> np.ndarray:
+    """Add frame id to image.
+
+    Args:
+        img (np.ndarray): Image.
+        frame_id (int): Frame id.
+    Returns:
+        img (np.ndarray): Image with frame id.
+    """
+    if isinstance(image, np.ndarray) is False:
+        raise TypeError("'image' parameter must be a numpy.ndarray")
+
+    try:
+        frame_id = int(frame_id)
+    except ValueError as e:
+        raise TypeError("'frame_id' must be a number") from e
+
+    fontface = cv2.FONT_HERSHEY_TRIPLEX
+    fontscale = 5
+    thickness = 1
+
+    label = f"frame: {frame_id}"
+
+    # draw frame id on the top left corner
+    (label_width, label_height), _ = cv2.getTextSize(
+        label, fontface, fontscale, thickness
+    )
+
+    label_left = 10
+    label_bottom = label_height + 10
+
+    cv2.putText(
+        image,
+        text=label,
+        org=(label_left, int((label_bottom))),
+        fontFace=fontface,
+        fontScale=fontscale,
+        color=(0, 0, 0),
+        thickness=thickness,
+        lineType=cv2.LINE_4,
+    )
     return image
