@@ -1,12 +1,14 @@
 x_ignore/*
 external/*
+logs/*
+models/*
+data/*
 soccertrack/datasets/GNSS
 soccertrack/datasets/top-view
 soccertrack/datasets/wide-view
 soccertrack/datasets/*.json
 
-data/results/*
-
+# Ignore model checkpoints
 *.pt
 
 # Byte-compiled / optimized / DLL files
@@ -96,3 +98,9 @@ target/
 
 # Mypy cache
 .mypy_cache/
+
+# Don't ignore the .gitignore file
+!.gitignore
+
+# Don't ignore the .gitkeep file
+!.gitkeep
