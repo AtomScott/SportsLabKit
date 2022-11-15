@@ -10,7 +10,7 @@ from pathlib import Path
 
 from soccertrack.utils import make_video
 
-from ..logging import logger
+from ..logger import logger
 from ..utils import MovieIterator, get_fps
 from .base import SoccerTrackMixin
 
@@ -202,7 +202,7 @@ class BBoxDataFrame(SoccerTrackMixin, pd.DataFrame):
         """
 
         if mapping is None:
-            mapping = {"TeamID": {3: 1}, "PlayerID": {}}
+            mapping = {"TeamID": {'3': 1}, "PlayerID": {}}
 
         if save_dir is not None:
             save_dir = Path(save_dir)
