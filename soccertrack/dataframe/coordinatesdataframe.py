@@ -86,6 +86,45 @@ class CoordinatesDataFrame(SoccerTrackMixin, pd.DataFrame):
 
         return self._constructor(pd.concat(transformed_groups, axis=1))
     
+    # def visualize_frames
+    
+    @staticmethod
+    def from_numpy(arr: np.ndarray):
+        """Create a CoordinatesDataFrame from a numpy array of either shape (L, N, 2) or (L, N * 2) where L is the number of frames, N is the number of players and 2 is the number of coordinates (x, y).
+
+        Args:
+            arr (np.ndarray): Numpy array.
+
+        Returns:
+            CoordinatesDataFrame: CoordinatesDataFrame.
+        """
+        assert arr.ndim in (2,3), "Array must be of shape (L, N, 2) or (L, N * 2)"
+        if arr.ndim == 3:
+            arr = arr.reshape(arr.shape[0], -1)
+            
+        
+        df = pd.DataFrame(arr)
+        
+        team_ids = [0] * 22 + [1] * 22 + ['ball'] * 2
+        _players = list(np.linspace(0, 10, 22).round().astype(int))
+
+        player_ids = _players + _players + [0, 0]
+        attributes = ['x', 'y'] * 23
+
+        idx = pd.MultiIndex.from_arrays(
+            [team_ids, player_ids, attributes],
+        )
+
+        # change multicolumn
+        df = CoordinatesDataFrame(
+            df.values, index=df.index, columns=idx
+        )
+
+        df.rename_axis(["TeamID", "PlayerID", "Attributes"], axis=1, inplace=True)
+        df.index.name = 'frame'
+        
+        return CoordinatesDataFrame(df)
+    
     # @property
     # def _constructor_sliced(self):
     #     raise NotImplementedError("This pandas method constructs pandas.Series object, which is not yet implemented in {self.__name__}.")
