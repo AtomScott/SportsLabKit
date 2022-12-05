@@ -377,9 +377,9 @@ def load_labelbox(filename: _pathlike) -> CoordinatesDataFrame:
     df_list = []
     for playerid, group in groups:
         teamid = group.teamid.iloc[0]
-        bbox_cols = ["bb_left", "bb_top", "bb_width", "bb_height"]
-
-        if teamid.lower() == "sports ball":
+        bbox_cols = ['bb_left', 'bb_top', 'bb_width', 'bb_height']
+        
+        if teamid.lower() =='ball':
             teamid = 3
             playerid = 0
 
@@ -394,9 +394,6 @@ def load_labelbox(filename: _pathlike) -> CoordinatesDataFrame:
     merged_dataframe = (
         merged_dataframe.sort_index().interpolate()
     )  # 暗黙的にinterpolateするのが正解なのか？
-
-    merged_dataframe = df_list[0].join(df_list[1 : len(df_list)])
-    merged_dataframe = merged_dataframe.sort_index().interpolate()
 
     return merged_dataframe
 
