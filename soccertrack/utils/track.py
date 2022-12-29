@@ -10,7 +10,9 @@ class Tracker:
         pass
 
 class Tracklet:
-    def __init__(self, initial_detection, kf=None, funcs=[]):
+    def __init__(self, initial_detection, kf=None, funcs=None):
+        if funcs is None:
+            funcs = []
         self.kf = kf
 
         self.saver = Saver(kf)
