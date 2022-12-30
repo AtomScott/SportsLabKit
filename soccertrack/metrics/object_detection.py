@@ -6,6 +6,14 @@ from typing import Any, Optional
 import numpy as np
 import pandas as pd
 
+X_INDEX = 0  # xmin
+Y_INDEX = 1  # ymin
+W_INDEX = 2  # width
+H_INDEX = 3  # height
+CONFIDENCE_INDEX = 4
+CLASS_ID_INDEX = 5
+IMAGE_NAME_INDEX = 6
+
 
 def _getArea(box: list[int]) -> int:
     """Return area of box.
@@ -82,8 +90,6 @@ def ElevenPointInterpolatedAP(rec: Any, prec: Any) -> list[Any]:
 
     Returns:
         Interp_ap_info (list[Any]): List containing information necessary for ap calculation
-
-
     """
     mrec = []
     # mrec.append(0)
@@ -149,7 +155,6 @@ def iou_score(bbox_det: list[int], bbox_gt: list[int]) -> float:
 
     Returns:
         iou(float): iou_score between two bbox
-
     """
     # if boxes dont intersect
     if _boxesIntersect(bbox_det, bbox_gt) is False:
@@ -162,11 +167,56 @@ def iou_score(bbox_det: list[int], bbox_gt: list[int]) -> float:
     return iou
 
 
+def convert_to_x1y1x2y2(bbox: list[int]) -> list[int]:
+    """Convert bbox to x1y1x2y2 format."""
+    x1 = bbox[0]
+    y1 = bbox[1]
+    x2 = bbox[0] + bbox[2]
+    y2 = bbox[1] + bbox[3]
+    return [x1, y1, x2, y2]
+
+
+def validate_bboxes(
+    bboxes: list[float, float, float, float, float, str, str], is_gt=False
+) -> None:
+    for bbox in bboxes:
+        assert (
+            len(bbox) == 7
+        ), f"bbox must have 7 elements (xmin, ymin, width, height, confidence, class_id, image_name), but {len(bbox)} elements found."
+
+        assert isinstance(
+            bbox[0], (int, float)
+        ), f"xmin must be int or float, but {type(bbox[0])} found."
+        assert isinstance(
+            bbox[1], (int, float)
+        ), f"ymin must be int or float, but {type(bbox[1])} found."
+        assert isinstance(
+            bbox[2], (int, float)
+        ), f"width must be int or float, but {type(bbox[2])} found."
+        assert isinstance(
+            bbox[3], (int, float)
+        ), f"height must be int or float, but {type(bbox[3])} found."
+        if is_gt:
+            assert (
+                bbox[4] == 1
+            ), f"confidence must be 1 for ground truth bbox, but {bbox[4]} found."
+        else:
+            assert isinstance(
+                bbox[4], (int, float)
+            ), f"confidence must be int or float, but {type(bbox[4])} found."
+        assert isinstance(
+            bbox[5], (str)
+        ), f"class_id must be str, but {type(bbox[5])} found."
+        assert isinstance(
+            bbox[6], (str)
+        ), f"image_name must be str, but {type(bbox[6])} found."
+
+
 def ap_score(
-    bboxes_det_per_class: list[Any],
-    bboxes_gt_per_class: list[Any],
+    bboxes_det_per_class: list[float, float, float, float, float, str, str],
+    bboxes_gt_per_class: list[float, float, float, float, float, str, str],
     IOUThreshold: float,
-    ap_only: bool,
+    ap_only: bool = True,
 ) -> dict[str, Any]:
     """Calculate average precision.
 
@@ -186,82 +236,90 @@ def ap_score(
         https://github.com/rafaelpadilla/Object-Detection-Metrics/blob/master/lib/BoundingBox.py
 
         ----
-        bbox_det_n(tuple): (xmin, ymin, xmax, ymax, confidence, class_id, image_name)
-        bbox_gt_n(tuple): (xmin, ymin, xmax, ymax, 1.0, class_id, image_name)
+        bbox_det_n(tuple): (xmin, ymin, width, height, confidence, class_id, image_name)
+        bbox_gt_n(tuple): (xmin, ymin, width, height, 1.0, class_id, image_name)
 
         xmin(float): xmin
         ymin(float): ymin
-        xmax(float): xmax
-        ymax(float): ymax
+        width(float): width
+        height(float): height
         confidence(float): class confidence
         class_id(str): class id
         image_name(str): image name
 
         #index variable, this is written as a global variable in the `def main()` function.
-        X1_INDEX = 0
-        Y1_INDEX = 1
-        X2_INDEX = 2
-        Y2_INDEX = 3
+        X_INDEX = 0
+        Y_INDEX = 1
+        W_INDEX = 2
+        H_INDEX = 3
         CONFIDENCE_INDEX = 4
-        CLASS_ID_IMDEX = 5
+        CLASS_ID_INDEX = 5
         IMAGE_NAME_INDEX = 6
-
     """
-    X1_INDEX = 1
-    Y1_INDEX = 2
-    X2_INDEX = 3
-    Y2_INDEX = 4
-    CONFIDENCE_INDEX = 5
-    CLASS_ID_INDEX = 6
-    FRAME_INDEX = 0
 
-    iouMax_list = []
+    validate_bboxes(bboxes_det_per_class, is_gt=False)
+    validate_bboxes(bboxes_gt_per_class, is_gt=True)
+
+    class_id = bboxes_det_per_class[0][CLASS_ID_INDEX]
+    n_dets = len(bboxes_det_per_class)
+    n_gts = len(bboxes_gt_per_class)
+
+    # check that class_id is the same for all bboxes
+    for bbox_det in bboxes_det_per_class:
+        assert (
+            bbox_det[CLASS_ID_INDEX] == class_id
+        ), f"class_id must be the same for all bboxes, but {bbox_det[CLASS_ID_INDEX]} found."
+    for bbox_gt in bboxes_gt_per_class:
+        assert (
+            bbox_gt[CLASS_ID_INDEX] == class_id
+        ), f"class_id must be the same for all bboxes, but {bbox_gt[CLASS_ID_INDEX]} found."
+
+    # create dictionary with bbox_gts for each image
+    # s.t. gts = {image_name_1: [bbox_gt_1, bbox_gt_2, ...], image_name_2: [bbox_gt_1, bbox_gt_2, ...], ...}
     gts: dict[str, Any] = {}
-    npos = 0
-    for g in bboxes_gt_per_class:
-        npos += 1
-        gts[g[FRAME_INDEX]] = gts.get(g[FRAME_INDEX], []) + [g]
-    # print(gts)
+    for bbox_gt in bboxes_gt_per_class:
+        image_name = bbox_gt[IMAGE_NAME_INDEX]
+        gts[image_name] = gts.get(image_name, []) + [bbox_gt]
 
-    def sort_key(x: list[Any]) -> Any:
-        """Sort key.
+    # Sort detections by decreasing confidence
+    bboxes_det_per_class = sorted(
+        bboxes_det_per_class, key=lambda x: x[CONFIDENCE_INDEX], reverse=True
+    )
 
-        Args:
-            x(list): bbox of detected object per class.
-
-        Returns:
-            confidence(float): confidence of bbox
-        """
-        CONFIDENCE_score = x[CONFIDENCE_INDEX]
-        return CONFIDENCE_score
-
-    dect = sorted(bboxes_det_per_class, key=sort_key, reverse=True)
     # create dictionary with amount of gts for each image
     det = {key: np.zeros(len(gt)) for key, gt in gts.items()}
 
-    print(f"Evaluating class: {str(dect[0][CLASS_ID_INDEX])} ({len(dect)} detections)")
+    iouMax_list = []
+    print(f"Evaluating class: {class_id} ({len(bboxes_det_per_class)} detections)")
+
     # Loop through detections
-    TP = np.zeros(len(dect))
-    FP = np.zeros(len(dect))
-    for d, dect in enumerate(dect):
-        # print('dect %s => %s' % (dects[d][0], dects[d][3],))
+    TP = np.zeros(len(bboxes_det_per_class))
+    FP = np.zeros(len(bboxes_det_per_class))
+    for d, bbox_det in enumerate(bboxes_det_per_class):
+
         # Find ground truth image
-        gt = gts[dect[FRAME_INDEX]] if dect[FRAME_INDEX] in gts else []
+        image_name = bbox_det[IMAGE_NAME_INDEX]
+        gt_bboxes = gts.get(image_name, [])
         iouMax = sys.float_info.min
 
-        for j, gt_elem in enumerate(gt):
+        for j, bbox_gt in enumerate(gt_bboxes):
             bbox_det = [
-                dect[X1_INDEX],
-                dect[Y1_INDEX],
-                dect[X2_INDEX],
-                dect[Y2_INDEX],
+                bbox_det[X_INDEX],
+                bbox_det[Y_INDEX],
+                bbox_det[W_INDEX],
+                bbox_det[H_INDEX],
             ]
             bbox_gt = [
-                gt_elem[X1_INDEX],
-                gt_elem[Y1_INDEX],
-                gt_elem[X2_INDEX],
-                gt_elem[Y2_INDEX],
+                bbox_gt[X_INDEX],
+                bbox_gt[Y_INDEX],
+                bbox_gt[W_INDEX],
+                bbox_gt[H_INDEX],
             ]
+
+            # convert x,y,w,h to x1,y1,x2,y2
+            bbox_det = convert_to_x1y1x2y2(bbox_det)
+            bbox_gt = convert_to_x1y1x2y2(bbox_gt)
+
             iou = iou_score(bbox_det, bbox_gt)
             if iou > iouMax:
                 iouMax = iou
@@ -271,35 +329,31 @@ def ap_score(
         # Assign detection as true positive/don't care/false positive
         if iouMax >= IOUThreshold:
             TP[d] = 1  # count as true positive
-            det[dect[FRAME_INDEX]][jmax] = 1  # flag as already 'seen'
+            det[image_name][jmax] = 1  # flag as already 'seen'
         else:
             FP[d] = 1  # count as false positive
 
     # compute precision, recall and average precision
     acc_FP = np.cumsum(FP)
     acc_TP = np.cumsum(TP)
-    rec = acc_TP / npos
+    rec = acc_TP / n_dets
     prec = np.divide(acc_TP, (acc_FP + acc_TP))
+
     # Depending on the method, call the right implementation
     [ap_, mpre_, mrec_, _] = ElevenPointInterpolatedAP(rec, prec)
-    # if method == MethodAveragePrecision.EveryPointInterpolation:
 
-    if ap_only:
-        ap = {"class": dect[CLASS_ID_INDEX], "AP": ap_}
+    return {
+        "class": class_id,
+        "precision": prec,
+        "recall": rec,
+        "AP": ap_,
+        "interpolated precision": mpre_,
+        "interpolated recall": mrec_,
+        "total positives": n_dets,
+        "total TP": np.sum(TP),
+        "total FP": np.sum(FP),
+    }
 
-    else:
-        ap = {
-            "class": dect[CLASS_ID_INDEX],
-            "precision": prec,
-            "recall": rec,
-            "AP": ap_,
-            "interpolated precision": mpre_,
-            "interpolated recall": mrec_,
-            "total positives": npos,
-            "total TP": np.sum(TP),
-            "total FP": np.sum(FP),
-        }
-    return ap
 
 def map_score(det_df: pd.DataFrame, gt_df: pd.DataFrame, IOUThreshold: float) -> float:
     """Calculate mean average precision.
@@ -312,20 +366,14 @@ def map_score(det_df: pd.DataFrame, gt_df: pd.DataFrame, IOUThreshold: float) ->
     Returns:
         map_score(Any): mean average precision
     """
-    # X1_INDEX = 0
-    # Y1_INDEX = 1
-    # X2_INDEX = 2
-    # Y2_INDEX = 3
-    # CONFIDENCE_INDEX = 4
-    CLASS_ID_INDEX = 6
-    # IMAGE_NAME_INDEX = 6
 
     # convert to 2-dim list from df
-    bboxes_det = det_df.to_list(xywh=True)
-    bboxes_gt = gt_df.to_list(xywh=True)
+    bboxes_det = det_df.values.tolist()
+    bboxes_gt = gt_df.values.tolist()
 
     ap_list = []
     class_list = []
+
     # calculate ap
     for bbox_det in bboxes_det:
         if bbox_det[CLASS_ID_INDEX] not in class_list:
