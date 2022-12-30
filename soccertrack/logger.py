@@ -129,7 +129,7 @@ def inspect(*args, level: str = "INFO", **kwargs) -> None:
 
     LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO")
     enable = logger.level(LOG_LEVEL).no <= logger.level(level.upper()).no
-    
+
     if hasattr(args[0], __name__):
         if args[0].__name__ == "inspect" and enable:
             inspect(inspect, *args[1:], **kwargs)
@@ -137,20 +137,29 @@ def inspect(*args, level: str = "INFO", **kwargs) -> None:
         logger.log(level, f"Inspecting: {args}")
         inspect(*args, **kwargs)
 
-def show_df(df, theme='dark'):
+
+def show_df(df, theme="dark"):
     from IPython.display import display
-    
+
     def dark(styler):
-        styler.applymap(lambda x: 'color: white')
-        styler.set_table_styles([dict(selector='th', props=[('color', 'white'), ('background-color', '#555555')])])
-        styler.apply(lambda x: ['background: #333333' for _ in x], axis=1)
+        styler.applymap(lambda x: "color: white")
+        styler.set_table_styles(
+            [
+                dict(
+                    selector="th",
+                    props=[("color", "white"), ("background-color", "#555555")],
+                )
+            ]
+        )
+        styler.apply(lambda x: ["background: #333333" for _ in x], axis=1)
         return styler
-    
+
     def light(styler):
         raise NotImplementedError("Light theme not implemented yet.")
-    
-    style = dark if theme == 'dark' else light
+
+    style = dark if theme == "dark" else light
     return display(df.style.pipe(style))
+
 
 # Code that runs on `import .logger`
 
@@ -211,4 +220,3 @@ if __name__ == "__main__":
     logger.warning("Warning")
     logger.error("Error")
     logger.critical("Critical")
-
