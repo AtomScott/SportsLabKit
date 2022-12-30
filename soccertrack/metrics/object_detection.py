@@ -6,6 +6,8 @@ from typing import Any, Optional
 import numpy as np
 import pandas as pd
 
+from soccertrack.dataframe import BBoxDataFrame
+
 X_INDEX = 0  # xmin
 Y_INDEX = 1  # ymin
 W_INDEX = 2  # width
@@ -176,6 +178,19 @@ def convert_to_x1y1x2y2(bbox: list[int]) -> list[int]:
     return [x1, y1, x2, y2]
 
 
+def convert_bboxes(bboxes: pd.DataFrame | BBoxDataFrame | list | tuple):
+    """convert bboxes to tuples of (xmin, ymin, width, height, confidence,
+    class_id, image_name)."""
+
+    if isinstance(bboxes, pd.DataFrame) or isinstance(bboxes, BBoxDataFrame):
+        bboxes = bboxes.values.tolist()
+    elif isinstance(bboxes, list):
+        bboxes = [tuple(bbox) for bbox in bboxes]
+
+    validate_bboxes(bboxes)
+    return bboxes
+
+
 def validate_bboxes(
     bboxes: list[float, float, float, float, float, str, str], is_gt=False
 ) -> None:
@@ -290,7 +305,9 @@ def ap_score(
     det = {key: np.zeros(len(gt)) for key, gt in gts.items()}
 
     iouMax_list = []
-    print(f"Evaluating class: {class_id} ({len(bboxes_det_per_class)} detections)")
+    print(
+        f"Evaluating class: {class_id} ({len(bboxes_det_per_class)} detections)"
+    )  # TODO: change to logger
 
     # Loop through detections
     TP = np.zeros(len(bboxes_det_per_class))
@@ -355,7 +372,11 @@ def ap_score(
     }
 
 
-def map_score(det_df: pd.DataFrame, gt_df: pd.DataFrame, IOUThreshold: float) -> float:
+def map_score(
+    bboxes_det: pd.DataFrame | BBoxDataFrame | list | tuple,
+    bboxes_gt: pd.DataFrame | BBoxDataFrame | list | tuple,
+    IOUThreshold: float,
+) -> float:
     """Calculate mean average precision.
 
     Args:
@@ -368,8 +389,8 @@ def map_score(det_df: pd.DataFrame, gt_df: pd.DataFrame, IOUThreshold: float) ->
     """
 
     # convert to 2-dim list from df
-    bboxes_det = det_df.values.tolist()
-    bboxes_gt = gt_df.values.tolist()
+    bboxes_det = convert_bboxes(bboxes_det)
+    bboxes_gt = convert_bboxes(bboxes_gt)
 
     ap_list = []
     class_list = []
@@ -394,8 +415,9 @@ def map_score(det_df: pd.DataFrame, gt_df: pd.DataFrame, IOUThreshold: float) ->
         ap = ap_score(
             bboxes_det_per_class, bboxes_gt_per_class, IOUThreshold, ap_only=True
         )
-        print(f"ap: {ap}")
+        print(f"ap: {ap}")  # TODO: change to logger
         ap_list.append(ap["AP"])
+
     # calculate map
     map = np.mean(ap_list)
     return float(map)
