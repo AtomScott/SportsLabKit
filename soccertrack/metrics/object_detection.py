@@ -305,9 +305,9 @@ def ap_score(
     det = {key: np.zeros(len(gt)) for key, gt in gts.items()}
 
     iouMax_list = []
-    print(
-        f"Evaluating class: {class_id} ({len(bboxes_det_per_class)} detections)"
-    )  # TODO: change to logger
+    # print(
+    # f"Evaluating class: {class_id} ({len(bboxes_det_per_class)} detections)"
+    # )  # TODO: change to logger
 
     # Loop through detections
     TP = np.zeros(len(bboxes_det_per_class))
@@ -319,13 +319,15 @@ def ap_score(
         gt_bboxes = gts.get(image_name, [])
         iouMax = sys.float_info.min
 
+        bbox_det = [
+            bbox_det[X_INDEX],
+            bbox_det[Y_INDEX],
+            bbox_det[W_INDEX],
+            bbox_det[H_INDEX],
+        ]
+        bbox_det = convert_to_x1y1x2y2(bbox_det)
+
         for j, bbox_gt in enumerate(gt_bboxes):
-            bbox_det = [
-                bbox_det[X_INDEX],
-                bbox_det[Y_INDEX],
-                bbox_det[W_INDEX],
-                bbox_det[H_INDEX],
-            ]
             bbox_gt = [
                 bbox_gt[X_INDEX],
                 bbox_gt[Y_INDEX],
@@ -334,10 +336,10 @@ def ap_score(
             ]
 
             # convert x,y,w,h to x1,y1,x2,y2
-            bbox_det = convert_to_x1y1x2y2(bbox_det)
             bbox_gt = convert_to_x1y1x2y2(bbox_gt)
 
             iou = iou_score(bbox_det, bbox_gt)
+
             if iou > iouMax:
                 iouMax = iou
                 jmax = j
@@ -415,7 +417,7 @@ def map_score(
         ap = ap_score(
             bboxes_det_per_class, bboxes_gt_per_class, IOUThreshold, ap_only=True
         )
-        print(f"ap: {ap}")  # TODO: change to logger
+        # print(f"ap: {ap}")  # TODO: change to logger
         ap_list.append(ap["AP"])
 
     # calculate map
