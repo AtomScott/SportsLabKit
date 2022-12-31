@@ -33,7 +33,9 @@ class SoccerTrackMixin(object):
         if apply_func is None:
             apply_func = lambda x: x
         for index, group in self.groupby(level=("TeamID", "PlayerID"), axis=1):
-            yield index, apply_func(group.droplevel(level=("TeamID", "PlayerID"), axis=1))
+            yield index, apply_func(
+                group.droplevel(level=("TeamID", "PlayerID"), axis=1)
+            )
 
     def iter_teams(self, apply_func=None):
         """Iterate over the teams of the dataframe.
@@ -74,3 +76,14 @@ class SoccerTrackMixin(object):
 
         df = df.stack(level=levels)
         return df
+
+    def get_frame(self, frame):
+        """Get a specific frame from the dataframe.
+
+        Args:
+            frame (int): Frame to get.
+
+        Returns:
+            pd.DataFrame: Dataframe with the frame.
+        """
+        return self[self.index == frame]
