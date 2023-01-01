@@ -1,6 +1,6 @@
 import os
 
-from soccertrack.logging import logger
+from soccertrack.logger import logger
 from typing import Optional
 from pathlib import Path
 from .downloader import KaggleDownloader

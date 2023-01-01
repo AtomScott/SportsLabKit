@@ -5,7 +5,7 @@ import platform
 from pathlib import Path
 from typing import Any, Optional, Union
 
-from soccertrack.logging import inspect, logger
+from soccertrack.logger import inspect, logger
 
 _pathlike = Union[str, Path]
 _module_path = Path(__file__).parent
