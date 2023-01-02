@@ -12,7 +12,8 @@ import numpy as np
 from numpy.typing import NDArray
 from omegaconf import OmegaConf
 from PIL import Image
-from soccertrack.logging import logger, tqdm
+from soccertrack import logger
+from soccertrack.logger import tqdm
 from vidgear.gears import WriteGear
 
 OmegaConf.register_new_resolver(
