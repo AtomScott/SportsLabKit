@@ -118,32 +118,7 @@ def ElevenPointInterpolatedAP(rec: Any, prec: Any) -> list[Any]:
     # By definition AP = sum(max(precision whose recall is above r))/11
     ap = sum(rhoInterp) / 11
     # Generating values for the plot
-    # rvals = []
-    # rvals.append(recallValid[0])
-    # for e in recallValid:
-    #     rvals.append(e)
-    # # [rvals.append(e) for e in recallValid]
-    # rvals.append(0)
 
-    # pvals = []
-    # pvals.append(0)
-    # for e in rhoInterp:
-    #     pvals.append(e)
-    # # [pvals.append(e) for e in rhoInterp]
-    # pvals.append(0)
-    # # rhoInterp = rhoInterp[::-1]
-    # cc = []
-    # for i, rval in enumerate(rvals):
-    #     p = [rval, pvals[i - 1]]
-    #     if p not in cc:
-    #         cc.append(p)
-    #     p = [rval, pvals[i]]
-    #     if p not in cc:
-    #         cc.append(p)
-    # recallValue = [i[0] for i in cc]
-    # # recallValues = cc[:, 0]
-    # rhoInter = [i[1] for i in cc]
-    # rhoInterp = cc[:, 1]
     Interp_ap_info = [ap, rhoInterp, recallValid, None]
     return Interp_ap_info
 
@@ -178,11 +153,15 @@ def convert_to_x1y1x2y2(bbox: list[int]) -> list[int]:
     return [x1, y1, x2, y2]
 
 
-def convert_bboxes(
-    bboxes: pd.DataFrame | BBoxDataFrame | list | tuple,
-) -> list[float, float, float, float, float, str, str]:
-    """convert bboxes to tuples of (xmin, ymin, width, height, confidence,
-    class_id, image_name)."""
+def convert_bboxes(bboxes: pd.DataFrame | BBoxDataFrame | list | tuple) -> list[float, float, float, float, float, str, str]:
+    """Convert bboxes to tuples of (xmin, ymin, width, height, confidence, class_id, image_name).
+    
+    Args:
+        bboxes (pd.DataFrame | BBoxDataFrame | list | tuple): bboxes to convert.
+    
+    Returns:
+        list[float, float, float, float, float, str, str]: converted bboxes.
+    """
 
     if isinstance(bboxes, pd.DataFrame) or isinstance(bboxes, BBoxDataFrame):
         bboxes = bboxes.values.tolist()
