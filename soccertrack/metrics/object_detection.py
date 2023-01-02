@@ -102,7 +102,7 @@ def ElevenPointInterpolatedAP(rec: Any, prec: Any) -> list[Any]:
         mpre.append(e)
     # [mpre.append(e) for e in prec]
     recallValues = np.linspace(0, 1, 11)
-    recallValues = recallValues[::-1]
+    recallValues = list(recallValues[::-1])
     rhoInterp = []
     recallValid = []
     # For each recallValues (0, 0.1, 0.2, ... , 1)
@@ -118,33 +118,8 @@ def ElevenPointInterpolatedAP(rec: Any, prec: Any) -> list[Any]:
     # By definition AP = sum(max(precision whose recall is above r))/11
     ap = sum(rhoInterp) / 11
     # Generating values for the plot
-    rvals = []
-    rvals.append(recallValid[0])
-    for e in recallValid:
-        rvals.append(e)
-    # [rvals.append(e) for e in recallValid]
-    rvals.append(0)
 
-    pvals = []
-    pvals.append(0)
-    for e in rhoInterp:
-        pvals.append(e)
-    # [pvals.append(e) for e in rhoInterp]
-    pvals.append(0)
-    # rhoInterp = rhoInterp[::-1]
-    cc = []
-    for i, rval in enumerate(rvals):
-        p = [rval, pvals[i - 1]]
-        if p not in cc:
-            cc.append(p)
-        p = [rval, pvals[i]]
-        if p not in cc:
-            cc.append(p)
-    recallValue = [i[0] for i in cc]
-    # recallValues = cc[:, 0]
-    rhoInter = [i[1] for i in cc]
-    # rhoInterp = cc[:, 1]
-    Interp_ap_info = [ap, rhoInter, recallValue, None]
+    Interp_ap_info = [ap, rhoInterp, recallValid, None]
     return Interp_ap_info
 
 
@@ -178,9 +153,15 @@ def convert_to_x1y1x2y2(bbox: list[int]) -> list[int]:
     return [x1, y1, x2, y2]
 
 
-def convert_bboxes(bboxes: pd.DataFrame | BBoxDataFrame | list | tuple):
-    """convert bboxes to tuples of (xmin, ymin, width, height, confidence,
-    class_id, image_name)."""
+def convert_bboxes(bboxes: pd.DataFrame | BBoxDataFrame | list | tuple) -> list[float, float, float, float, float, str, str]:
+    """Convert bboxes to tuples of (xmin, ymin, width, height, confidence, class_id, image_name).
+    
+    Args:
+        bboxes (pd.DataFrame | BBoxDataFrame | list | tuple): bboxes to convert.
+    
+    Returns:
+        list[float, float, float, float, float, str, str]: converted bboxes.
+    """
 
     if isinstance(bboxes, pd.DataFrame) or isinstance(bboxes, BBoxDataFrame):
         bboxes = bboxes.values.tolist()
@@ -228,20 +209,19 @@ def validate_bboxes(
 
 
 def ap_score(
-    bboxes_det_per_class: list[float, float, float, float, float, str, str],
-    bboxes_gt_per_class: list[float, float, float, float, float, str, str],
-    IOUThreshold: float,
-    ap_only: bool = True,
+    bboxes_det_per_class: list[list[float, float, float, float, float, str, str]],
+    bboxes_gt_per_class: list[list[float, float, float, float, float, str, str]],
+    iou_threshold: float,
 ) -> dict[str, Any]:
     """Calculate average precision.
 
     Args:
         bboxes_det_per_class(list): bbox of detected object per class.
         bboxes_gt_per_class(list): bbox of ground truth object per class.
-        IOUThreshold(float): iou threshold
-        ap_only(bool): if True, return ap only. if False, return ap ,recall, precision, and so on.
+        IOUThreshold(float): iou threshold. it is usually set to 50%, 75% or 95%.
+
     Returns:
-        ap(float): average precision
+        ap(dict): dict containing information about average precision
 
     Note:
         bboxes_det_per_class: [bbox_det_1, bbox_det_2, ...]
@@ -271,13 +251,27 @@ def ap_score(
         CLASS_ID_INDEX = 5
         IMAGE_NAME_INDEX = 6
     """
+    assert len(bboxes_gt_per_class) != 0, f"It must contain at least one Grand Truth."
+
+    class_id = bboxes_gt_per_class[0][CLASS_ID_INDEX]
+    n_dets = len(bboxes_det_per_class)
+    n_gts = len(bboxes_gt_per_class)
+
+    if len(bboxes_det_per_class) == 0:
+        return {
+            "class": class_id,
+            "precision": [],
+            "recall": [],
+            "AP": 0.0,
+            "interpolated precision": [],
+            "interpolated recall": [],
+            "total positives": 0,
+            "total TP": 0,
+            "total FP": 0,
+        }
 
     validate_bboxes(bboxes_det_per_class, is_gt=False)
     validate_bboxes(bboxes_gt_per_class, is_gt=True)
-
-    class_id = bboxes_det_per_class[0][CLASS_ID_INDEX]
-    n_dets = len(bboxes_det_per_class)
-    n_gts = len(bboxes_gt_per_class)
 
     # check that class_id is the same for all bboxes
     for bbox_det in bboxes_det_per_class:
@@ -305,9 +299,6 @@ def ap_score(
     det = {key: np.zeros(len(gt)) for key, gt in gts.items()}
 
     iouMax_list = []
-    # print(
-    # f"Evaluating class: {class_id} ({len(bboxes_det_per_class)} detections)"
-    # )  # TODO: change to logger
 
     # Loop through detections
     TP = np.zeros(len(bboxes_det_per_class))
@@ -346,7 +337,7 @@ def ap_score(
                 iouMax_list.append(iouMax)
 
         # Assign detection as true positive/don't care/false positive
-        if iouMax >= IOUThreshold:
+        if iouMax >= iou_threshold:
             TP[d] = 1  # count as true positive
             det[image_name][jmax] = 1  # flag as already 'seen'
         else:
@@ -363,21 +354,54 @@ def ap_score(
 
     return {
         "class": class_id,
-        "precision": prec,
-        "recall": rec,
+        "precision": list(prec),
+        "recall": list(rec),
         "AP": ap_,
         "interpolated precision": mpre_,
         "interpolated recall": mrec_,
         "total positives": n_dets,
-        "total TP": np.sum(TP),
-        "total FP": np.sum(FP),
+        "total TP": int(np.sum(TP)),
+        "total FP": int(np.sum(FP)),
     }
+
+
+def ap_score_range(
+    bboxes_det_per_class: list[float, float, float, float, float, str, str],
+    bboxes_gt_per_class: list[float, float, float, float, float, str, str],
+    start_threshold: float = 0.5,
+    end_threshold: float = 0.95,
+    step: float = 0.05,
+) -> float:
+
+    """Calculate average precision in the specified range.
+
+    Args:
+        bboxes_det_per_class(list): bbox of detected object per class.
+        bboxes_gt_per_class(list): bbox of ground truth object per class.
+        start_threshold(float): start threshold of IOU. default is 0.5.
+        end_threshold(float): end threshold of IOU. default is 0.95.
+        step(float): step of updating threshold. default is 0.05.
+
+    Returns:
+        ap_results(list): list of average precision in the specified range.
+        ap_range(float): average of ap in the specified range.
+
+    """
+
+    ap_list = []
+    for iou_threshold in np.arange(start_threshold, end_threshold + step, step):
+        ap_result = ap_score(bboxes_det_per_class, bboxes_gt_per_class, iou_threshold)
+        ap_list.append(ap_result["AP"])
+
+    ap_range = np.mean(ap_list)
+
+    return ap_range
 
 
 def map_score(
     bboxes_det: pd.DataFrame | BBoxDataFrame | list | tuple,
     bboxes_gt: pd.DataFrame | BBoxDataFrame | list | tuple,
-    IOUThreshold: float,
+    iou_threshold: float,
 ) -> float:
     """Calculate mean average precision.
 
@@ -387,7 +411,7 @@ def map_score(
         IOUThreshold(float): iou threshold
 
     Returns:
-        map_score(Any): mean average precision
+        map(float): mean average precision
     """
 
     # convert to 2-dim list from df
@@ -398,9 +422,9 @@ def map_score(
     class_list = []
 
     # calculate ap
-    for bbox_det in bboxes_det:
-        if bbox_det[CLASS_ID_INDEX] not in class_list:
-            class_list.append(bbox_det[CLASS_ID_INDEX])
+    for bbox_gt in bboxes_gt:
+        if bbox_gt[CLASS_ID_INDEX] not in class_list:
+            class_list.append(bbox_gt[CLASS_ID_INDEX])
 
     classes = sorted(class_list)
     for class_id in classes:
@@ -414,12 +438,39 @@ def map_score(
             for groundTruth_per_class in bboxes_gt
             if groundTruth_per_class[CLASS_ID_INDEX] == class_id
         ]
-        ap = ap_score(
-            bboxes_det_per_class, bboxes_gt_per_class, IOUThreshold, ap_only=True
-        )
-        # print(f"ap: {ap}")  # TODO: change to logger
+        ap = ap_score(bboxes_det_per_class, bboxes_gt_per_class, iou_threshold)
         ap_list.append(ap["AP"])
 
     # calculate map
     map = np.mean(ap_list)
-    return float(map)
+    return map
+
+
+def map_score_range(
+    bboxes_det: pd.DataFrame | BBoxDataFrame | list | tuple,
+    bboxes_gt: pd.DataFrame | BBoxDataFrame | list | tuple,
+    start_threshold: float = 0.5,
+    end_threshold: float = 0.95,
+    step: float = 0.05,
+) -> float:
+    """Calculate mean average precision.
+
+    Args:
+        det_df(pd.DataFrame): dataframe of detected object.
+        gt_df(pd.DataFrame): dataframe of ground truth object.
+        start_threshold(float): start threshold of IOU. default is 0.5.
+        end_threshold(float): end threshold of IOU. default is 0.95.
+        step(float): step of updating threshold. default is 0.05.
+
+    Returns:
+        map_range(float): average of map in the specified range. (0.5 to 0.95 in increments of 0.05)
+
+    """
+    map_list = []
+    for iou_threshold in np.arange(start_threshold, end_threshold + step, step):
+        map_result = map_score(bboxes_det, bboxes_gt, iou_threshold)
+        map_list.append(map_result)
+
+    map_range = np.mean(map_list)
+
+    return map_range
