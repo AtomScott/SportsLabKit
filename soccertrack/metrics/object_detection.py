@@ -299,9 +299,6 @@ def ap_score(
     det = {key: np.zeros(len(gt)) for key, gt in gts.items()}
 
     iouMax_list = []
-    # print(
-    # f"Evaluating class: {class_id} ({len(bboxes_det_per_class)} detections)"
-    # )  # TODO: change to logger
 
     # Loop through detections
     TP = np.zeros(len(bboxes_det_per_class))
@@ -398,7 +395,7 @@ def ap_score_range(
 
     ap_range = np.mean(ap_list)
 
-    return float(ap_range)
+    return ap_range
 
 
 def map_score(
@@ -442,12 +439,11 @@ def map_score(
             if groundTruth_per_class[CLASS_ID_INDEX] == class_id
         ]
         ap = ap_score(bboxes_det_per_class, bboxes_gt_per_class, iou_threshold)
-        # print(f"ap: {ap}")  # TODO: change to logger
         ap_list.append(ap["AP"])
 
     # calculate map
     map = np.mean(ap_list)
-    return float(map)
+    return map
 
 
 def map_score_range(
@@ -470,42 +466,11 @@ def map_score_range(
         map_range(float): average of map in the specified range. (0.5 to 0.95 in increments of 0.05)
 
     """
+    map_list = []
+    for iou_threshold in np.arange(start_threshold, end_threshold + step, step):
+        map_result = map_score(bboxes_det, bboxes_gt, iou_threshold)
+        map_list.append(map_result)
 
-    # convert to 2-dim list from df
-    bboxes_det = convert_bboxes(bboxes_det)
-    bboxes_gt = convert_bboxes(bboxes_gt)
+    map_range = np.mean(map_list)
 
-    ap_range_list = []
-    class_list = []
-
-    # calculate ap
-    for bbox_gt in bboxes_gt:
-        if bbox_gt[CLASS_ID_INDEX] not in class_list:
-            class_list.append(bbox_gt[CLASS_ID_INDEX])
-
-    classes = sorted(class_list)
-    for class_id in classes:
-        bboxes_det_per_class = [
-            detection_per_class
-            for detection_per_class in bboxes_det
-            if detection_per_class[CLASS_ID_INDEX] == class_id
-        ]
-        bboxes_gt_per_class = [
-            groundTruth_per_class
-            for groundTruth_per_class in bboxes_gt
-            if groundTruth_per_class[CLASS_ID_INDEX] == class_id
-        ]
-        ap_range = ap_score_range(
-            bboxes_det_per_class,
-            bboxes_gt_per_class,
-            start_threshold,
-            end_threshold,
-            step,
-        )
-
-        # print(f"ap: {ap}")  # TODO: change to logger
-        ap_range_list.append(ap_range)
-
-    # calculate map
-    map_range = np.mean(ap_range_list)
-    return float(map_range)
+    return map_range
