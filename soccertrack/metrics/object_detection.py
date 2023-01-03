@@ -124,7 +124,7 @@ def ElevenPointInterpolatedAP(rec: Any, prec: Any) -> list[Any]:
 
 
 def iou_score(bbox_det: list[int], bbox_gt: list[int]) -> float:
-    """Calculate iou between two bbox.
+    """Calculate iou between two bbox of shape (x1, y1, x2, y2).
 
     Args:
         list[int]: bbox of detected object.
@@ -133,6 +133,11 @@ def iou_score(bbox_det: list[int], bbox_gt: list[int]) -> float:
     Returns:
         iou(float): iou_score between two bbox
     """
+
+    # add large number to avoid bboxes outside of image
+    E = 1000000
+    bbox_det = [elem + E for elem in bbox_det]
+    bbox_gt = [elem + E for elem in bbox_gt]
     # if boxes dont intersect
     if _boxesIntersect(bbox_det, bbox_gt) is False:
         return 0
@@ -153,12 +158,14 @@ def convert_to_x1y1x2y2(bbox: list[int]) -> list[int]:
     return [x1, y1, x2, y2]
 
 
-def convert_bboxes(bboxes: pd.DataFrame | BBoxDataFrame | list | tuple) -> list[float, float, float, float, float, str, str]:
+def convert_bboxes(
+    bboxes: pd.DataFrame | BBoxDataFrame | list | tuple,
+) -> list[float, float, float, float, float, str, str]:
     """Convert bboxes to tuples of (xmin, ymin, width, height, confidence, class_id, image_name).
-    
+
     Args:
         bboxes (pd.DataFrame | BBoxDataFrame | list | tuple): bboxes to convert.
-    
+
     Returns:
         list[float, float, float, float, float, str, str]: converted bboxes.
     """
@@ -209,16 +216,9 @@ def validate_bboxes(
 
 
 def ap_score(
-<<<<<<< Updated upstream
     bboxes_det_per_class: list[list[float, float, float, float, float, str, str]],
     bboxes_gt_per_class: list[list[float, float, float, float, float, str, str]],
     iou_threshold: float,
-=======
-    bboxes_det_per_class: list[float, float, float, float, float, str, str],
-    bboxes_gt_per_class: list[float, float, float, float, float, str, str],
-    iou_threshold: float,
-    ap_only: bool = True,
->>>>>>> Stashed changes
 ) -> dict[str, Any]:
     """Calculate average precision.
 
@@ -280,13 +280,6 @@ def ap_score(
     validate_bboxes(bboxes_det_per_class, is_gt=False)
     validate_bboxes(bboxes_gt_per_class, is_gt=True)
 
-<<<<<<< Updated upstream
-=======
-    class_id = bboxes_gt_per_class[0][CLASS_ID_INDEX]
-    n_dets = len(bboxes_det_per_class)
-    n_gts = len(bboxes_gt_per_class)
-
->>>>>>> Stashed changes
     # check that class_id is the same for all bboxes
     for bbox_det in bboxes_det_per_class:
         assert (
@@ -313,12 +306,6 @@ def ap_score(
     det = {key: np.zeros(len(gt)) for key, gt in gts.items()}
 
     iouMax_list = []
-<<<<<<< Updated upstream
-=======
-    # print(
-    #     f"Evaluating class: {class_id} ({len(bboxes_det_per_class)} detections)"
-    # )  # TODO: change to logger
->>>>>>> Stashed changes
 
     # Loop through detections
     TP = np.zeros(len(bboxes_det_per_class))
@@ -458,14 +445,7 @@ def map_score(
             for groundTruth_per_class in bboxes_gt
             if groundTruth_per_class[CLASS_ID_INDEX] == class_id
         ]
-<<<<<<< Updated upstream
         ap = ap_score(bboxes_det_per_class, bboxes_gt_per_class, iou_threshold)
-=======
-        ap = ap_score(
-            bboxes_det_per_class, bboxes_gt_per_class, iou_threshold, ap_only=True
-        )
-        # print(f"ap: {ap}")  # TODO: change to logger
->>>>>>> Stashed changes
         ap_list.append(ap["AP"])
 
     # calculate map
