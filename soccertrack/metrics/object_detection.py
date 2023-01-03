@@ -209,9 +209,16 @@ def validate_bboxes(
 
 
 def ap_score(
+<<<<<<< Updated upstream
     bboxes_det_per_class: list[list[float, float, float, float, float, str, str]],
     bboxes_gt_per_class: list[list[float, float, float, float, float, str, str]],
     iou_threshold: float,
+=======
+    bboxes_det_per_class: list[float, float, float, float, float, str, str],
+    bboxes_gt_per_class: list[float, float, float, float, float, str, str],
+    iou_threshold: float,
+    ap_only: bool = True,
+>>>>>>> Stashed changes
 ) -> dict[str, Any]:
     """Calculate average precision.
 
@@ -273,6 +280,13 @@ def ap_score(
     validate_bboxes(bboxes_det_per_class, is_gt=False)
     validate_bboxes(bboxes_gt_per_class, is_gt=True)
 
+<<<<<<< Updated upstream
+=======
+    class_id = bboxes_gt_per_class[0][CLASS_ID_INDEX]
+    n_dets = len(bboxes_det_per_class)
+    n_gts = len(bboxes_gt_per_class)
+
+>>>>>>> Stashed changes
     # check that class_id is the same for all bboxes
     for bbox_det in bboxes_det_per_class:
         assert (
@@ -299,6 +313,12 @@ def ap_score(
     det = {key: np.zeros(len(gt)) for key, gt in gts.items()}
 
     iouMax_list = []
+<<<<<<< Updated upstream
+=======
+    # print(
+    #     f"Evaluating class: {class_id} ({len(bboxes_det_per_class)} detections)"
+    # )  # TODO: change to logger
+>>>>>>> Stashed changes
 
     # Loop through detections
     TP = np.zeros(len(bboxes_det_per_class))
@@ -438,7 +458,14 @@ def map_score(
             for groundTruth_per_class in bboxes_gt
             if groundTruth_per_class[CLASS_ID_INDEX] == class_id
         ]
+<<<<<<< Updated upstream
         ap = ap_score(bboxes_det_per_class, bboxes_gt_per_class, iou_threshold)
+=======
+        ap = ap_score(
+            bboxes_det_per_class, bboxes_gt_per_class, iou_threshold, ap_only=True
+        )
+        # print(f"ap: {ap}")  # TODO: change to logger
+>>>>>>> Stashed changes
         ap_list.append(ap["AP"])
 
     # calculate map

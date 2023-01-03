@@ -12,7 +12,11 @@ import numpy as np
 from numpy.typing import NDArray
 from omegaconf import OmegaConf
 from PIL import Image
+<<<<<<< Updated upstream
 from soccertrack.logger import tqdm, logger
+=======
+from soccertrack.logger import logger, tqdm
+>>>>>>> Stashed changes
 from vidgear.gears import WriteGear
 
 OmegaConf.register_new_resolver(
@@ -22,6 +26,7 @@ OmegaConf.register_new_resolver(
 from ast import literal_eval
 from typing import Any, Union
 
+import git
 import dateutil.parser
 import numpy as np
 import pandas as pd
@@ -347,6 +352,13 @@ def merge_dict_of_lists(d1: dict, d2: dict) -> dict:
     keys = set(d1.keys()).union(d2.keys())
     ret = {k: list(d1.get(k, [])) + list(d2.get(k, [])) for k in keys}
     return ret
+
+
+def get_git_root():
+    """Get the root of the git repository."""
+    git_repo = git.Repo(__file__, search_parent_directories=True)
+    git_root = git_repo.git.rev_parse("--show-toplevel")
+    return Path(git_root)
 
 
 # Due to memory consumption concerns, the function below has been replaced by the function that uses vidgear above.
