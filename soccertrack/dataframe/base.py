@@ -24,6 +24,18 @@ class SoccerTrackMixin(object):
         else:
             self.to_csv(path_or_buf, mode="w")
 
+    def iter_frames(self, apply_func=None):
+        """Iterate over the frames of the dataframe.
+
+        Args:
+            apply_func (function, optional): Function to apply to each group. Defaults to None.
+        """
+        if apply_func is None:
+            apply_func = lambda x: x
+
+        for index, group in self.groupby("frame"):
+            yield index, apply_func(group)
+
     def iter_players(self, apply_func=None):
         """Iterate over the players of the dataframe.
 
@@ -77,6 +89,14 @@ class SoccerTrackMixin(object):
         df = df.stack(level=levels)
         return df
 
+    def is_long_format(self):
+        """Check if the dataframe is in long format.
+
+        Returns:
+            bool: True if the dataframe is in long format, False otherwise.
+        """
+        return self.index.nlevels == 3
+
     def get_frame(self, frame):
         """Get a specific frame from the dataframe.
 
@@ -86,4 +106,6 @@ class SoccerTrackMixin(object):
         Returns:
             pd.DataFrame: Dataframe with the frame.
         """
+        if self.is_long_format():
+            return self.xs(frame, level="frame")
         return self[self.index == frame]
