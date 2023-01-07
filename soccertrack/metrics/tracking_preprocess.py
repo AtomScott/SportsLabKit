@@ -1,21 +1,18 @@
 from __future__ import annotations
-
 from typing import Any
 
 import numpy as np
 from itertools import chain
-from soccertrack import BBoxDataFrame
 from scipy.spatial.distance import cdist
-from soccertrack.metrics import iou_score
-from soccertrack.logger import tqdm
 
-def to_mot_eval_format(bboxes_gt : BBoxDataFrame, 
+from soccertrack.metrics import iou_score
+from soccertrack.metrics.object_detection import convert_to_x1y1x2y2
+
+def to_mot_eval_format(
                         tracker_ids: list[list[int]],
                         tracker_dets: list[list[np.ndarray]], 
-                        tracker_dets_xyxy: list[list[np.ndarray]],
                         gt_ids: list[list[int]], 
                         gt_dets: list[list[np.ndarray]], 
-                        gt_dets_xyxy: list[list[np.ndarray]]
                         ) -> dict[str, Any]:
     """Converts tracking and ground truth data to the format(dictionary) required by the MOT metrics.
     
@@ -28,7 +25,7 @@ def to_mot_eval_format(bboxes_gt : BBoxDataFrame,
         gt_dets (list[list[np.ndarray]]): List of lists of ground truth detections for each timestep
         gt_dets_xyxy (list[list[np.ndarray]]): List of lists of ground truth detections in xyxy format for each timestep
         
-    Retruns:
+    Returns:
         dict[str, Any]: Dictionary containing the data required by the MOT metrics
         
     Note:
@@ -42,8 +39,17 @@ def to_mot_eval_format(bboxes_gt : BBoxDataFrame,
     reference : https://github.com/JonathonLuiten/TrackEval/blob/ec237ec3ef654548fdc1fa1e100a45b31a6d4499/trackeval/datasets/mots_challenge.py
     """
     
+    gt_dets_xyxy = [
+        [convert_to_x1y1x2y2(bbox) for bbox in frame_dets]
+        for frame_dets in gt_dets
+    ]
+    tracker_dets_xyxy = [
+        [convert_to_x1y1x2y2(bbox) for bbox in frame_dets]
+        for frame_dets in tracker_dets
+    ]
+
     sim_score_list = []
-    for i in tqdm(range(len(gt_ids))):
+    for i in range(len(gt_ids)):
         sim_score = cdist(gt_dets_xyxy[i], tracker_dets_xyxy[i], iou_score)
         sim_score_list.append(sim_score)
 
@@ -67,5 +73,5 @@ def to_mot_eval_format(bboxes_gt : BBoxDataFrame,
     data["num_gt_dets"] = num_gt_dets
     data["num_tracker_ids"] = len(unique_tracker_ids)
     data["num_gt_ids"] = len(unique_gt_ids)
-    data["num_timesteps"] = len(bboxes_gt)
+    data["num_timesteps"] = len(gt_dets)
     return data

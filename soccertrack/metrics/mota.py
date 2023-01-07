@@ -1,21 +1,11 @@
 from __future__ import annotations
-
 from typing import Any
 
 import numpy as np
 from scipy.optimize import linear_sum_assignment
 
 from soccertrack import BBoxDataFrame
-# from soccertrack.utils.utils import list2dict
-
-import numpy as np
-from itertools import chain
-
-from scipy.spatial.distance import cdist
-from soccertrack.metrics import iou_score
-from soccertrack.logger import tqdm
-
-from ._track_preprocess import to_mot_eval_format
+from .tracking_preprocess import to_mot_eval_format
 
 def mota_score(bboxes_track: BBoxDataFrame, bboxes_gt: BBoxDataFrame) -> dict[str, Any]:
     """Calculates CLEAR metrics for one sequence.
@@ -26,14 +16,12 @@ def mota_score(bboxes_track: BBoxDataFrame, bboxes_gt: BBoxDataFrame) -> dict[st
 
     Returns:
         dict[str, Any]: CLEAR metrics
-
-
     """
 
-    tracker_ids, tracker_dets, tracker_dets_xyxy = bboxes_track.preprocess_for_mot_eval()
-    gt_ids, gt_dets, gt_dets_xyxy = bboxes_gt.preprocess_for_mot_eval()
+    tracker_ids, tracker_dets = bboxes_track.preprocess_for_mot_eval()
+    gt_ids, gt_dets = bboxes_gt.preprocess_for_mot_eval()
     
-    data = to_mot_eval_format(bboxes_gt, tracker_ids, tracker_dets, tracker_dets_xyxy, gt_ids, gt_dets, gt_dets_xyxy)
+    data = to_mot_eval_format(tracker_ids, tracker_dets, gt_ids, gt_dets)
 
     main_integer_fields = [
         "CLR_TP",
@@ -63,7 +51,6 @@ def mota_score(bboxes_track: BBoxDataFrame, bboxes_gt: BBoxDataFrame) -> dict[st
     fields = float_fields + integer_fields
 
     # Configuration options:
-    # config = utils.init_config(config, get_default_config(), get_name())
     threshold = 0.5
     res = {}
     for field in fields:

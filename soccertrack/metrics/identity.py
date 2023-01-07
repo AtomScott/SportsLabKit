@@ -1,15 +1,11 @@
 from __future__ import annotations
-
 from typing import Any
 
 import numpy as np
 from scipy.optimize import linear_sum_assignment
 
 from soccertrack import BBoxDataFrame
-# from soccertrack.utils.utils import list2dict
-
-from ._track_preprocess import to_mot_eval_format
-
+from .tracking_preprocess import to_mot_eval_format
 
 def identity_score(
     bboxes_track: BBoxDataFrame, bboxes_gt: BBoxDataFrame
@@ -22,18 +18,12 @@ def identity_score(
 
     Returns:
         dict[str, Any]: ID metrics
-
-
     """
-
-    # track_list = bboxes_track.to_list()
-    # gt_list = bboxes_gt.to_list()
-
-    # data = list2dict(track_list, gt_list)
-    tracker_ids, tracker_dets, tracker_dets_xyxy = bboxes_track.preprocess_for_mot_eval()
-    gt_ids, gt_dets, gt_dets_xyxy = bboxes_gt.preprocess_for_mot_eval()
     
-    data = to_mot_eval_format(bboxes_gt, tracker_ids, tracker_dets, tracker_dets_xyxy, gt_ids, gt_dets, gt_dets_xyxy)
+    tracker_ids, tracker_dets = bboxes_track.preprocess_for_mot_eval()
+    gt_ids, gt_dets = bboxes_gt.preprocess_for_mot_eval()
+    
+    data = to_mot_eval_format(tracker_ids, tracker_dets, gt_ids, gt_dets)
 
     integer_fields = ["IDTP", "IDFN", "IDFP"]
     float_fields = ["IDF1", "IDR", "IDP"]

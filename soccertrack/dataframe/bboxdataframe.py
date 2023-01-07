@@ -9,6 +9,7 @@ import pandas as pd
 from pathlib import Path
 
 from soccertrack.utils import make_video
+from soccertrack.logger import tqdm
 
 from ..logger import logger
 from ..utils import MovieIterator, get_fps
@@ -306,7 +307,7 @@ class BBoxDataFrame(SoccerTrackMixin, pd.DataFrame):
         OBJECT_ID_INDEX = 7
         
         # make a list of lists such that each list contains the detections for a single frame
-        list_of_list_of_bboxes = [frame_dets.to_list_of_tuples_format() for i, frame_dets in self.iter_frames()]
+        list_of_list_of_bboxes = [frame_dets.to_list_of_tuples_format() for i, frame_dets in tqdm(self.iter_frames(), total=len(self), desc="Preprocessing for MOT evaluation")]
 
         ids = [
             list_of_bboxes[:, OBJECT_ID_INDEX].astype('int64')
@@ -317,15 +318,8 @@ class BBoxDataFrame(SoccerTrackMixin, pd.DataFrame):
             list_of_bboxes[:, [X_INDEX, Y_INDEX, W_INDEX, H_INDEX]].astype('int64')
             for list_of_bboxes in list_of_list_of_bboxes
         ]
-
-        dets_xyxy =  [
-        np.concatenate((list_of_bboxes[:, [X_INDEX, Y_INDEX]],
-                        list_of_bboxes[:, [X_INDEX, Y_INDEX]] + list_of_bboxes[:, [W_INDEX, H_INDEX]]),
-                        axis=1)
-        for list_of_bboxes in list_of_list_of_bboxes
-        ]
         
-        return ids, dets, dets_xyxy
+        return ids, dets
 
 def add_bbox_to_frame(
     image: np.ndarray,
