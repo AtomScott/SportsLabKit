@@ -2,7 +2,8 @@ import random
 import numpy as np
 import unittest
 
-from soccertrack.metrics import ap_score, iou_score, map_score, ap_score_range, map_score_range
+import soccertrack
+from soccertrack.metrics import ap_score, iou_score, map_score, ap_score_range, map_score_range, mota_score, identity_score, hota_score
 
 
 class TestMetrics(unittest.TestCase):
@@ -56,7 +57,7 @@ class TestMetrics(unittest.TestCase):
         }
         self.assertDictEqual(ap, ans)
         
-    def test_ap_score_range1(self):
+    def test_ap_score_range_1(self):
         """Test average AP score within specified range with perfect detection."""
         bboxes_det = [
             [10, 10, 20, 20, 1.0, "A", "N"],
@@ -136,6 +137,86 @@ class TestMetrics(unittest.TestCase):
         mAP_range = map_score_range(bboxes_det, bboxes_gt, 0.5, 0.95, 0.05)
         ans = 1
         self.assertEqual(mAP_range, ans)
+        
+    def test_mota_score_1(self):
+        """Test MOTA score with perfect detection."""
+        dataset_path = soccertrack.datasets.get_path('top-view')
+        path_to_csv = sorted(dataset_path.glob('annotations/*.csv'))[0]
+        bbdf = soccertrack.load_df(path_to_csv)
+        bboxes_track = bbdf
+        bboxes_gt = bbdf
+        
+        mota = mota_score(bboxes_track, bboxes_gt)
+        ans = {'MOTA': 1.0,
+            'MOTP': 1.0,
+            'MODA': 1.0,
+            'CLR_Re': 1.0,
+            'CLR_Pr': 1.0,
+            'MTR': 1.0,
+            'PTR': 0.0,
+            'MLR': 0.0,
+            'sMOTA': 1.0,
+            'CLR_F1': 1.0,
+            'FP_per_frame': 0.0,
+            'MOTAL': 1.0,
+            'MOTP_sum': float(23 * 900),
+            'CLR_TP': 23*900,
+            'CLR_FN': 0,
+            'CLR_FP': 0,
+            'IDSW': 0,
+            'MT': 23,
+            'PT': 0,
+            'ML': 0,
+            'Frag': 0.0,
+            'CLR_Frames': 900}
+        self.assertDictEqual(mota, ans)
+        
+        
+    def identity_score_1(self):
+        """Test IDENTITY score with perfect detection."""
+        dataset_path = soccertrack.datasets.get_path('top-view')
+        path_to_csv = sorted(dataset_path.glob('annotations/*.csv'))[0]
+        bbdf = soccertrack.load_df(path_to_csv)
+        bboxes_track = bbdf
+        bboxes_gt = bbdf
+        
+        identity = mota_score(bboxes_track, bboxes_gt)
+        ans = {'IDF1': 1.0, 
+            'IDR': 1.0, 
+            'IDP': 1.0, 
+            'IDTP': 23 * 900, 
+            'IDFN': 0, 
+            'IDFP': 0}
+
+        self.assertDictEqual(identity, ans)
+        
+    def hota_score_1(self):
+        """Test HOTA score with perfect detection."""
+        dataset_path = soccertrack.datasets.get_path('top-view')
+        path_to_csv = sorted(dataset_path.glob('annotations/*.csv'))[0]
+        bbdf = soccertrack.load_df(path_to_csv)
+        bboxes_track = bbdf
+        bboxes_gt = bbdf
+        
+        hota = mota_score(bboxes_track, bboxes_gt)
+        ans = {'HOTA': 1.0,
+            'DetA': 1.0,
+            'AssA': 1.0,
+            'DetRe': 1.0,
+            'DetPr': 1.0,
+            'AssRe': 1.0,
+            'AssPr': 1.0,
+            'LocA': 1.0,
+            'RHOTA': 1.0,
+            'HOTA_TP': float(23 * 900),
+            'HOTA_FN': 0.0,
+            'HOTA_FP': 0.0,
+            'HOTA(0)': 1.0,
+            'LocA(0)': 1.0,
+            'HOTALocA(0)': 1.0}
+
+        self.assertDictEqual(hota, ans)
+
 
 
 if __name__ == "__main__":
