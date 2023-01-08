@@ -37,6 +37,15 @@ _COLOR_NAME_TO_RGB = dict(
 
 _COLOR_NAMES = list(_COLOR_NAME_TO_RGB)
 
+# global index to access bbox information for each frame
+X_INDEX = 0  # xmin
+Y_INDEX = 1  # ymin
+W_INDEX = 2  # width
+H_INDEX = 3  # height
+CONFIDENCE_INDEX = 4
+CLASS_ID_INDEX = 5
+IMAGE_NAME_INDEX = 6
+OBJECT_ID_INDEX = 7
 
 def _rgb_to_bgr(color: tuple[int, ...]) -> list[Any]:
     """Convert RGB color to BGR color.
@@ -298,14 +307,6 @@ class BBoxDataFrame(SoccerTrackMixin, pd.DataFrame):
             ids (list): List of lists of object ids for each frame.
             dets (list): A list of arrays of detections in the format (x, y, w, h) for each frame.
         """
-        X_INDEX = 0  # xmin
-        Y_INDEX = 1  # ymin
-        W_INDEX = 2  # width
-        H_INDEX = 3  # height
-        CONFIDENCE_INDEX = 4
-        CLASS_ID_INDEX = 5
-        IMAGE_NAME_INDEX = 6
-        OBJECT_ID_INDEX = 7
         
         # make a list of lists such that each list contains the detections for a single frame
         list_of_list_of_bboxes = [frame_dets.to_list_of_tuples_format() for i, frame_dets in tqdm(self.iter_frames(), total=len(self), desc="Preprocessing for MOT evaluation")]
