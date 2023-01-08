@@ -20,7 +20,6 @@ def hota_score(bboxes_track: BBoxDataFrame, bboxes_gt: BBoxDataFrame) -> dict[st
     
     tracker_ids, tracker_dets = bboxes_track.preprocess_for_mot_eval()
     gt_ids, gt_dets = bboxes_gt.preprocess_for_mot_eval()
-    
     data = to_mot_eval_format(tracker_ids, tracker_dets, gt_ids, gt_dets)
 
     array_labels = np.arange(0.05, 0.99, 0.05)
@@ -52,13 +51,18 @@ def hota_score(bboxes_track: BBoxDataFrame, bboxes_gt: BBoxDataFrame) -> dict[st
         )
         res["LocA"] = np.ones((len(array_labels)), dtype=np.float)
         res["LocA(0)"] = 1.0
+        # Calculate final scores
+        hota_final_scores(res)
         return res
+
     if data["num_gt_dets"] == 0:
         res["HOTA_FP"] = data["num_tracker_dets"] * np.ones(
             (len(array_labels)), dtype=np.float
         )
         res["LocA"] = np.ones((len(array_labels)), dtype=np.float)
         res["LocA(0)"] = 1.0
+        # Calculate final scores
+        hota_final_scores(res)
         return res
 
     # Variables counting global association
@@ -84,7 +88,6 @@ def hota_score(bboxes_track: BBoxDataFrame, bboxes_gt: BBoxDataFrame) -> dict[st
         potential_matches_count[
             gt_ids_t[:, np.newaxis], tracker_ids_t[np.newaxis, :]
         ] += sim_iou
-
         # Calculate the total number of dets for each gt_id and tracker_id.
         gt_id_count[gt_ids_t] += 1
         tracker_id_count[0, tracker_ids_t] += 1
@@ -167,12 +170,16 @@ def hota_score(bboxes_track: BBoxDataFrame, bboxes_gt: BBoxDataFrame) -> dict[st
     )
     res["HOTA"] = np.sqrt(res["DetA"] * res["AssA"])
     res["RHOTA"] = np.sqrt(res["DetRe"] * res["AssA"])
-
     res["HOTA(0)"] = np.sqrt(res["DetA"] * res["AssA"])[0]
     res["LocA(0)"] = res["LocA"][0]
     res["HOTALocA(0)"] = res["HOTA(0)"] * res["LocA(0)"]
 
     # Calculate final scores
+    hota_final_scores(res)
+    return res
+
+def hota_final_scores(res):
+    """Calculate final HOTA scores"""
     res["HOTA"] = np.mean(res["HOTA"])
     res["DetA"] = np.mean(res["DetA"])
     res["AssA"] = np.mean(res["AssA"])
@@ -185,5 +192,4 @@ def hota_score(bboxes_track: BBoxDataFrame, bboxes_gt: BBoxDataFrame) -> dict[st
     res["HOTA_TP"] = np.mean(res["HOTA_TP"])
     res["HOTA_FP"] = np.mean(res["HOTA_FP"])
     res["HOTA_FN"] = np.mean(res["HOTA_FN"])
-
-    return res
+    

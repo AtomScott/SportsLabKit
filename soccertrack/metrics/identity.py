@@ -38,9 +38,14 @@ def identity_score(
     # Return result quickly if tracker or gt sequence is empty
     if data["num_tracker_dets"] == 0:
         res["IDFN"] = data["num_gt_dets"]
+        # Calculate final scores
+        id_final_scores(res)
         return res
+    
     if data["num_gt_dets"] == 0:
         res["IDFP"] = data["num_tracker_dets"]
+        # Calculate final scores
+        id_final_scores(res)
         return res
 
     # Variables counting global association
@@ -86,12 +91,13 @@ def identity_score(
     res["IDFN"] = fn_mat[match_rows, match_cols].sum().astype(np.int)
     res["IDFP"] = fp_mat[match_rows, match_cols].sum().astype(np.int)
     res["IDTP"] = (gt_id_count.sum() - res["IDFN"]).astype(np.int)
-
     # Calculate final ID scores
+    id_final_scores(res)
+    return res
 
+def id_final_scores(res):
     res["IDR"] = res["IDTP"] / np.maximum(1.0, res["IDTP"] + res["IDFN"])
     res["IDP"] = res["IDTP"] / np.maximum(1.0, res["IDTP"] + res["IDFP"])
     res["IDF1"] = res["IDTP"] / np.maximum(
         1.0, res["IDTP"] + 0.5 * res["IDFP"] + 0.5 * res["IDFN"]
-    )
-    return res
+    )  

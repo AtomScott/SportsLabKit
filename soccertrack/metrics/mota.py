@@ -19,8 +19,7 @@ def mota_score(bboxes_track: BBoxDataFrame, bboxes_gt: BBoxDataFrame) -> dict[st
     """
 
     tracker_ids, tracker_dets = bboxes_track.preprocess_for_mot_eval()
-    gt_ids, gt_dets = bboxes_gt.preprocess_for_mot_eval()
-    
+    gt_ids, gt_dets = bboxes_gt.preprocess_for_mot_eval()    
     data = to_mot_eval_format(tracker_ids, tracker_dets, gt_ids, gt_dets)
 
     main_integer_fields = [
@@ -60,11 +59,18 @@ def mota_score(bboxes_track: BBoxDataFrame, bboxes_gt: BBoxDataFrame) -> dict[st
     if data["num_tracker_dets"] == 0:
         res["CLR_FN"] = data["num_gt_dets"]
         res["ML"] = data["num_gt_ids"]
+        res["CLR_Frames"] = data["num_timesteps"]
         res["MLR"] = 1
+        # Calculate final scores
+        mota_final_scores(res)
         return res
+    
     if data["num_gt_dets"] == 0:
         res["CLR_FP"] = data["num_tracker_dets"]
+        res["CLR_Frames"] = data["num_timesteps"]
         res["MLR"] = 1
+        # Calculate final scores
+        mota_final_scores(res)
         return res
 
     # Variables counting global association
@@ -143,13 +149,16 @@ def mota_score(bboxes_track: BBoxDataFrame, bboxes_gt: BBoxDataFrame) -> dict[st
         res["ML"] = num_gt_ids - res["MT"] - res["PT"]
         res["Frag"] = np.sum(np.subtract(gt_frag_count[gt_frag_count > 0], 1))
         res["MOTP"] = res["MOTP_sum"] / np.maximum(1.0, res["CLR_TP"])
-
         res["CLR_Frames"] = data["num_timesteps"]
-
     # Calculate final CLEAR scores
     # """Calculate sub-metric ('field') values which only depend on other sub-metric values.
     # This function is used both for both per-sequence calculation, and in combining values across sequences.
     # """
+    mota_final_scores(res)
+    return res
+
+def mota_final_scores(res):
+    """Calculate final CLEAR scores"""
     num_gt_ids = res["MT"] + res["ML"] + res["PT"]
     res["MTR"] = res["MT"] / np.maximum(1.0, num_gt_ids)
     res["MLR"] = res["ML"] / np.maximum(1.0, num_gt_ids)
@@ -175,5 +184,4 @@ def mota_score(bboxes_track: BBoxDataFrame, bboxes_gt: BBoxDataFrame) -> dict[st
     res["MOTAL"] = (res["CLR_TP"] - res["CLR_FP"] - safe_log_idsw) / np.maximum(
         1.0, res["CLR_TP"] + res["CLR_FN"]
     )
-
-    return res
+    
