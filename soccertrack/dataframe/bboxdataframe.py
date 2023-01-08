@@ -295,7 +295,8 @@ class BBoxDataFrame(SoccerTrackMixin, pd.DataFrame):
             self (BBoxDataFrame): BBoxDataFrame object.
 
         Returns:
-            pd.DataFrame: Dataframe in MOT format.
+            ids (list): List of lists of object ids for each frame.
+            dets (list): A list of arrays of detections in the format (x, y, w, h) for each frame.
         """
         X_INDEX = 0  # xmin
         Y_INDEX = 1  # ymin

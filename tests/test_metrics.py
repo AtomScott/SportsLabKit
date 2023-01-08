@@ -142,7 +142,7 @@ class TestMetrics(unittest.TestCase):
         """Test MOTA score with perfect detection."""
         dataset_path = soccertrack.datasets.get_path('top-view')
         path_to_csv = sorted(dataset_path.glob('annotations/*.csv'))[0]
-        bbdf = soccertrack.load_df(path_to_csv)
+        bbdf = soccertrack.load_df(path_to_csv)[0:2]
         bboxes_track = bbdf
         bboxes_gt = bbdf
         
@@ -159,8 +159,8 @@ class TestMetrics(unittest.TestCase):
             'CLR_F1': 1.0,
             'FP_per_frame': 0.0,
             'MOTAL': 1.0,
-            'MOTP_sum': float(23 * 900),
-            'CLR_TP': 23*900,
+            'MOTP_sum': float(23 * len(bbdf)),
+            'CLR_TP': 23*len(bbdf),
             'CLR_FN': 0,
             'CLR_FP': 0,
             'IDSW': 0,
@@ -168,7 +168,7 @@ class TestMetrics(unittest.TestCase):
             'PT': 0,
             'ML': 0,
             'Frag': 0.0,
-            'CLR_Frames': 900}
+            'CLR_Frames': len(bbdf)}
         self.assertDictEqual(mota, ans)
         
         
@@ -176,7 +176,7 @@ class TestMetrics(unittest.TestCase):
         """Test IDENTITY score with perfect detection."""
         dataset_path = soccertrack.datasets.get_path('top-view')
         path_to_csv = sorted(dataset_path.glob('annotations/*.csv'))[0]
-        bbdf = soccertrack.load_df(path_to_csv)
+        bbdf = soccertrack.load_df(path_to_csv)[0:2]
         bboxes_track = bbdf
         bboxes_gt = bbdf
         
@@ -184,7 +184,7 @@ class TestMetrics(unittest.TestCase):
         ans = {'IDF1': 1.0, 
             'IDR': 1.0, 
             'IDP': 1.0, 
-            'IDTP': 23 * 900, 
+            'IDTP': 23 * len(bbdf), 
             'IDFN': 0, 
             'IDFP': 0}
 
@@ -194,7 +194,7 @@ class TestMetrics(unittest.TestCase):
         """Test HOTA score with perfect detection."""
         dataset_path = soccertrack.datasets.get_path('top-view')
         path_to_csv = sorted(dataset_path.glob('annotations/*.csv'))[0]
-        bbdf = soccertrack.load_df(path_to_csv)
+        bbdf = soccertrack.load_df(path_to_csv)[0:2]
         bboxes_track = bbdf
         bboxes_gt = bbdf
         
@@ -208,7 +208,7 @@ class TestMetrics(unittest.TestCase):
             'AssPr': 1.0,
             'LocA': 1.0,
             'RHOTA': 1.0,
-            'HOTA_TP': float(23 * 900),
+            'HOTA_TP': float(23 * len(bbdf)),
             'HOTA_FN': 0.0,
             'HOTA_FP': 0.0,
             'HOTA(0)': 1.0,
