@@ -8,7 +8,10 @@ from soccertrack import BBoxDataFrame
 from .tracking_preprocess import to_mot_eval_format
 
 
-def mota_score(bboxes_track: BBoxDataFrame, bboxes_gt: BBoxDataFrame) -> dict[str, Any]:
+
+def mota_score(
+    data,
+):  # bboxes_track: BBoxDataFrame, bboxes_gt: BBoxDataFrame) -> dict[str, Any]:
     """Calculates CLEAR metrics for one sequence.
 
     Args:

@@ -1,4 +1,4 @@
-.PHONY: clean data format lint requirements sync_data_to_s3 sync_data_from_s3 show-d
+.PHONY: clean data format lint requirements sync_data_to_s3 sync_data_from_s3 show-d tests
 
 #################################################################################
 # GLOBALS                                                                       #
@@ -37,8 +37,9 @@ clean:
 
 ## format python source code
 format:
-	$(PYTHON_INTERPRETER) -m black src/
-	$(PYTHON_INTERPRETER) -m isort src/
+	poetry run docformatter --in-place -r $(i)
+	poetry run black $(i)
+	poetry run isort $(i)
 
 ## Lint using flake8
 lint:
@@ -47,6 +48,10 @@ lint:
 	poetry run isort $(i)
 	poetry run prospector --profile profile.prospector.yaml $(i)
 
+## Run tests using pytest
+tests:
+	poetry run pytest --cov=./ --cov-report xml 
+	/bin/deepsource report --analyzer test-coverage --key python --value-file ./coverage.xml  
 
 ## Upload Data to S3
 sync_data_to_s3:

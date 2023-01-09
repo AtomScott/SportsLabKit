@@ -11,7 +11,7 @@ import yaml
 
 import soccertrack
 from soccertrack import Camera
-from soccertrack.logging import logger, tqdm
+from soccertrack.logger import logger, tqdm
 
 
 # Move each file to their respective folderv and rename them to include their parent folder name

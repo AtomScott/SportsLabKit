@@ -1,5 +1,7 @@
 from contextlib import contextmanager
 import logging
+import warnings
+
 
 
 @contextmanager
@@ -13,7 +15,8 @@ def all_logging_disabled(highest_level=logging.CRITICAL):
 
 
 # load vidgear first with all_logging_disabled
-with all_logging_disabled():
+with all_logging_disabled(), warnings.catch_warnings():
+    warnings.simplefilter("ignore")
     from vidgear.gears import WriteGear, CamGear
 
 from soccertrack.dataframe import CoordinatesDataFrame, BBoxDataFrame

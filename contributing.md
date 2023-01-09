@@ -53,3 +53,30 @@ When contibuting to documentation, a good way to check your changes is to view t
 > **Note**
 > 
 > SoccerTrack is in early development and is not yet ready for production use. We are working on a stable release and will update this README when it is ready. In the meantime, we welcome any feedback or contributions. If you have any questions or something is unclear, please feel free to open an issue.
+
+## Testing
+
+`poetry run pytest tests`
+
+The Makefile contains the following commands:
+```
+## format python source code
+format:
+	poetry run docformatter --in-place -r $(i)
+	poetry run black $(i)
+	poetry run isort $(i)
+
+## Lint using flake8
+lint:
+	poetry run docformatter --in-place -r $(i)
+	poetry run black $(i)
+	poetry run isort $(i)
+	poetry run prospector --profile profile.prospector.yaml $(i)
+
+## Run tests using pytest
+tests:
+	poetry run pytest --cov=./ --cov-report xml 
+	/bin/deepsource report --analyzer test-coverage --key python --value-file ./coverage.xml  
+```
+
+so you can run `make format` to format the code, `make lint` to lint the code, and `make tests` to run the tests.

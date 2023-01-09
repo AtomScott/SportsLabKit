@@ -1,10 +1,10 @@
-import datetime
-import os
-import sys
-import unittest
-from pathlib import Path
-from tempfile import TemporaryDirectory
-from unittest import TestCase
+# import datetime
+# import os
+# import sys
+# import unittest
+# from pathlib import Path
+# from tempfile import TemporaryDirectory
+# from unittest import TestCase
 
 import ffmpeg
 import pandas as pd
@@ -16,15 +16,15 @@ from soccertrack.io.file import (
     load_statsports,
 )
 
-TEST_DIR = os.path.dirname(os.path.abspath(__file__))
-PROJECT_DIR = os.path.abspath(os.path.join(TEST_DIR, os.pardir))
-sys.path.insert(0, PROJECT_DIR)
+# TEST_DIR = os.path.dirname(os.path.abspath(__file__))
+# PROJECT_DIR = os.path.abspath(os.path.join(TEST_DIR, os.pardir))
+# sys.path.insert(0, PROJECT_DIR)
 
 # from sandbox.functions import *  # noqa
 
 
-class TestFunctions(TestCase):
-    """test functions"""
+#     def test_load_gps_from_yaml(self):
+#         yamlfile = Path("tests/assets/gps_data/four_gps_files.yaml")
 
     # def test_cut_video_file(self):
     #     """A test for the cut_video_file function."""
@@ -158,5 +158,5 @@ class TestFunctions(TestCase):
     #     pass
 
 
-if __name__ == "__main__":
-    unittest.main()
+# if __name__ == "__main__":
+#     unittest.main()

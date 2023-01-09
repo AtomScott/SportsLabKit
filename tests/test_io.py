@@ -53,5 +53,37 @@ class TestIO(unittest.TestCase):
     #         )
 
 
-if __name__ == "__main__":
-    unittest.main()
+#     def test_save_dataframe_load_dataframe(self):
+#         with TemporaryDirectory() as tmpdir:
+#             save_path = Path(tmpdir) / Path("dataframe.csv")
+
+#             # Make a dataframe with multi-index columns
+#             cols = pd.MultiIndex.from_tuples([
+#                 ('0', '0', 'A'),
+#                 ('0', '0', 'B'),
+#             ])
+#             dataframe = pd.DataFrame(
+#                 data=[[1, 2], [3, 4]],
+#                 index=['a', 'b'],
+#                 columns=cols
+#             )
+
+#             dataframe.attrs = {
+#                 'testinging': 'test',
+#                 '420': 420,
+#                 '2.6': 2.6
+#             }
+
+#             save_dataframe(dataframe, save_path)
+#             self.assertTrue(save_path.exists())
+
+#             loaded_dataframe = load_dataframe(save_path)
+
+#             pd.testing.assert_frame_equal(loaded_dataframe, dataframe)
+#             self.assertDictEqual(
+#                 loaded_dataframe.attrs,
+#                 dataframe.attrs
+#             )
+
+# if __name__ == "__main__":
+#     unittest.main()

@@ -145,7 +145,7 @@ def iou_score(bbox_det: list[int], bbox_gt: list[int]) -> float:
     union = _getUnionAreas(bbox_det, bbox_gt, interArea=interArea)
     # intersection over union
     iou = interArea / union
-    assert iou >= 0
+    assert iou >= 0, f"Got negative iou: {iou}, from {bbox_det=} and {bbox_gt=}"
     return iou
 
 
