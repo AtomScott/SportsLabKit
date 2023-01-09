@@ -88,9 +88,9 @@ def identity_score(
     match_rows, match_cols = linear_sum_assignment(fn_mat + fp_mat)
 
     # Accumulate basic statistics
-    res["IDFN"] = fn_mat[match_rows, match_cols].sum().astype(np.int)
-    res["IDFP"] = fp_mat[match_rows, match_cols].sum().astype(np.int)
-    res["IDTP"] = (gt_id_count.sum() - res["IDFN"]).astype(np.int)
+    res["IDFN"] = fn_mat[match_rows, match_cols].sum().astype(int)
+    res["IDFP"] = fp_mat[match_rows, match_cols].sum().astype(int)
+    res["IDTP"] = (gt_id_count.sum() - res["IDFN"]).astype(int)
     # Calculate final ID scores
     id_final_scores(res)
     return res
