@@ -18,6 +18,19 @@ def identity_score(
 
     Returns:
         dict[str, Any]: ID metrics
+        
+    Note:
+    The description of each evaluation indicator will be as follows:
+    "IDTP" : The number of true positive identities.
+    "IDFN" : The number of false negative identities.
+    "IDFP" : The number of false positive identities.
+    "IDF1" : The F1 score of the identity detection.
+    "IDR" : The recall of the identity detection.
+    "IDP" : The precision of the identity detection.
+    
+    This is also based on the following original paper and the github repository.
+    paper : https://arxiv.org/abs/1609.01775
+    code  : https://github.com/JonathonLuiten/TrackEval
     """
     
     tracker_ids, tracker_dets = bboxes_track.preprocess_for_mot_eval()
@@ -88,10 +101,17 @@ def identity_score(
     match_rows, match_cols = linear_sum_assignment(fn_mat + fp_mat)
 
     # Accumulate basic statistics
-    res["IDFN"] = fn_mat[match_rows, match_cols].sum().astype(np.int)
-    res["IDFP"] = fp_mat[match_rows, match_cols].sum().astype(np.int)
-    res["IDTP"] = (gt_id_count.sum() - res["IDFN"]).astype(np.int)
+    res["IDFN"] = fn_mat[match_rows, match_cols].sum().astype(np.int64)
+    res["IDFP"] = fp_mat[match_rows, match_cols].sum().astype(np.int64)
+    res["IDTP"] = (gt_id_count.sum() - res["IDFN"]).astype(np.int64)
+    
     # Calculate final ID scores
+    #At First, Subtract the tracks with missing data from the entire track data of the track being tracked. 
+    #This is to adjust the number of FPs.
+    num_attibutes_per_bbox = 5  #The number of attributes for each object in the BBoxDataframe. 
+                                #([bb_left, bb_top, bb_width, bb_height, conf])
+    num_lacked_tracks = int((bboxes_track == -1.0).values.sum() / num_attibutes_per_bbox)
+    res["IDFP"] = res["IDFP"] - num_lacked_tracks
     id_final_scores(res)
     return res
 
