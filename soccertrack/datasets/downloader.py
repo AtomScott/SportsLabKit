@@ -65,14 +65,14 @@ class KaggleDownloader:
                 force=force,
                 quiet=quiet,
             )
-            
+
         if file_name is None and unzip:
-            file_name = 'soccertrack'
+            file_name = "soccertrack"
         if file_name is None and not unzip:
-            file_name += 'soccertrack.zip'
+            file_name += "soccertrack.zip"
         else:
             file_name = Path(file_name).name
-        
+
         save_path = path / file_name
         return save_path
 
@@ -169,7 +169,7 @@ def authenticate(show_message: bool = True) -> Any:
 
         api = KaggleApi()
         api.authenticate()
-        logger.info('Authentication successful.')
+        logger.info("Authentication successful.")
     except OSError:
         logger.error("Kaggle API key not found. Showing instructions to authenticate.")
         if show_message:
