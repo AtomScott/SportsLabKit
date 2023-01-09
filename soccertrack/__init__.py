@@ -1,6 +1,6 @@
-
 from contextlib import contextmanager
 import logging
+
 
 @contextmanager
 def all_logging_disabled(highest_level=logging.CRITICAL):
@@ -10,6 +10,7 @@ def all_logging_disabled(highest_level=logging.CRITICAL):
         yield
     finally:
         logging.disable(previous_level)
+
 
 # load vidgear first with all_logging_disabled
 with all_logging_disabled():
