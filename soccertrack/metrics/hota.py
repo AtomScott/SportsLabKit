@@ -226,8 +226,3 @@ def hota_final_scores(res):
     res["HOTA_TP"] = np.mean(res["HOTA_TP"])
     res["HOTA_FP"] = np.mean(res["HOTA_FP"])
     res["HOTA_FN"] = np.mean(res["HOTA_FN"])
-<<<<<<< Updated upstream
-=======
-
-    return res
->>>>>>> Stashed changes
