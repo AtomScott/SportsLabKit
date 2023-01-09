@@ -7,6 +7,7 @@ from scipy.optimize import linear_sum_assignment
 from soccertrack import BBoxDataFrame
 from .tracking_preprocess import to_mot_eval_format
 
+
 def hota_score(bboxes_track: BBoxDataFrame, bboxes_gt: BBoxDataFrame) -> dict[str, Any]:
     """Calculates the HOTA metrics for one sequence.
 
@@ -36,7 +37,7 @@ def hota_score(bboxes_track: BBoxDataFrame, bboxes_gt: BBoxDataFrame) -> dict[st
     paper : https://link.springer.com/article/10.1007/s11263-020-01375-2
     code  : https://github.com/JonathonLuiten/TrackEval
     """
-    
+
     tracker_ids, tracker_dets = bboxes_track.preprocess_for_mot_eval()
     gt_ids, gt_dets = bboxes_gt.preprocess_for_mot_eval()
     data = to_mot_eval_format(tracker_ids, tracker_dets, gt_ids, gt_dets)
@@ -59,16 +60,14 @@ def hota_score(bboxes_track: BBoxDataFrame, bboxes_gt: BBoxDataFrame) -> dict[st
     # Initialise results
     res = {}
     for field in float_array_fields + integer_array_fields:
-        res[field] = np.zeros((len(array_labels)), dtype=np.float64)
+        res[field] = np.zeros((len(array_labels)), dtype=float)
     for field in float_fields:
         res[field] = 0
 
     # Return result quickly if tracker or gt sequence is empty
     if data["num_tracker_dets"] == 0:
-        res["HOTA_FN"] = data["num_gt_dets"] * np.ones(
-            (len(array_labels)), dtype=np.float64
-        )
-        res["LocA"] = np.ones((len(array_labels)), dtype=np.float64)
+        res["HOTA_FN"] = data["num_gt_dets"] * np.ones((len(array_labels)), dtype=float)
+        res["LocA"] = np.ones((len(array_labels)), dtype=float)
         res["LocA(0)"] = 1.0
         # Calculate final scores
         hota_final_scores(res)
@@ -76,9 +75,9 @@ def hota_score(bboxes_track: BBoxDataFrame, bboxes_gt: BBoxDataFrame) -> dict[st
 
     if data["num_gt_dets"] == 0:
         res["HOTA_FP"] = data["num_tracker_dets"] * np.ones(
-            (len(array_labels)), dtype=np.float
+            (len(array_labels)), dtype=float
         )
-        res["LocA"] = np.ones((len(array_labels)), dtype=np.float64)
+        res["LocA"] = np.ones((len(array_labels)), dtype=float)
         res["LocA(0)"] = 1.0
         # Calculate final scores
         hota_final_scores(res)
@@ -203,6 +202,7 @@ def hota_score(bboxes_track: BBoxDataFrame, bboxes_gt: BBoxDataFrame) -> dict[st
     hota_final_scores(res)
     return res
 
+
 def hota_final_scores(res):
     """Calculate final HOTA scores"""
     res["HOTA"] = np.mean(res["HOTA"])
@@ -217,4 +217,3 @@ def hota_final_scores(res):
     res["HOTA_TP"] = np.mean(res["HOTA_TP"])
     res["HOTA_FP"] = np.mean(res["HOTA_FP"])
     res["HOTA_FN"] = np.mean(res["HOTA_FN"])
-    

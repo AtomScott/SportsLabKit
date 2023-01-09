@@ -101,10 +101,9 @@ def identity_score(
     match_rows, match_cols = linear_sum_assignment(fn_mat + fp_mat)
 
     # Accumulate basic statistics
-    res["IDFN"] = fn_mat[match_rows, match_cols].sum().astype(np.int64)
-    res["IDFP"] = fp_mat[match_rows, match_cols].sum().astype(np.int64)
-    res["IDTP"] = (gt_id_count.sum() - res["IDFN"]).astype(np.int64)
-    
+    res["IDFN"] = fn_mat[match_rows, match_cols].sum().astype(int)
+    res["IDFP"] = fp_mat[match_rows, match_cols].sum().astype(int)
+    res["IDTP"] = (gt_id_count.sum() - res["IDFN"]).astype(int)
     # Calculate final ID scores
     #At First, Subtract the tracks with missing data from the entire track data of the track being tracked. 
     #This is to adjust the number of FPs.
