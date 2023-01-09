@@ -9,6 +9,7 @@ class Tracker:
     def __init__(self):
         pass
 
+
 class Tracklet:
     def __init__(self, initial_detection, kf=None, funcs=None):
         if funcs is None:

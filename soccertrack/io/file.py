@@ -377,9 +377,9 @@ def load_labelbox(filename: _pathlike) -> CoordinatesDataFrame:
     df_list = []
     for playerid, group in groups:
         teamid = group.teamid.iloc[0]
-        bbox_cols = ['bb_left', 'bb_top', 'bb_width', 'bb_height']
-        
-        if teamid.lower() =='ball':
+        bbox_cols = ["bb_left", "bb_top", "bb_width", "bb_height"]
+
+        if teamid.lower() == "ball":
             teamid = 3
             playerid = 0
 
@@ -501,9 +501,17 @@ def is_mot(filename: _pathlike) -> bool:
             reader = csv.reader(f)
             first_line = next(reader)
 
-        return ["frame", "id", "bb_left", "bb_top", "bb_width", "bb_height"] == first_line
+        return [
+            "frame",
+            "id",
+            "bb_left",
+            "bb_top",
+            "bb_width",
+            "bb_height",
+        ] == first_line
     except Exception:
         return False
+
 
 def infer_bbox_format(filename: _pathlike) -> str:
     """Try to infer the format of a given bounding box file.

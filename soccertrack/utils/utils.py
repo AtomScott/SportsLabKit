@@ -29,6 +29,7 @@ import pandas as pd
 from pandas._typing import FilePath, WriteBuffer
 from itertools import zip_longest
 
+
 def auto_string_parser(value: str) -> Any:
     """Auxiliary function to parse string values.
 
@@ -63,6 +64,8 @@ def auto_string_parser(value: str) -> Any:
     except (ValueError, TypeError):
         pass
     return value
+
+
 def count_iter_items(iterable: Iterable) -> int:
     """Consume an iterable not reading it into memory; return the number of items.
 
@@ -145,10 +148,12 @@ def cv2pil(image: NDArray[np.uint8]) -> Image.Image:
     new_image = Image.fromarray(new_image)
     return new_image
 
+
 def get_fps(path):
     path = str(path)
     cap = cv2.VideoCapture(path)
     return cap.get(cv2.CAP_PROP_FPS)
+
 
 def make_video(
     frames: Iterable[NDArray[np.uint8]],
@@ -229,7 +234,7 @@ def make_video(
     }
 
     logger.debug(f"output_params: {output_params}")
-    
+
     if not Path(outpath).parent.exists():
         os.makedirs(os.path.dirname(outpath), exist_ok=True)
     writer = WriteGear(

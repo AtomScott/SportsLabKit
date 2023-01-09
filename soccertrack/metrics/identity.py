@@ -7,6 +7,7 @@ from scipy.optimize import linear_sum_assignment
 from soccertrack import BBoxDataFrame
 from .tracking_preprocess import to_mot_eval_format
 
+
 def identity_score(
     bboxes_track: BBoxDataFrame, bboxes_gt: BBoxDataFrame
 ) -> dict[str, Any]:
@@ -18,7 +19,7 @@ def identity_score(
 
     Returns:
         dict[str, Any]: ID metrics
-        
+
     Note:
     The description of each evaluation indicator will be as follows:
     "IDTP" : The number of true positive identities.
@@ -27,15 +28,15 @@ def identity_score(
     "IDF1" : The F1 score of the identity detection.
     "IDR" : The recall of the identity detection.
     "IDP" : The precision of the identity detection.
-    
+
     This is also based on the following original paper and the github repository.
     paper : https://arxiv.org/abs/1609.01775
     code  : https://github.com/JonathonLuiten/TrackEval
     """
-    
+
     tracker_ids, tracker_dets = bboxes_track.preprocess_for_mot_eval()
     gt_ids, gt_dets = bboxes_gt.preprocess_for_mot_eval()
-    
+
     data = to_mot_eval_format(tracker_ids, tracker_dets, gt_ids, gt_dets)
 
     integer_fields = ["IDTP", "IDFN", "IDFP"]
@@ -54,7 +55,7 @@ def identity_score(
         # Calculate final scores
         id_final_scores(res)
         return res
-    
+
     if data["num_gt_dets"] == 0:
         res["IDFP"] = data["num_tracker_dets"]
         # Calculate final scores
@@ -105,18 +106,23 @@ def identity_score(
     res["IDFP"] = fp_mat[match_rows, match_cols].sum().astype(int)
     res["IDTP"] = (gt_id_count.sum() - res["IDFN"]).astype(int)
     # Calculate final ID scores
-    #At First, Subtract the tracks with missing data from the entire track data of the track being tracked. 
-    #This is to adjust the number of FPs.
-    num_attibutes_per_bbox = 5  #The number of attributes for each object in the BBoxDataframe. 
-                                #([bb_left, bb_top, bb_width, bb_height, conf])
-    num_lacked_tracks = int((bboxes_track == -1.0).values.sum() / num_attibutes_per_bbox)
+    # At First, Subtract the tracks with missing data from the entire track data of the track being tracked.
+    # This is to adjust the number of FPs.
+    num_attibutes_per_bbox = (
+        5  # The number of attributes for each object in the BBoxDataframe.
+    )
+    # ([bb_left, bb_top, bb_width, bb_height, conf])
+    num_lacked_tracks = int(
+        (bboxes_track == -1.0).values.sum() / num_attibutes_per_bbox
+    )
     res["IDFP"] = res["IDFP"] - num_lacked_tracks
     id_final_scores(res)
     return res
+
 
 def id_final_scores(res):
     res["IDR"] = res["IDTP"] / np.maximum(1.0, res["IDTP"] + res["IDFN"])
     res["IDP"] = res["IDTP"] / np.maximum(1.0, res["IDTP"] + res["IDFP"])
     res["IDF1"] = res["IDTP"] / np.maximum(
         1.0, res["IDTP"] + 0.5 * res["IDFP"] + 0.5 * res["IDFN"]
-    )  
+    )

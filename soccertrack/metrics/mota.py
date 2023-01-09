@@ -7,6 +7,7 @@ from scipy.optimize import linear_sum_assignment
 from soccertrack import BBoxDataFrame
 from .tracking_preprocess import to_mot_eval_format
 
+
 def mota_score(bboxes_track: BBoxDataFrame, bboxes_gt: BBoxDataFrame) -> dict[str, Any]:
     """Calculates CLEAR metrics for one sequence.
 
@@ -16,14 +17,14 @@ def mota_score(bboxes_track: BBoxDataFrame, bboxes_gt: BBoxDataFrame) -> dict[st
 
     Returns:
         dict[str, Any]: CLEAR metrics
-    
+
     Note:
     The description of each evaluation indicator will be as follows:
     "MOTA"  :   Multi-Object Tracking Accuracy.
     "MOTAL" :   MOTA with a logarithmic penalty for ID switches.
     "MOTP"  :   The average dissimilarity between all true positives and their corresponding ground truth targets.
                 res["MOTP_sum"] / np.maximum(1.0, res["CLR_TP"])
-    "MODA"  :   Multi-Object Detection Accuracy. This measure combines false positives and missed targets. 
+    "MODA"  :   Multi-Object Detection Accuracy. This measure combines false positives and missed targets.
     "CLR_Re":   MOTA's Recall. ["CLR_TP"] / np.maximum(1.0, res["CLR_TP"] + res["CLR_FN"]).
     "CLR_Pr":   MOTA's Precision. ["CLR_TP"] / np.maximum(1.0, res["CLR_TP"] + res["CLR_FP"]).
     "MTR"   :   MT divided by the number of unique IDs in gt.
@@ -34,27 +35,26 @@ def mota_score(bboxes_track: BBoxDataFrame, bboxes_gt: BBoxDataFrame) -> dict[st
     "CLR_FN" :  Number of FNs.
     "CLR_FP" :  Number of FPs.
     "IDSW" :    Number of IDSW.
-    "MT" :      Mostly tracked trajectory. A target is mostly tracked if it is successfully tracked for at least 80% of its life span. 
+    "MT" :      Mostly tracked trajectory. A target is mostly tracked if it is successfully tracked for at least 80% of its life span.
     "PT" :      Partially tracked trajectory. All trajectories except MT and ML are PT.
     "ML" :      Mostly lost trajectory. If a track is only recovered for less than 20% of its total length, it is said to be mostly lost (ML).
     "Frag" :    Number of fragments. A fragment is a sub-trajectory of a track that is interrupted by a large gap in detection.
-    
+
     This is also based on the following original paper and the github repository.
     paper : https://arxiv.org/pdf/1603.00831.pdf
     code  : https://github.com/JonathonLuiten/TrackEval
     """
 
     tracker_ids, tracker_dets = bboxes_track.preprocess_for_mot_eval()
-    gt_ids, gt_dets = bboxes_gt.preprocess_for_mot_eval()    
+    gt_ids, gt_dets = bboxes_gt.preprocess_for_mot_eval()
     data = to_mot_eval_format(tracker_ids, tracker_dets, gt_ids, gt_dets)
 
-
     main_integer_fields = [
-        "CLR_TP", 
-        "CLR_FN", 
-        "CLR_FP", 
-        "IDSW", 
-        "MT", 
+        "CLR_TP",
+        "CLR_FN",
+        "CLR_FP",
+        "IDSW",
+        "MT",
         "PT",
         "ML",
         "Frag",
@@ -65,9 +65,9 @@ def mota_score(bboxes_track: BBoxDataFrame, bboxes_gt: BBoxDataFrame) -> dict[st
         "MODA",
         "CLR_Re",
         "CLR_Pr",
-        "MTR", 
-        "PTR", 
-        "MLR", 
+        "MTR",
+        "PTR",
+        "MLR",
         "sMOTA",
     ]
     extra_integer_fields = ["CLR_Frames"]
@@ -91,7 +91,7 @@ def mota_score(bboxes_track: BBoxDataFrame, bboxes_gt: BBoxDataFrame) -> dict[st
         # Calculate final scores
         mota_final_scores(res)
         return res
-    
+
     if data["num_gt_dets"] == 0:
         res["CLR_FP"] = data["num_tracker_dets"]
         res["CLR_Frames"] = data["num_timesteps"]
@@ -167,7 +167,7 @@ def mota_score(bboxes_track: BBoxDataFrame, bboxes_gt: BBoxDataFrame) -> dict[st
         res["CLR_FN"] += len(gt_ids_t) - num_matches
         res["CLR_FP"] += len(tracker_ids_t) - num_matches
         if num_matches > 0:
-            res["MOTP_sum"] += sum(similarity[match_rows, match_cols]) 
+            res["MOTP_sum"] += sum(similarity[match_rows, match_cols])
 
         # Calculate MT/ML/PT/Frag/MOTP
         tracked_ratio = gt_matched_count[gt_id_count > 0] / gt_id_count[gt_id_count > 0]
@@ -178,15 +178,20 @@ def mota_score(bboxes_track: BBoxDataFrame, bboxes_gt: BBoxDataFrame) -> dict[st
         res["MOTP"] = res["MOTP_sum"] / np.maximum(1.0, res["CLR_TP"])
         res["CLR_Frames"] = data["num_timesteps"]
     # Calculate final CLEAR scores
-    #At First, Subtract the tracks with missing data from the entire track data of the track being tracked. 
-    #This is to adjust the number of FPs.
-    num_attibutes_per_bbox = 5  #The number of attributes for each object in the BBoxDataframe. 
-                                #([bb_left, bb_top, bb_width, bb_height, conf])
-    num_lacked_tracks = int((bboxes_track == -1.0).values.sum() / num_attibutes_per_bbox)
+    # At First, Subtract the tracks with missing data from the entire track data of the track being tracked.
+    # This is to adjust the number of FPs.
+    num_attibutes_per_bbox = (
+        5  # The number of attributes for each object in the BBoxDataframe.
+    )
+    # ([bb_left, bb_top, bb_width, bb_height, conf])
+    num_lacked_tracks = int(
+        (bboxes_track == -1.0).values.sum() / num_attibutes_per_bbox
+    )
     res["CLR_FP"] = res["CLR_FP"] - num_lacked_tracks
-    
+
     mota_final_scores(res)
     return res
+
 
 def mota_final_scores(res):
     """Calculate final CLEAR scores"""
@@ -215,4 +220,3 @@ def mota_final_scores(res):
     res["MOTAL"] = (res["CLR_TP"] - res["CLR_FP"] - safe_log_idsw) / np.maximum(
         1.0, res["CLR_TP"] + res["CLR_FN"]
     )
-    

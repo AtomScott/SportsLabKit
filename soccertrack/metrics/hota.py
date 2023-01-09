@@ -32,7 +32,7 @@ def hota_score(bboxes_track: BBoxDataFrame, bboxes_gt: BBoxDataFrame) -> dict[st
     "HOTA(0)" : The overall HOTA score with a threshold of 0.5.
     "LocA(0)" : The localization accuracy with a threshold of 0.5.
     "HOTALocA(0)" : The overall HOTA score with a threshold of 0.5 and the localization accuracy with a threshold of 0.5.
-    
+
     This is also based on the following original paper and the github repository.
     paper : https://link.springer.com/article/10.1007/s11263-020-01375-2
     code  : https://github.com/JonathonLuiten/TrackEval
@@ -90,7 +90,7 @@ def hota_score(bboxes_track: BBoxDataFrame, bboxes_gt: BBoxDataFrame) -> dict[st
 
     # First loop through each timestep and accumulate global track information.
     for t, (gt_ids_t, tracker_ids_t, gt_det_t, tracker_det_t) in enumerate(
-        zip(data["gt_ids"], data["tracker_ids"], data["gt_dets"] ,data["tracker_dets"])
+        zip(data["gt_ids"], data["tracker_ids"], data["gt_dets"], data["tracker_dets"])
     ):
         # Count the potential matches between ids in each timestep
         # These are normalised, weighted by the match similarity.
@@ -107,9 +107,13 @@ def hota_score(bboxes_track: BBoxDataFrame, bboxes_gt: BBoxDataFrame) -> dict[st
             gt_ids_t[:, np.newaxis], tracker_ids_t[np.newaxis, :]
         ] += sim_iou
         # Calculate the total number of dets for each gt_id and tracker_id.
-        count = np.array([[0 if row[0] == -1 else 1 for _, row in enumerate(gt_det_t)]]).T
+        count = np.array(
+            [[0 if row[0] == -1 else 1 for _, row in enumerate(gt_det_t)]]
+        ).T
         gt_id_count[gt_ids_t] += list(count)
-        tracker_id_count[0, tracker_ids_t] += [0 if row[0] == -1 else 1 for _, row in enumerate(tracker_det_t)]
+        tracker_id_count[0, tracker_ids_t] += [
+            0 if row[0] == -1 else 1 for _, row in enumerate(tracker_det_t)
+        ]
 
     # Calculate overall jaccard alignment score (before unique matching) between IDs
     global_alignment_score = potential_matches_count / (
@@ -152,7 +156,7 @@ def hota_score(bboxes_track: BBoxDataFrame, bboxes_gt: BBoxDataFrame) -> dict[st
             num_matches = len(alpha_match_rows)
             res["HOTA_TP"][a] += num_matches
             res["HOTA_FN"][a] += len(gt_ids_t) - num_matches
-            res["HOTA_FP"][a] += len(tracker_ids_t) - num_matches 
+            res["HOTA_FP"][a] += len(tracker_ids_t) - num_matches
             if num_matches > 0:
                 res["LocA"][a] += sum(similarity[alpha_match_rows, alpha_match_cols])
                 matches_counts[a][
@@ -176,15 +180,20 @@ def hota_score(bboxes_track: BBoxDataFrame, bboxes_gt: BBoxDataFrame) -> dict[st
             1, res["HOTA_TP"][a]
         )
         res["AssA"][a] = (res["AssRe"][a] * res["AssPr"][a]) / np.maximum(
-            1e-10, (res["AssRe"][a] + res["AssPr"][a]) - (res["AssRe"][a] * res["AssPr"][a])
+            1e-10,
+            (res["AssRe"][a] + res["AssPr"][a]) - (res["AssRe"][a] * res["AssPr"][a]),
         )
 
     # Calculate scores for each alpha value
-    #At First, Subtract the tracks with missing data from the entire track data of the track being tracked. 
-    #This is to adjust the number of FPs.
-    num_attibutes_per_bbox = 5  #The number of attributes for each object in the BBoxDataframe. 
-                                #([bb_left, bb_top, bb_width, bb_height, conf])
-    num_lacked_tracks = int((bboxes_track == -1.0).values.sum() / num_attibutes_per_bbox)
+    # At First, Subtract the tracks with missing data from the entire track data of the track being tracked.
+    # This is to adjust the number of FPs.
+    num_attibutes_per_bbox = (
+        5  # The number of attributes for each object in the BBoxDataframe.
+    )
+    # ([bb_left, bb_top, bb_width, bb_height, conf])
+    num_lacked_tracks = int(
+        (bboxes_track == -1.0).values.sum() / num_attibutes_per_bbox
+    )
     res["HOTA_FP"] = res["HOTA_FP"] - num_lacked_tracks
     res["LocA"] = np.maximum(1e-10, res["LocA"]) / np.maximum(1e-10, res["HOTA_TP"])
     res["DetRe"] = res["HOTA_TP"] / np.maximum(1, res["HOTA_TP"] + res["HOTA_FN"])
