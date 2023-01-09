@@ -21,6 +21,7 @@ furo = "^2022.6.21"
 nbsphinx = "^0.8.9"
 ipython = "^8.5.0"
 kaggle = "^1.5.12"
+vidgear = "^0.2.6"
 
 [tool.poetry.dev-dependencies]
 prospector = "^1.7.7"
