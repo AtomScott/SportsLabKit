@@ -3,7 +3,6 @@ import logging
 import warnings
 
 
-
 @contextmanager
 def all_logging_disabled(highest_level=logging.CRITICAL):
     previous_level = logging.root.manager.disable
