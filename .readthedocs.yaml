@@ -18,7 +18,7 @@ build:
     # https://github.com/readthedocs/readthedocs.org/issues/4912#issuecomment-1143587902
     post_install:
       - cp -r ./notebooks ./docs/notebooks
-      - pip install poetry==1.2.0b1
+      - pip install poetry==1.3.1
       - poetry config virtualenvs.create false
       - poetry install
 
