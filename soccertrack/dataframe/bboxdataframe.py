@@ -277,14 +277,16 @@ class BBoxDataFrame(SoccerTrackMixin, pd.DataFrame):
         player_mappings = long_df["PlayerID"].map(mapping["PlayerID"])
         long_df["class"] = player_mappings.combine_first(team_mappings).fillna(na_class)
         long_df["image_name"] = long_df["frame"].astype(str)
-        long_df["object_id"] = long_df["PlayerID"] + "_" + long_df["TeamID"]
+        long_df["object_id"] = (
+            long_df["PlayerID"].astype(str) + "_" + long_df["TeamID"].astype(str)
+        )
 
         # create a unique object id for each object in ascending order
         assigned_ids = {
             p_id_t_id: object_id
             for object_id, p_id_t_id in enumerate(long_df["object_id"].unique())
         }
-        long_df["object_id"] = long_df["object_id"].map(assigned_ids)
+        long_df["object_id"] = long_df["object_id"].map(assigned_ids).astype(int)
 
         cols = [
             "bb_left",
