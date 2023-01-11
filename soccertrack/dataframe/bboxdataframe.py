@@ -276,7 +276,9 @@ class BBoxDataFrame(SoccerTrackMixin, pd.DataFrame):
         team_mappings = long_df["TeamID"].map(mapping["TeamID"])
         player_mappings = long_df["PlayerID"].map(mapping["PlayerID"])
         long_df["class"] = player_mappings.combine_first(team_mappings).fillna(na_class)
-        long_df["image_name"] = long_df["frame"].astype(str)
+        long_df["image_name"] = long_df["frame"].astype(
+            int
+        )  # TODO: This won't work for object detection
         long_df["object_id"] = (
             long_df["PlayerID"].astype(str) + "_" + long_df["TeamID"].astype(str)
         )
@@ -312,14 +314,11 @@ class BBoxDataFrame(SoccerTrackMixin, pd.DataFrame):
         """
 
         # make a list of lists such that each list contains the detections for a single frame
-        list_of_list_of_bboxes = [
-            frame_dets.to_list_of_tuples_format()
-            for i, frame_dets in tqdm(
-                self.iter_frames(),
-                total=len(self),
-                desc="Preprocessing for MOT evaluation",
-            )
-        ]
+        list_of_tuples = self.to_list_of_tuples_format()
+        list_of_list_of_bboxes = np.split(
+            list_of_tuples,
+            np.unique(list_of_tuples[:, IMAGE_NAME_INDEX], return_index=True)[1][1:],
+        )
 
         ids = [
             list_of_bboxes[:, OBJECT_ID_INDEX].astype("int64")
