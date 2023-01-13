@@ -39,6 +39,8 @@ The sections below outline the steps in each case.
 
 In case you feel like you've made a valuable contribution, but you don't know how to write or run tests for it, or how to generate the documentation: don't let this discourage you from making the pull request; we can help you! Just go ahead and submit the pull request, but keep in mind that you might be asked to append additional commits to your pull request.
 
+## Documentation
+
 ### How to setup a local server to view the docs
 
 When contibuting to documentation, a good way to check your changes is to view the docs locally. This can be done by setting up a local server. We also recommend docker installation for dev usage.
