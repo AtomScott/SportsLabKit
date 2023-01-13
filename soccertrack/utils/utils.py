@@ -12,22 +12,23 @@ import numpy as np
 from numpy.typing import NDArray
 from omegaconf import OmegaConf
 from PIL import Image
-from soccertrack.logger import logger, tqdm
 from vidgear.gears import WriteGear
+
+from soccertrack.logger import logger, tqdm
 
 OmegaConf.register_new_resolver(
     "now", lambda x: datetime.now().strftime(x), replace=True
 )
 
 from ast import literal_eval
+from itertools import zip_longest
 from typing import Any, Union
 
-import git
 import dateutil.parser
+import git
 import numpy as np
 import pandas as pd
 from pandas._typing import FilePath, WriteBuffer
-from itertools import zip_longest
 
 
 def auto_string_parser(value: str) -> Any:

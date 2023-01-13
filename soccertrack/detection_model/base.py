@@ -11,8 +11,8 @@ import requests
 import torch
 from PIL import Image
 
-from ..utils.draw import draw_bounding_boxes
 from ..logger import logger
+from ..utils.draw import draw_bounding_boxes
 
 
 def read_image(img):

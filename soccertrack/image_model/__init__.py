@@ -1,14 +1,13 @@
-import torch
-import torchmetrics
-from torchvision import transforms, models
 import pytorch_lightning as pl
-from torch.utils.data import DataLoader, Dataset
-from torchvision.datasets import ImageFolder
-from PIL import Image
-
-from torch import nn
+import torch
 import torch.nn.functional as F
+import torchmetrics
+from PIL import Image
+from torch import nn
+from torch.utils.data import DataLoader, Dataset
 from torchmetrics.functional import accuracy
+from torchvision import models, transforms
+from torchvision.datasets import ImageFolder
 
 
 class ImageClassificationData(pl.LightningDataModule):

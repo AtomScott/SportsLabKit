@@ -1,8 +1,9 @@
 import os
+from pathlib import Path
+from typing import Optional
 
 from soccertrack.logger import logger
-from typing import Optional
-from pathlib import Path
+
 from .downloader import KaggleDownloader
 
 __all__ = ["available", "get_path", "KaggleDownloader"]

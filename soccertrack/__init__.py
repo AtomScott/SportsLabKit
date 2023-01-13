@@ -1,6 +1,6 @@
-from contextlib import contextmanager
 import logging
 import warnings
+from contextlib import contextmanager
 
 
 @contextmanager
@@ -18,7 +18,7 @@ with all_logging_disabled(), warnings.catch_warnings():
     warnings.simplefilter("ignore")
     from vidgear.gears import WriteGear, CamGear
 
-from soccertrack.dataframe import CoordinatesDataFrame, BBoxDataFrame
-from soccertrack.io import load_df
 import soccertrack.datasets  # noqa
 from soccertrack.camera import Camera
+from soccertrack.dataframe import BBoxDataFrame, CoordinatesDataFrame
+from soccertrack.io import load_df
