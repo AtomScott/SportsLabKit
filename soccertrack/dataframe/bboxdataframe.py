@@ -1,15 +1,15 @@
 from __future__ import annotations
 
 from hashlib import md5
+from pathlib import Path
 from typing import Any, Optional, Type
 
 import cv2
 import numpy as np
 import pandas as pd
-from pathlib import Path
 
-from soccertrack.utils import make_video
 from soccertrack.logger import tqdm
+from soccertrack.utils import make_video
 
 from ..logger import logger
 from ..utils import MovieIterator, get_fps

@@ -1,18 +1,18 @@
 from __future__ import annotations
 
 import uuid
-from typing import Dict, Any
-
-from labelbox import Client, LabelingFrontend, Dataset, Project
-from labelbox.schema.ontology import OntologyBuilder, Tool
-from labelbox.schema.media_type import MediaType
-
 from pathlib import Path
-import soccertrack
-from soccertrack.logging import (
-    show_df,
-)  # This just makes the df viewable in the notebook.
+from typing import Any, Dict
+
+from labelbox import Client, Dataset, LabelingFrontend, Project
+from labelbox.schema.media_type import MediaType
+from labelbox.schema.ontology import OntologyBuilder, Tool
 from tqdm import tqdm
+
+import soccertrack
+from soccertrack.logging import (  # This just makes the df viewable in the notebook.
+    show_df,
+)
 
 
 def bbdf2ndjson(

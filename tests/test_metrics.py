@@ -1,18 +1,19 @@
 import random
+import unittest
+
 import numpy as np
 import pandas as pd
-import unittest
 
 import soccertrack
 from soccertrack.metrics import (
     ap_score,
+    ap_score_range,
+    hota_score,
+    identity_score,
     iou_score,
     map_score,
-    ap_score_range,
     map_score_range,
     mota_score,
-    identity_score,
-    hota_score,
 )
 
 # global variables for tracking evaluation

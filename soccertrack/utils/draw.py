@@ -1,8 +1,10 @@
+from typing import Any, List, Optional, Tuple, Type, Union
+
 import matplotlib
 import numpy as np
-from typing import Any, Optional, Type, Union, Tuple, List
-from soccertrack.logger import logger
 from PIL import Image, ImageColor, ImageDraw, ImageFont
+
+from soccertrack.logger import logger
 
 
 def _generate_color_palette(n: int) -> np.ndarray:

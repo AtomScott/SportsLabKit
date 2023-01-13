@@ -1,7 +1,8 @@
 """Tracking utilities"""
 
-import numpy as np
 from copy import deepcopy
+
+import numpy as np
 from filterpy.common import Saver
 
 # large floating point number

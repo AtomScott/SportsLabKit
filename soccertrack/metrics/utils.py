@@ -1,9 +1,8 @@
 import numpy as np
-
-import numpy as np
 from scipy.spatial.distance import cdist
-from soccertrack.metrics import iou_score
+
 from soccertrack.logger import tqdm
+from soccertrack.metrics import iou_score
 
 
 def list2dict(bboxes_track, bboxes_gt):

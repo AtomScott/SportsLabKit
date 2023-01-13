@@ -1,8 +1,9 @@
 from __future__ import annotations
+
+from itertools import chain
 from typing import Any
 
 import numpy as np
-from itertools import chain
 from scipy.spatial.distance import cdist
 
 from soccertrack.metrics import iou_score
