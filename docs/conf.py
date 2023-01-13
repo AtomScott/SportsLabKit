@@ -32,13 +32,34 @@ extensions = [
     "sphinx.ext.todo",
     "sphinx.ext.autosummary",
     "sphinx.ext.viewcode",
+    "sphinx.ext.intersphinx",
     "sphinx_autodoc_typehints",
     "m2r2",
     "nbsphinx",
+    "autoapi.extension",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
+
+# -- Options for autoapi -------------------------------------------------------
+
+autoapi_dirs = ["../soccertrack"]
+autoapi_type = "python"
+
+autoapi_template_dir = "_templates/autoapi"
+
+autoapi_options = [
+    "members",
+    "undoc-members",
+    "show-inheritance",
+    "show-module-summary",
+    "imported-members",
+]
+
+autoapi_keep_files = True
+autoapi_add_toctree_entry = False
+
 
 #
 # -- Options for TODOs -------------------------------------------------------
@@ -78,7 +99,7 @@ release = "0.1"
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = ["_build", "api/soccertrack.rst"]
+exclude_patterns = ["_build"]
 
 # The reST default role (used for this markup: `text`) to use for all documents.
 # default_role = None
@@ -149,7 +170,7 @@ html_logo = "_static/logo.png"
 # The name of an image file (within the static path) to use as favicon of the
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
 # pixels large.
-# html_favicon = None
+html_favicon = "_static/favicon.ico"
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -286,6 +307,13 @@ texinfo_documents = [
 
 # -- Options for autodoc -------------------------------------------------------
 autoclass_content = "both"
+
+# descriptions of the relevant function/method.
+autodoc_typehints = "signature"
+
+# Don't show class signature with the class' name.
+autodoc_class_signature = "separated"
+
 autodoc_mock_imports = [
     # I think the imports should be `as imported`. For example, `sklean` instead
     # of `scikit-learn`.
@@ -307,3 +335,64 @@ autodoc_mock_imports = [
     "more_itertools",
     "sklearn",
 ]
+
+# -- Options for intersphinx ---------------------------------------------------
+intersphinx_mapping = {
+    "python": ("https://docs.python.org/3", None),
+    "numpy": ("https://numpy.org/doc/stable/", None),
+    "pandas": ("https://pandas.pydata.org/pandas-docs/stable/", None),
+    "scipy": ("https://docs.scipy.org/doc/scipy/reference", None),
+    "sklearn": ("https://scikit-learn.org/stable", None),
+    "matplotlib": ("https://matplotlib.org", None),
+    "pillow": ("https://pillow.readthedocs.io/en/stable/", None),
+    "vidgear": ("https://abhitronix.github.io/vidgear/latest/", None),
+    "torch": ("https://pytorch.org/docs/stable/", None),
+    "omegaconf": ("https://omegaconf.readthedocs.io/en/latest/", None),
+    "more_itertools": ("https://more-itertools.readthedocs.io/en/stable/", None),
+    "mypy": ("https://mypy.readthedocs.io/en/stable/", None),
+}
+# -- custom auto_summary() macro ---------------------------------------------
+
+
+def contains(seq, item):
+    """Jinja2 custom test to check existence in a container.
+    Example of use:
+    {% set class_methods = methods|selectattr("properties", "contains", "classmethod") %}
+    Related doc: https://jinja.palletsprojects.com/en/3.1.x/api/#custom-tests
+    """
+    return item in seq
+
+
+def prepare_jinja_env(jinja_env) -> None:
+    """Add `contains` custom test to Jinja environment."""
+    jinja_env.tests["contains"] = contains
+
+
+autoapi_prepare_jinja_env = prepare_jinja_env
+
+# Custom role for labels used in auto_summary() tables.
+rst_prolog = """
+.. role:: summarylabel
+"""
+
+# Related custom CSS
+html_css_files = [
+    "css/label.css",
+]
+
+# noinspection PyUnusedLocal
+def autoapi_skip_members(app, what, name, obj, skip, options):
+    # skip submodules
+    if what == "module":
+        skip = True
+    elif what == "data":
+        if obj.name in ["EASING_FUNCTIONS", "ParamType"]:
+            skip = True
+    elif what == "function":
+        if obj.name in ["working_directory"]:
+            skip = True
+    return skip
+
+
+def setup(app):
+    app.connect("autoapi-skip-member", autoapi_skip_members)

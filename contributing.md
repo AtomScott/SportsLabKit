@@ -1,5 +1,9 @@
 # Contributing guidelines
 
+> **Note**
+> 
+> SoccerTrack is in early development and is not yet ready for production use. We are working on a stable release and will update this file when it is ready. In the meantime, we welcome any feedback or contributions. If you have any questions or something is unclear, please feel free to open an issue.
+
 We welcome any kind of contribution to our software, from simple comment or question to a full fledged [pull request](https://help.github.com/articles/about-pull-requests/). Please read and follow our [Code of Conduct](CODE_OF_CONDUCT.md).
 
 A contribution can be one of the following cases:
@@ -41,20 +45,64 @@ In case you feel like you've made a valuable contribution, but you don't know ho
 
 ## Documentation
 
+## How to contribute to the documentation
+
+If you would like to contribute to the documentation, you can do so by following the steps below. If you are new to Sphinx, you can read the [reStructuredText Primer](https://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html) to get started.
+
+1. Fork the repository.
+2. Make changes to the documentation.
+3. Generate the documentation locally (see below).
+4. Make a pull request.
+
+We've also add an action that will build pull requests on readthedocs so you can check the documentation there as well. See below for more information.
+
 ### How to setup a local server to view the docs
 
-When contibuting to documentation, a good way to check your changes is to view the docs locally. This can be done by setting up a local server. We also recommend docker installation for dev usage.
+When contibuting to documentation, a good way to check your changes is to view the docs locally. This can be done by setting up a local server.
 
-1. `cd` into the docs folder.
-2. Make changes to the documentation.
-3. Run `make html`. This will build the documentation locally.
-4. Run `make serve` and visit the [port 8000](http://[::]:8000/). You should be able to view the newly built documentation
-5. If the changes look good, commit and push the changes to your fork.
-6. Make a pull request.
+1. Run `make html`. This will build the documentation locally.
+2. Run `make serve` and visit the [port 8000](http://[::]:8000/). You should be able to view the newly built documentation
+3. If the changes look good, commit and push the changes to your fork.
 
-> **Note**
-> 
-> SoccerTrack is in early development and is not yet ready for production use. We are working on a stable release and will update this README when it is ready. In the meantime, we welcome any feedback or contributions. If you have any questions or something is unclear, please feel free to open an issue.
+### How to view a preview documentation from PRs
+
+#### Build on pull request events
+
+We create and build a new version when a pull request is opened, and rebuild the version whenever a new commit is pushed.
+
+#### Build status report
+
+Your project’s pull request build status will show as one of your pull request’s checks. This status will update as the build is running, and will show a success or failure status when the build completes.
+
+![](https://docs.readthedocs.io/en/stable/_images/github-build-status-reporting.gif)
+
+<img src='https://raw.githubusercontent.com/AtomScott/SoccerTrack/feature/major_refactor/docs/_static/contributing/docs_01.webp'/>
+<img src='https://raw.githubusercontent.com/AtomScott/SoccerTrack/feature/major_refactor/docs/_static/contributing/docs_02.webp'/>
+
+## Try to use optimized images
+
+We all love beautiful images, but they tend to be heavy. We try to keep the size of the repository as small as possible, so please try to use optimized images. You can use [TinyPNG](https://tinypng.com/) to optimize your images.
+
+If you prefer to use a command line tool, you can use [ImageMagick](https://imagemagick.org/index.php) to optimize your images. Here is a insighful [blogpost](https://webdevstudios.com/2022/03/10/quickly-optimize-images/) on how to set up a command in your bash profile! TL;DR:
+
+```bash
+function ctwp() {
+  extension=$1
+  params=$2
+      	
+  for i in *.$extension
+   	do
+   	  file=$i
+   	  convert $file $params ${file%.*}.webp
+   	done
+}
+```
+
+1. Install ImageMagick CLI
+2. Add the above function to a file called .custom_commands.sh in your home directory.
+3. Add this to your .bashrc  -> source ~/.custom_commands.sh
+4. In the directory full of .jpgs you’d like to convert, run in the terminal: ctwp jpg
+
 
 ## Testing
 

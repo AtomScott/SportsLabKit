@@ -45,11 +45,6 @@ clean:
 html:
 	rm -rf api _build
 	cp -r ../notebooks .
-	poetry run sphinx-apidoc -t _templates -fMeET ../soccertrack/ -o api/ 
-	poetry run python prepend_titles.py
-
-	@echo "Auto-generation of API documentation finished. " \
-		"The generated files are in 'api/'"
 
 	poetry run $(SPHINXBUILD) -E -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	rm -rf notebooks
