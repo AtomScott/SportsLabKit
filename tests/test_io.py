@@ -1,11 +1,12 @@
 import os
 import sys
-import pandas as pd
-from tempfile import TemporaryDirectory
+import unittest
 from pathlib import Path
+from tempfile import TemporaryDirectory
+
+import pandas as pd
 
 from soccertrack.utils.utils import auto_string_parser
-import unittest
 
 TEST_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_DIR = os.path.abspath(os.path.join(TEST_DIR, os.pardir))

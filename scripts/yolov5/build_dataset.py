@@ -3,11 +3,11 @@ Script to convert soccertrack dataset format to YOLOv5 format.
 """
 import argparse
 from pathlib import Path
-from joblib import Parallel, delayed
 
 import cv2
 import numpy as np
 import yaml
+from joblib import Parallel, delayed
 
 import soccertrack
 from soccertrack import Camera
@@ -60,10 +60,11 @@ if __name__ == "__main__":
         def _parallel_imwrite(frame_num, frame):
             file_path = f"{save_dir}/{path_to_csv.stem}/{frame_num:06d}.png"
             cv2.imwrite(file_path, frame)
-        
+
         res = Parallel(n_jobs=-1)(
-            delayed(_parallel_imwrite)(frame_num, frame) for frame_num, frame in enumerate(tqdm(cam.iter_frames()))
-            )
+            delayed(_parallel_imwrite)(frame_num, frame)
+            for frame_num, frame in enumerate(tqdm(cam.iter_frames()))
+        )
         break
 
     # Partition the dataset

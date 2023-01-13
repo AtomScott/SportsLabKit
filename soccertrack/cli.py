@@ -1,14 +1,13 @@
-from glob import glob
 import os
+from glob import glob
 from typing import Optional
 
 import numpy as np
-
 from fire import Fire
 
-from soccertrack.utils.camera import find_intrinsic_camera_parameters, Camera
-from soccertrack.utils.utils import make_video
 from soccertrack.utils import logger, set_log_level
+from soccertrack.utils.camera import Camera, find_intrinsic_camera_parameters
+from soccertrack.utils.utils import make_video
 
 
 class CLI:

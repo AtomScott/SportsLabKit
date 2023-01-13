@@ -26,7 +26,7 @@ class ModelPreset(Enum):
 
 
 def _base_dim_block(dt: float, order: int = 1):
-    block = np.array([[1, dt, (dt ** 2) / 2], [0, 1, dt], [0, 0, 1]])
+    block = np.array([[1, dt, (dt**2) / 2], [0, 1, dt], [0, 0, 1]])
     cutoff = order + 1
     return block[:cutoff, :cutoff]
 

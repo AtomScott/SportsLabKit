@@ -4,13 +4,13 @@ from collections.abc import Iterable
 from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Type, Union
 
 import numpy as np
+import pandas as pd
 from filterpy.kalman import KalmanFilter
 from motpy.core import Box, Detection, Track, Vector
 from motpy.model import Model, ModelPreset
-import pandas as pd
 
-from soccertrack.logger import logger
 from soccertrack import BBoxDataFrame
+from soccertrack.logger import logger
 
 
 def get_kalman_object_tracker(

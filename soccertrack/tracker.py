@@ -6,7 +6,6 @@ from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Type, U
 import numpy as np
 import scipy
 from filterpy.kalman import KalmanFilter
-
 from motpy.core import Box, Detection, Track, Vector, setup_logger
 from motpy.metrics import angular_similarity, calculate_iou
 from motpy.model import Model, ModelPreset
