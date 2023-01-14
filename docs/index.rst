@@ -32,16 +32,16 @@
         notebooks/03_core_components/tracking_model.ipynb
 
 ..  toctree::
-        :maxdepth: 2
         :caption: API Reference
         :hidden:
+        :maxdepth: 1
 
-        04_api
+        autoapi/soccertrack/index
 
 ..  toctree::
         :maxdepth: 1
         :caption: Dev
         :hidden:
 
-        Contributing <05_contributing>
+        Contributing <04_contributing>
         notebooks/05_dev/logging-demo.ipynb

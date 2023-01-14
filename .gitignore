@@ -3,6 +3,7 @@ external/*
 logs/*
 models/*
 data/*
+docs/autoapi
 soccertrack/datasets/GNSS
 soccertrack/datasets/top-view
 soccertrack/datasets/wide-view
