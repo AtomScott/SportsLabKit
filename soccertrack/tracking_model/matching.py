@@ -10,10 +10,13 @@ import scipy
 from scipy.optimize import linear_sum_assignment
 from scipy.spatial.distance import cdist
 
-from soccertrack.checks import (_check_cost_matrix, _check_detections,
-                                _check_matches, _check_trackers)
-from soccertrack.metrics import (BaseCostMatrixMetric, CosineCMM, IoUCMM,
-                                 iou_score)
+from soccertrack.checks import (
+    _check_cost_matrix,
+    _check_detections,
+    _check_matches,
+    _check_trackers,
+)
+from soccertrack.metrics import BaseCostMatrixMetric, CosineCMM, IoUCMM, iou_score
 from soccertrack.tracking_model import SingleObjectTracker
 from soccertrack.types import Detection
 
