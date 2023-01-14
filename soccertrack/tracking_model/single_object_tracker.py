@@ -1,16 +1,16 @@
 from __future__ import annotations
 
 import uuid
+from abc import ABC, abstractmethod
 from collections.abc import Iterable
 from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Type, Union
-from abc import ABC, abstractmethod
 
 import numpy as np
 import pandas as pd
 
 from soccertrack import BBoxDataFrame
 from soccertrack.logger import logger
-from soccertrack.types import Detection, Box, Vector, Tracker
+from soccertrack.types import Box, Detection, Tracker, Vector
 
 
 class SingleObjectTracker(Tracker):

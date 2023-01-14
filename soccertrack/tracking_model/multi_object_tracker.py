@@ -12,8 +12,7 @@ from motpy.model import Model, ModelPreset
 
 from soccertrack import BBoxDataFrame, Camera
 from soccertrack.logger import logger, tqdm
-from soccertrack.tracking_model.tracker import (KalmanTracker,
-                                                SingleObjectTracker)
+from soccertrack.tracking_model.tracker import KalmanTracker, SingleObjectTracker
 from soccertrack.types import Box, Detection, Track, Vector, _pathlike
 
 DEFAULT_MODEL_SPEC = ModelPreset.constant_velocity_and_static_box_size_2d.value
