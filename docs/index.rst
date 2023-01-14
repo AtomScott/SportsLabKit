@@ -19,6 +19,12 @@
         :hidden:
 
         notebooks/02_user_guide/dataset_preparation.rst
+        notebooks/02_user_guide/detection_wtih_yolov5.rst
+        notebooks/02_user_guide/appearance_feature_extraction_with_resnet18.rst
+        notebooks/02_user_guide/tracking_with_deepsort.rst
+        notebooks/02_user_guide/tracking_evaluation.rst
+
+
 
 ..  toctree::
         :maxdepth: 2
@@ -34,7 +40,7 @@
 ..  toctree::
         :caption: API Reference
         :hidden:
-        :maxdepth: 1
+        :maxdepth: 2
 
         autoapi/soccertrack/index
 
