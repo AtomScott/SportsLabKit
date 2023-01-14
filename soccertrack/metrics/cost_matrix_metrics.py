@@ -7,8 +7,7 @@ import numpy as np
 from scipy.spatial.distance import cdist
 
 from soccertrack.metrics import iou_score
-from soccertrack.tracking_model import SingleObjectTracker
-from soccertrack.types import Detection
+from soccertrack.types import Detection, Tracker
 from soccertrack.checks import (
     _check_trackers,
     _check_detections,
@@ -21,7 +20,7 @@ class BaseCostMatrixMetric(ABC):
     detections."""
 
     def __call__(
-        self, trackers: Sequence[SingleObjectTracker], detections: Sequence[Detection]
+        self, trackers: Sequence[Tracker], detections: Sequence[Detection]
     ) -> np.ndarray:
         """Calculate the metric between trackers and detections.
 
@@ -41,7 +40,7 @@ class BaseCostMatrixMetric(ABC):
 
     @abstractmethod
     def compute_metric(
-        self, trackers: Sequence[SingleObjectTracker], detections: Sequence[Detection]
+        self, trackers: Sequence[Tracker], detections: Sequence[Detection]
     ) -> np.ndarray:
         """Calculate the metric between trackers and detections.
 
@@ -59,7 +58,7 @@ class IoUCMM(BaseCostMatrixMetric):
     """Compute the IoU Cost Matrix Metric between trackers and detections."""
 
     def compute_metric(
-        self, trackers: Sequence[SingleObjectTracker], detections: Sequence[Detection]
+        self, trackers: Sequence[Tracker], detections: Sequence[Detection]
     ) -> np.ndarray:
         bb1 = np.array(
             [
@@ -81,7 +80,7 @@ class CosineCMM(BaseCostMatrixMetric):
     detections."""
 
     def compute_metric(
-        self, trackers: Sequence[SingleObjectTracker], detections: Sequence[Detection]
+        self, trackers: Sequence[Tracker], detections: Sequence[Detection]
     ) -> np.ndarray:
         vectors1 = np.array([t.feature for t in trackers])
         vectors2 = np.array([d.feature for d in detections])
