@@ -6,8 +6,7 @@ import numpy as np
 from scipy.optimize import linear_sum_assignment
 
 from soccertrack import BBoxDataFrame
-
-from .tracking_preprocess import to_mot_eval_format
+from soccertrack.metrics.tracking_preprocess import to_mot_eval_format
 
 
 def hota_score(bboxes_track: BBoxDataFrame, bboxes_gt: BBoxDataFrame) -> dict[str, Any]:

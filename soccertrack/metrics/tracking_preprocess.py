@@ -5,9 +5,7 @@ from typing import Any
 
 import numpy as np
 from scipy.spatial.distance import cdist
-
-from soccertrack.metrics import iou_score
-from soccertrack.metrics.object_detection import convert_to_x1y1x2y2
+from soccertrack.metrics.object_detection import convert_to_x1y1x2y2, iou_score
 
 
 def to_mot_eval_format(
