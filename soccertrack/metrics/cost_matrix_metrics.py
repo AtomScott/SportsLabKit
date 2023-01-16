@@ -75,6 +75,27 @@ class IoUCMM(BaseCostMatrixMetric):
         return 1 - cdist(bb1, bb2, iou_score)
 
 
+class EuclideanCMM(BaseCostMatrixMetric):
+    """Compute the Euclidean Cost Matrix Metric between trackers and
+    detections."""
+
+    def __init__(self, im_shape: tuple[float, float] = (1080, 1920)):
+        self.normalizer = np.sqrt(im_shape[0] ** 2 + im_shape[1] ** 2)
+
+    def compute_metric(
+        self, trackers: Sequence[Tracker], detections: Sequence[Detection]
+    ) -> np.ndarray:
+
+        centers1 = np.array(
+            [(t.box[0] + t.box[2] / 2, t.box[1] + t.box[3] / 2) for t in trackers]
+        )
+        centers2 = np.array(
+            [(d.box[0] + d.box[2] / 2, d.box[1] + d.box[3] / 2) for d in detections]
+        )
+
+        return cdist(centers1, centers2) / self.normalizer  # keep values in [0, 1]
+
+
 class CosineCMM(BaseCostMatrixMetric):
     """Compute the Cosine Cost Matrix Metric between trackers and
     detections."""
@@ -84,4 +105,4 @@ class CosineCMM(BaseCostMatrixMetric):
     ) -> np.ndarray:
         vectors1 = np.array([t.feature for t in trackers])
         vectors2 = np.array([d.feature for d in detections])
-        return cdist(vectors1, vectors2, "cosine")
+        return cdist(vectors1, vectors2, "cosine") / 2  # keep values in [0, 1]
