@@ -11,7 +11,7 @@ from motpy.model import Model, ModelPreset
 
 from soccertrack import BBoxDataFrame
 from soccertrack.logger import logger
-from soccertrack.types import Detection, Box, Vector, Tracker
+from soccertrack.types import Box, Detection, Tracker, Vector
 
 
 class SingleObjectTracker(Tracker):

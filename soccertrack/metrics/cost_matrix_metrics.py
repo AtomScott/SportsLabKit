@@ -6,13 +6,9 @@ from typing import Sequence
 import numpy as np
 from scipy.spatial.distance import cdist
 
+from soccertrack.checks import _check_cost_matrix, _check_detections, _check_trackers
 from soccertrack.metrics import iou_score
 from soccertrack.types import Detection, Tracker
-from soccertrack.checks import (
-    _check_trackers,
-    _check_detections,
-    _check_cost_matrix,
-)
 
 
 class BaseCostMatrixMetric(ABC):
