@@ -12,9 +12,7 @@ from motpy.model import Model, ModelPreset
 
 from soccertrack import BBoxDataFrame, Camera
 from soccertrack.logger import logger, tqdm
-from soccertrack.tracking_model.tracker import (KalmanTracker,
-                                                SingleObjectTracker)
-from soccertrack.types import Box, Detection, Track, Vector, _pathlike
+from soccertrack.types import Box, Detection, Tracker, Vector, _pathlike
 
 DEFAULT_MODEL_SPEC = ModelPreset.constant_velocity_and_static_box_size_2d.value
 
@@ -39,55 +37,20 @@ class MultiObjectTracker:
         self,
         detection_model=None,
         image_model=None,
-        motion_model=None,
+        tracker: Tracker = None,
+        tracker_kwargs: dict[str, Any] = {},
         matching_fn: Any | None = None,
-        # matching_fn_kwargs: dict = None,
-        # dt: float = None,
-        # model_spec: str | dict = DEFAULT_MODEL_SPEC,
-        # matching_fn: Any | None = None,
-        # tracker_kwargs: dict = None,
-        # active_tracks_kwargs: dict = None,
     ) -> None:
 
         self.detection_model = detection_model
         self.image_model = image_model
-        self.motion_model = motion_model
         self.matching_fn: Any = matching_fn
 
-        self.trackers: list[SingleObjectTracker] = []
-        self.stale_trackers: list[SingleObjectTracker] = []
+        self.tracker_class = tracker
+        self.tracker_kwargs = tracker_kwargs
 
-        # kwargs to be passed to each single object tracker
-        # self.tracker_kwargs: dict = tracker_kwargs if tracker_kwargs is not None else {}
-        # self.tracker_clss: SingleObjectTracker = None
-
-        # translate model specification into single object tracker to be used
-        # if isinstance(model_spec, dict):
-        #     self.tracker_clss = KalmanTracker
-        #     self.tracker_kwargs["model_kwargs"] = model_spec
-        #     self.tracker_kwargs["model_kwargs"]["dt"] = dt
-        # elif isinstance(model_spec, str) and model_spec in ModelPreset.__members__:
-        #     self.tracker_clss = KalmanTracker
-        #     self.tracker_kwargs["model_kwargs"] = ModelPreset[model_spec].value
-        #     self.tracker_kwargs["model_kwargs"]["dt"] = dt
-        # else:
-        #     raise NotImplementedError(f"unsupported motion model {model_spec}")
-
-        # logger.debug(
-        #     f"using single tracker of class: {self.tracker_clss} with kwargs: {self.tracker_kwargs}"
-        # )
-
-        # self.matching_fn_kwargs: dict = (
-        #     matching_fn_kwargs if matching_fn_kwargs is not None else {}
-        # )
-        # if self.matching_fn is None:
-        #     self.matching_fn = IOUAndFeatureMatchingFunction(**self.matching_fn_kwargs)
-
-        # kwargs to be used when self.step returns active tracks
-        # self.active_tracks_kwargs: dict = (
-        #     active_tracks_kwargs if active_tracks_kwargs is not None else {}
-        # )
-        # logger.debug("using active_tracks_kwargs: %s" % str(self.active_tracks_kwargs))
+        self.trackers: list[Tracker] = []
+        self.stale_trackers: list[Tracker] = []
 
         self.detections_matched_ids = []
         self.current_step = 0
@@ -102,30 +65,38 @@ class MultiObjectTracker:
             The result of the tracking as a xxx.
         """
 
-        if isinstance(source, str):
-            cam = Camera(source)
         if not isinstance(source, Camera):
             cam = Camera(source)
+        else:
+            cam = source
 
         dets = []
         for frame in (pbar := tqdm(cam.iter_frames())):
 
             # detect objects using the detection model
-            detections = self.det_model(frame).to_list()
+            detections = self.detection_model(frame).to_list()
+
+            # extract features from the detections
+            if len(detections) > 0:
+                embeds = self.image_model.embed_detections(detections, frame)
+                for i, det in enumerate(detections):
+                    det.feature = embeds[i]
+
             dets.append(detections)
 
             # update the state of the multi-object-tracker tracker
             # with the list of bounding boxes
-            self.step(detections=detections)
+            active_trackers = self.step(detections=detections)
 
             # get tracks to be displayed
-            tracks = self.all_tracks()
-            pbar.set_postfix({f"Number of active tracks": len(tracks)})
+            all_trackers = self.all_trackers()
+            pbar.set_postfix(
+                {
+                    "Number of active/all tracks": f"{len(active_trackers)}/{len(all_trackers)}"
+                }
+            )
 
-        result = None
-        return result
-
-    def step(self, detections: list[Detection]) -> list[Track]:
+    def step(self, detections: list[Detection]) -> list[Tracker]:
         """the method matches the new detections with existing trackers,
         creates new trackers if necessary and performs the cleanup.
 
@@ -133,10 +104,6 @@ class MultiObjectTracker:
         """
         # filter out empty detections
         # detections = [det for det in detections if det.box is not None]
-
-        # predict state in all trackers
-        for t in self.trackers:
-            t.predict()
 
         # match trackers with detections
         logger.debug("step with %d detections" % len(detections))
@@ -157,19 +124,14 @@ class MultiObjectTracker:
         assigned_det_idxs = set(matches[:, 1]) if len(matches) > 0 else []
         for det_idx in set(range(len(detections))).difference(assigned_det_idxs):
             det = detections[det_idx]
-            tracker = self.tracker_clss(
-                box0=det.box,
-                score0=det.score,
-                class_id0=det.class_id,
-                **self.tracker_kwargs,
-            )
+            tracker = self.instatiate_tracker_with_detection(det)
             self.detections_matched_ids[det_idx] = tracker.id
             self.trackers.append(tracker)
 
         # unassigned trackers
         assigned_track_idxs = set(matches[:, 0]) if len(matches) > 0 else []
         for track_idx in set(range(len(self.trackers))).difference(assigned_track_idxs):
-            self.trackers[track_idx].stale()
+            self.trackers[track_idx].update(None, global_step=self.current_step)
 
         # cleanup dead trackers
         self.cleanup_trackers()
@@ -177,46 +139,35 @@ class MultiObjectTracker:
         # update current step
         self.current_step += 1
 
-        return self.active_tracks(**self.active_tracks_kwargs)
+        return self.active_trackers()
 
-    def active_tracks(
-        self,
-        max_staleness_to_positive_ratio: float = 3.0,
-        max_staleness: float = 999,
-        min_steps_alive: int = -1,
-    ) -> list[Track]:
+    def instatiate_tracker_with_detection(self, detection: Detection) -> Tracker:
+        """instantiates a new tracker from a detection"""
+        tracker = self.tracker_class(
+            **self.tracker_kwargs,
+        )
+        tracker.update(detection=detection, no_predict=False)
+        return tracker
+
+    def active_trackers(self) -> list[Tracker]:
         """returns all active tracks after optional filtering by tracker steps
         count and staleness."""
+        return [tracker for tracker in self.trackers if tracker.is_active()]
 
-        tracks: list[Track] = []
-        for tracker in self.trackers:
-            cond1 = (
-                tracker.staleness / tracker.steps_positive
-                < max_staleness_to_positive_ratio
-            )  # early stage
-            cond2 = tracker.staleness < max_staleness
-            cond3 = tracker.steps_alive >= min_steps_alive
-            if cond1 and cond2 and cond3:
-                tracks.append(
-                    Track(
-                        id=tracker.id,
-                        box=tracker.box(),
-                        score=tracker.score,
-                        class_id=tracker.class_id,
-                    )
-                )
-
-        logger.debug("active/all tracks: %d/%d" % (len(self.trackers), len(tracks)))
-        return tracks
-
-    def all_trackers(self) -> list[Track]:
+    def all_trackers(self) -> list[Tracker]:
         """returns all trackers."""
         return self.trackers + self.stale_trackers
 
     def to_bbdf(self):
         """Create a bounding box dataframe."""
+        df = pd.concat(
+            [t.to_bbdf() for t in self.active_trackers()], axis=1
+        ).sort_index()
+        df = df.reindex(index=range(self.current_step))
 
-        return pd.concat([t.to_bbdf() for t in self.all_trackers()], axis=1)
+        return pd.concat(
+            [t.to_bbdf() for t in self.all_trackers()], axis=1
+        ).sort_index()
 
     def cleanup_trackers(self) -> None:
         """Moves stale trackers into the stale_trackers list."""
