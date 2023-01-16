@@ -1,12 +1,13 @@
 from __future__ import annotations
 
 import uuid
-from collections.abc import Iterable
 from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Type, Union
-from abc import ABC, abstractmethod
+from filterpy.kalman import KalmanFilter
 
 import numpy as np
 import pandas as pd
+
+from motpy.model import Model, ModelPreset
 
 from soccertrack import BBoxDataFrame
 from soccertrack.logger import logger
@@ -121,6 +122,7 @@ class SingleObjectTracker(Tracker):
         self,
         detection: Union[Detection, None],
         no_predict: bool = False,
+        global_step: Optional[int] = None,
     ) -> None:
         """update the tracker with a new detection and predict the next state.
 
@@ -133,6 +135,10 @@ class SingleObjectTracker(Tracker):
         """
 
         self.steps_alive += 1
+        if global_step is not None:
+            self.global_step = int(global_step)
+        else:
+            self.global_step += 1
 
         if detection is not None:
             self.steps_positive += 1
@@ -173,9 +179,17 @@ class SingleObjectTracker(Tracker):
             self._pred_features = [feature]
             self._pred_class_ids = [class_id]
 
+    def is_active(self) -> bool:
+        """check if the tracker is active. e.g. `self.steps_alive > 0 and not self.is_stale() and not self.is_invalid()`."""
+        return self.steps_alive > 0 and not self.is_stale() and not self.is_invalid()
+
     def is_stale(self) -> bool:
         """check if the tracker is stale. e.g. `self.staleness > self.max_staleness`."""
         return self.staleness > self.max_staleness
+
+    def is_invalid(self) -> bool:
+        """check if the tracker had nan values in its predictions."""
+        return np.isnan(self.box).any() or np.isnan(self.score)
 
     def to_bbdf(self) -> BBoxDataFrame:
         """Convert the tracker predictions to a BBoxDataFrame.
@@ -187,9 +201,19 @@ class SingleObjectTracker(Tracker):
         if len(self._pred_boxes) == 0:
             return pd.DataFrame()
 
+        if self.global_step > self.steps_alive:
+            frame_range = range(
+                self.global_step + 1 - self.steps_alive, self.global_step + 1
+            )
+        else:
+            assert (
+                len(self._pred_boxes) == self.steps_alive
+            ), f"Somehow the tracker has {len(self._pred_boxes)} predictions but {self.steps_alive} steps alive."
+            frame_range = range(len(self._pred_boxes))
+
         df = pd.DataFrame(
             {
-                "frame": range(len(self._pred_boxes)),
+                "frame": frame_range,
                 "id": self.id,
                 "box": self._pred_boxes,
                 "score": self._pred_scores,
@@ -216,7 +240,6 @@ class SingleObjectTracker(Tracker):
         )
 
         bbdf = BBoxDataFrame(box_df.values, index=df.index, columns=idx)
-        print(bbdf)
         return bbdf
 
     def __repr__(self) -> str:
@@ -273,3 +296,107 @@ class SimpleTracker(SingleObjectTracker):
         else:
             raise ValueError("no observation found")
         return box, score, feature, class_id
+
+
+DEFAULT_MODEL_SPEC = ModelPreset.constant_velocity_and_static_box_size_2d.value
+
+
+class KalmanTracker(SingleObjectTracker):
+    """A Kalman filter based single tracker"""
+
+    def __init__(
+        self,
+        max_staleness: float = 12,
+        keep_observations: bool = True,
+        keep_predictions: bool = True,
+        model_kwargs: dict = DEFAULT_MODEL_SPEC,
+    ):
+        super().__init__(max_staleness, keep_observations, keep_predictions)
+        self.model_kwargs: dict = model_kwargs
+        self.model = Model(**self.model_kwargs)
+        self._tracker: KalmanFilter = get_kalman_object_tracker(model=self.model)
+
+    def _predict(self) -> None:
+        """predict the next state of the tracker"""
+        self._tracker.predict()
+        x = self._tracker.x
+        xc, xcv, y, ycv, w, h = x
+        xmin, ymin = xc - w / 2, y - h / 2
+        box = np.concatenate([xmin, ymin, w, h])
+
+        # find the most recent observation
+        for i in range(1, len(self._obs_boxes) + 1):
+            if self._obs_boxes[-i] is not None:
+                # box = #self._obs_boxes[-i]
+                score = self._obs_scores[-i]
+                feature = self._obs_features[-i]
+                class_id = self._obs_class_ids[-i]
+                break
+        else:
+            raise ValueError("no observation found")
+        return box, score, feature, class_id
+
+    def update(
+        self,
+        detection: Union[Detection, None],
+        no_predict: bool = False,
+        global_step: Optional[int] = None,
+    ) -> None:
+        """update the tracker with a new detection and predict the next state.
+
+        Args:
+            detection (Detection): detection to update the tracker with
+            no_predict (bool, optional): whether to skip prediction. Defaults to False.
+
+        Note:
+            If there is no detection (i.e. detection is None), the tracker will still predict the next state.
+        """
+
+        self.steps_alive += 1
+        if global_step is not None:
+            self.global_step = int(global_step)
+        else:
+            self.global_step += 1
+
+        if detection is not None:
+            self.steps_positive += 1
+            self.staleness = 0.0
+            self._update_observation(detection)
+        else:
+            self.staleness += 1
+            self._update_observation(None)
+
+        # update the _tracker
+        if self._obs_boxes[-1] is not None:
+            xmin, ymin, w, h = self._obs_boxes[-1]
+            xc, yc = xmin + w / 2, ymin + h / 2
+            # z = self.model.box_to_z(self._obs_boxes[-1])
+            z = np.array([xc, yc, w, h])
+            self._tracker.update(z)
+
+        if not no_predict:
+            self.predict()
+
+
+def get_kalman_object_tracker(
+    model: Model, x0: Optional[Vector] = None
+) -> KalmanFilter:
+    """returns Kalman-based tracker based on a specified motion model spec.
+    e.g. for spec = {'order_pos': 1, 'dim_pos': 2, 'order_size': 0, 'dim_size': 1}
+    we expect the following setup:
+    state x, x', y, y', w, h
+    where x and y are centers of boxes
+          w and h are width and height
+    """
+
+    tracker = KalmanFilter(dim_x=model.state_length, dim_z=model.measurement_length)
+    tracker.F = model.build_F()
+    tracker.Q = model.build_Q()
+    tracker.H = model.build_H()
+    tracker.R = model.build_R()
+    tracker.P = model.build_P()
+
+    if x0 is not None:
+        tracker.x = x0
+
+    return tracker
