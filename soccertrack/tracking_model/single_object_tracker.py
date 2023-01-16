@@ -2,11 +2,10 @@ from __future__ import annotations
 
 import uuid
 from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Type, Union
-from filterpy.kalman import KalmanFilter
 
 import numpy as np
 import pandas as pd
-
+from filterpy.kalman import KalmanFilter
 from motpy.model import Model, ModelPreset
 
 from soccertrack import BBoxDataFrame
