@@ -11,6 +11,7 @@ from soccertrack.metrics.object_detection import (
 from soccertrack.metrics.cost_matrix_metrics import (
     BaseCostMatrixMetric,
     IoUCMM,
+    EuclideanCMM,
     CosineCMM,
 )
 
@@ -25,5 +26,6 @@ __all__ = [
     "map_score_range",
     "BaseCostMatrixMetric",
     "IoUCMM",
+    "EuclideanCMM",
     "CosineCMM",
 ]
