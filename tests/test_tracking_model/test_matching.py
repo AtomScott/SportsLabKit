@@ -16,8 +16,7 @@ import unittest
 import numpy as np
 
 from soccertrack.logger import *
-from soccertrack.tracking_model import (MotionVisualMatchingFunction,
-                                        SingleObjectTracker)
+from soccertrack.tracking_model import MotionVisualMatchingFunction, SingleObjectTracker
 from soccertrack.types import Detection
 
 dets = [

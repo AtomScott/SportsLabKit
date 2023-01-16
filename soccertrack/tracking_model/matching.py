@@ -10,10 +10,13 @@ import scipy
 from scipy.optimize import linear_sum_assignment
 from scipy.spatial.distance import cdist
 
-from soccertrack.checks import (_check_cost_matrix, _check_detections,
-                                _check_matches, _check_trackers)
-from soccertrack.metrics import (BaseCostMatrixMetric, CosineCMM, IoUCMM,
-                                 iou_score)
+from soccertrack.checks import (
+    _check_cost_matrix,
+    _check_detections,
+    _check_matches,
+    _check_trackers,
+)
+from soccertrack.metrics import BaseCostMatrixMetric, CosineCMM, IoUCMM, iou_score
 from soccertrack.tracking_model import SingleObjectTracker
 from soccertrack.types import Detection
 
@@ -23,7 +26,23 @@ EPS = 1e-7
 def linear_sum_assignment_with_inf(
     cost_matrix: np.ndarray,
 ) -> Tuple[np.ndarray, np.ndarray]:
+    """Solve the linear sum assignment problem with inf values.
+
+    Args:
+        cost_matrix (np.ndarray): The cost matrix to solve.
+
+    Raises:
+        ValueError: Raises an error if the cost matrix contains both inf and -inf.
+        ValueError: Raises an error if the cost matrix contains only inf or -inf.
+
+    Returns:
+        Tuple[np.ndarray, np.ndarray]: The row and column indices of the assignment.
+    """
     cost_matrix = np.asarray(cost_matrix)
+
+    if cost_matrix.size == 0:
+        return np.empty((0,), dtype=int), np.empty((0,), dtype=int)
+
     min_inf = np.isneginf(cost_matrix).any()
     max_inf = np.isposinf(cost_matrix).any()
 
@@ -33,7 +52,7 @@ def linear_sum_assignment_with_inf(
     if min_inf or max_inf:
         values = cost_matrix[~np.isinf(cost_matrix)]
         if values.size == 0:
-            raise ValueError("matrix contains only inf or -inf")
+            return np.empty((0,), dtype=int), np.empty((0,), dtype=int)
 
         m = values.min()
         M = values.max()
@@ -139,6 +158,11 @@ class MotionVisualMatchingFunction(BaseMatchingFunction):
         visual_metric_beta: float = 1,
         visual_metric_gate: float = np.inf,
     ) -> None:
+        if not isinstance(motion_metric, BaseCostMatrixMetric):
+            raise TypeError("motion_metric should be a BaseCostMatrixMetric")
+        if not isinstance(visual_metric, BaseCostMatrixMetric):
+            raise TypeError("visual_metric should be a BaseCostMatrixMetric")
+
         self.motion_metric = motion_metric
         self.motion_metric_beta = motion_metric_beta
         self.motion_metric_gate = motion_metric_gate
