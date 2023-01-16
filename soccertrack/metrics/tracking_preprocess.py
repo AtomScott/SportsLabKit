@@ -8,6 +8,7 @@ from scipy.spatial.distance import cdist
 from soccertrack.metrics.object_detection import convert_to_x1y1x2y2, iou_score
 
 
+# TODO: Write tests for mot_eval_format
 def to_mot_eval_format(
     tracker_ids: list[list[int]],
     tracker_dets: list[list[np.ndarray]],
@@ -83,8 +84,11 @@ def to_mot_eval_format(
 
     sim_score_list = []
     for i in range(len(gt_ids)):
-        sim_score = cdist(gt_dets_xyxy[i], tracker_dets_xyxy[i], iou_score)
-        sim_score_list.append(sim_score)
+        if len(gt_ids[i]) == 0 or len(tracker_ids[i]) == 0:
+            sim_score_list.append(np.array([]))
+        else:
+            sim_score = cdist(gt_dets_xyxy[i], tracker_dets_xyxy[i], iou_score)
+            sim_score_list.append(sim_score)
 
     data = {}
     data["tracker_ids"] = tracker_ids
