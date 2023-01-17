@@ -2,9 +2,9 @@
 name = "soccertrack"
 version = "0.0.1"
 description = "A dataset and algorithm for multi-object tracking in sports"
-long_description = file: README.md
 authors = ["Atom Scott <atom.james.scott@gmail.com>"]
-license = file: LICENSE
+long_description = {file = "README.md"}
+license = {file = "LICENSE"}
 
 [tool.poetry.dependencies]
 python = ">=3.9,<3.11"
