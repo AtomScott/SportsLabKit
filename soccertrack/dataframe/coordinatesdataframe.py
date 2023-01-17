@@ -106,7 +106,7 @@ class CoordinatesDataFrame(SoccerTrackMixin, pd.DataFrame):
 
         df = pd.DataFrame(arr)
 
-        team_ids = [0] * 22 + [1] * 22 + ["ball"] * 2
+        team_ids = ["0"] * 22 + ["1"] * 22 + ["ball"] * 2
         _players = list(np.linspace(0, 10, 22).round().astype(int))
 
         player_ids = _players + _players + [0, 0]
@@ -154,6 +154,12 @@ class CoordinatesDataFrame(SoccerTrackMixin, pd.DataFrame):
 
         Note:
             `marker_kwargs` will be used for all markers but will be overwritten by `ball_kwargs`, `home_kwargs` and `away_kwargs`. All keyword arguments are passed to `plt.plot`. `save_kwargs` are passed to `plt.savefig`.
+
+        Example:
+            >>> codf = CoordinatesDataFrame.from_numpy(np.random.randint(0, 105, (1, 23, 2)))
+            >>> codf.visualize_frame(0)
+
+        .. image:: /_static/visualize_frame.png
         """
 
         _marker_kwargs = dict(
@@ -239,6 +245,10 @@ class CoordinatesDataFrame(SoccerTrackMixin, pd.DataFrame):
 
         Note:
             `marker_kwargs` will be used for all markers but will be overwritten by `ball_kwargs`, `home_kwargs` and `away_kwargs`. All keyword arguments are passed to `plt.plot`. `save_kwargs` are passed to `FuncAnimation.save`.
+
+        Example:
+            >>> codf = load_codf("/path/to/codf.csv")
+            >>> codf.visualize_frames("/path/to/save.mp4")
         """
         _marker_kwargs = dict(
             marker="o",
