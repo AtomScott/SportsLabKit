@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 from ast import literal_eval
-from typing import Mapping, Optional, Union, Any
+from typing import Any, Mapping, Optional, Union
 
 import cv2
 import matplotlib.pyplot as plt
@@ -12,9 +12,9 @@ from matplotlib.animation import FuncAnimation
 from mplsoccer import Pitch
 from numpy.typing import ArrayLike, NDArray
 
-from soccertrack.types import _pathlike
-from soccertrack.logger import logger
 from soccertrack.dataframe.base import SoccerTrackMixin
+from soccertrack.logger import logger
+from soccertrack.types import _pathlike
 
 
 class CoordinatesDataFrame(SoccerTrackMixin, pd.DataFrame):
@@ -139,6 +139,7 @@ class CoordinatesDataFrame(SoccerTrackMixin, pd.DataFrame):
     ):
         """Visualize a single frame.
 
+        Visualize a frame given a frame number and save it to a path. The `CoordinatesDataFrame` is expected to already have been normalized so that the pitch is 105x68, e.g. coordinates on the x-axis range from 0 to 105 and coordinates on the y-axis range from 0 to 68.
         Args:
             frame_idx: Frame number.
             save_path: Path to save the image. Defaults to None.
@@ -222,6 +223,8 @@ class CoordinatesDataFrame(SoccerTrackMixin, pd.DataFrame):
     ):
         """Visualize a single frame.
 
+        Visualizes the frames and generates a pitch animation. The `CoordinatesDataFrame` is expected to already have been normalized so that the pitch is 105x68, e.g. coordinates on the x-axis range from 0 to 105 and coordinates on the y-axis range from 0 to 68.
+
         Args:
             frame_idx: Frame number.
             save_path: Path to save the image. Defaults to None.
@@ -281,7 +284,10 @@ class CoordinatesDataFrame(SoccerTrackMixin, pd.DataFrame):
         home, *_ = ax.plot([], [], **_home_kwargs)
 
         def animate(i):
-            """Function to animate the data. Each frame it sets the data for the players and the ball."""
+            """Function to animate the data.
+
+            Each frame it sets the data for the players and the ball.
+            """
             # set the ball data with the x and y positions for the ith frame
             ball.set_data(
                 df_ball.loc[:, (slice(None), "x")].iloc[i],
