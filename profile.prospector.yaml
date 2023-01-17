@@ -88,7 +88,7 @@ mccabe:
   run: true
 
 pyroma:
-  run: true
+  run: false
   disable:
     - PYR06
     - PYR09
