@@ -3,8 +3,6 @@ name = "soccertrack"
 version = "0.0.1"
 description = "A dataset and algorithm for multi-object tracking in sports"
 authors = ["Atom Scott <atom.james.scott@gmail.com>"]
-long_description = {file = "README.md"}
-license = {file = "LICENSE"}
 
 [tool.poetry.dependencies]
 python = ">=3.9,<3.11"
