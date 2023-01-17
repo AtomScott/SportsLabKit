@@ -8,6 +8,7 @@ soccertrack/datasets/GNSS
 soccertrack/datasets/top-view
 soccertrack/datasets/wide-view
 soccertrack/datasets/*.json
+tests/outputs/
 
 # Ignore model checkpoints
 *.pt
