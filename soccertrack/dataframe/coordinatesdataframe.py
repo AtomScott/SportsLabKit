@@ -140,6 +140,7 @@ class CoordinatesDataFrame(SoccerTrackMixin, pd.DataFrame):
         """Visualize a single frame.
 
         Visualize a frame given a frame number and save it to a path. The `CoordinatesDataFrame` is expected to already have been normalized so that the pitch is 105x68, e.g. coordinates on the x-axis range from 0 to 105 and coordinates on the y-axis range from 0 to 68.
+
         Args:
             frame_idx: Frame number.
             save_path: Path to save the image. Defaults to None.
