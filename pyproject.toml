@@ -4,7 +4,7 @@ version = "0.0.1"
 description = "A dataset and algorithm for multi-object tracking in sports"
 authors = ["Atom Scott <atom.james.scott@gmail.com>"]
 license = "LICENSE"
-readme = “README.md”
+readme = "README.md"
 
 [tool.poetry.dependencies]
 python = ">=3.9,<3.11"
