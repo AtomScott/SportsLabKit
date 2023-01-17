@@ -1,9 +1,9 @@
 import unittest
 from test.support import captured_stdout
 
-from soccertrack.logger import *
 from soccertrack.dataframe import CoordinatesDataFrame
 from soccertrack.io.file import load_codf
+from soccertrack.logger import *
 from soccertrack.types import Detection
 from soccertrack.utils import get_git_root
 
