@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 from ast import literal_eval
-from typing import Mapping, Optional, Union, Any
+from typing import Any, Mapping, Optional, Union
 
 import cv2
 import matplotlib.pyplot as plt
@@ -12,9 +12,9 @@ from matplotlib.animation import FuncAnimation
 from mplsoccer import Pitch
 from numpy.typing import ArrayLike, NDArray
 
-from soccertrack.types import _pathlike
-from soccertrack.logger import logger
 from soccertrack.dataframe.base import SoccerTrackMixin
+from soccertrack.logger import logger
+from soccertrack.types import _pathlike
 
 
 class CoordinatesDataFrame(SoccerTrackMixin, pd.DataFrame):
