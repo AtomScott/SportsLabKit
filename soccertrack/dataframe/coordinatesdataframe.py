@@ -286,14 +286,14 @@ class CoordinatesDataFrame(SoccerTrackMixin, pd.DataFrame):
         Example:
             >>> codf = load_codf("/path/to/codf.csv")
             >>> codf.visualize_frames("/path/to/save.mp4")
-
+            ...
             # Heres a demo using random data
             >>> codf = CoordinatesDataFrame.from_numpy(np.random.randint(0, 50, (1, 23, 2)))
             >>> codf = codf.loc[codf.index.repeat(5)] # repeat the same frame 5 times
             >>> codf += np.array([[0,1,2,3,4]]).T # add some movment
-            >>> codf.visualize_frames('_static/visualize_frames.gif', save_kwargs={'fps':2})
+            >>> codf.visualize_frames('visualize_frames.gif', save_kwargs={'fps':2})
 
-        .. image:: _static/visualize_frames.gif
+        .. image:: /_static/visualize_frames.gif
         """
         _marker_kwargs = merge_dicts(
             {"marker": "o", "markeredgecolor": "None", "linestyle": "None"},
