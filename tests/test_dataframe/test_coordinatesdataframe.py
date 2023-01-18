@@ -73,7 +73,7 @@ class TestCoordinatesDataFrame(unittest.TestCase):
         assert save_path.exists(), f"File {save_path} does not exist"
 
     def test_numpy(self):
-        pass # TODO
+        pass  # TODO
 
     def test_to_pitch_coordinates(self):
-        pass # TODO
+        pass  # TODO
