@@ -5,6 +5,7 @@
 [![Documentation Status](https://readthedocs.org/projects/soccertrack/badge/?version=latest)](https://soccertrack.readthedocs.io/en/latest/?badge=latest) 
 [![Kaggle](https://kaggle.com/static/images/open-in-kaggle.svg)](https://www.kaggle.com/datasets/atomscott/soccertrack)
 [![PWC](https://img.shields.io/badge/%7C-Papers%20with%20Code-lightblue)](https://paperswithcode.com/dataset/soccertrack-dataset)
+[![dm](https://img.shields.io/pypi/dm/soccertrack)](https://pypi.org/project/soccertrack/)
 
 [![DeepSource](https://deepsource.io/gh/AtomScott/SoccerTrack.svg/?label=active+issues&show_trend=true&token=TIxJg8BLzszYnWeVDMHr6pMU)](https://deepsource.io/gh/AtomScott/SoccerTrack/?ref=repository-badge)
 [![DeepSource](https://deepsource.io/gh/AtomScott/SoccerTrack.svg/?label=resolved+issues&show_trend=true&token=TIxJg8BLzszYnWeVDMHr6pMU)](https://deepsource.io/gh/AtomScott/SoccerTrack/?ref=repository-badge)
