@@ -317,7 +317,7 @@ class CoordinatesDataFrame(SoccerTrackMixin, pd.DataFrame):
             _marker_kwargs,
             {"zorder": 10, "ms": 10, "markerfacecolor": "r"},
             marker_kwargs,
-            home_kwargs,
+            away_kwargs,
         )
 
         _save_kwargs = merge_dicts(
