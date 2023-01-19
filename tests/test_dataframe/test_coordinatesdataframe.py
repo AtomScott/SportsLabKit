@@ -1,6 +1,8 @@
 import unittest
 from test.support import captured_stdout
 
+import numpy as np
+
 from soccertrack.dataframe import CoordinatesDataFrame
 from soccertrack.io.file import load_codf
 from soccertrack.logger import *
@@ -40,6 +42,8 @@ class TestCoordinatesDataFrame(unittest.TestCase):
         marker_kwargs = {"markerfacecolor": "green", "ms": 30}
         saved_kwargs = {"dpi": 300, "bbox_inches": "tight"}
 
+        print(codf)
+
         codf.visualize_frame(
             0,
             save_path=save_path,
@@ -72,8 +76,43 @@ class TestCoordinatesDataFrame(unittest.TestCase):
         codf.visualize_frames(save_path=save_path, save_kwargs=saved_kwargs)
         assert save_path.exists(), f"File {save_path} does not exist"
 
-    def test_numpy(self):
-        pass # TODO
+    def test_from_numpy_1(self):
+        arr = np.random.rand(10, 22, 2)
+        codf = CoordinatesDataFrame.from_numpy(arr)
+
+        self.assertIsInstance(codf, CoordinatesDataFrame)
+        self.assertEqual(codf.shape, (10, 44))
+
+    def test_from_numpy_2(self):
+        arr = np.random.rand(10, 23, 2)
+        codf = CoordinatesDataFrame.from_numpy(arr)
+
+        self.assertIsInstance(codf, CoordinatesDataFrame)
+        self.assertEqual(codf.shape, (10, 46))
+
+    def test_from_numpy_3(self):
+        arr = np.random.rand(5, 3, 2)
+        team_ids = [1, 2, "ball"]
+        player_ids = [1, 1, "ball"]
+        codf = CoordinatesDataFrame.from_numpy(arr, team_ids, player_ids)
+
+        assert codf.shape == (5, 6)
+
+    def test_from_dict_1(self):
+        d = {
+            "home_team": {
+                "player_1a": {1: (1, 2), 2: (3, 4), 3: (5, 6)},
+                "player_1b": {1: (7, 8), 2: (9, 10), 3: (11, 12)},
+            },
+            "away_team": {
+                "player_2a": {1: (13, 14), 2: (15, 16), 3: (17, 18)},
+                "player_2b": {1: (19, 20), 2: (21, 22), 3: (23, 24)},
+            },
+            "ball": {"ball": {1: (25, 26), 2: (27, 28), 3: (29, 30)}},
+        }
+        codf = CoordinatesDataFrame.from_dict(d)
+
+        assert codf.shape == (3, 10)
 
     def test_to_pitch_coordinates(self):
-        pass # TODO
+        pass  # TODO

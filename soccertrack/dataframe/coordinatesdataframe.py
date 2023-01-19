@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 from ast import literal_eval
-from typing import Any, Mapping, Optional, Union
+from typing import Any, Mapping, Optional, Union, Iterable, List, Tuple, Type, Dict
 
 import cv2
 import matplotlib.pyplot as plt
@@ -103,26 +103,74 @@ class CoordinatesDataFrame(SoccerTrackMixin, pd.DataFrame):
     # def visualize_frames
 
     @staticmethod
-    def from_numpy(arr: np.ndarray):
+    def from_numpy(
+        arr: np.ndarray,
+        team_ids: Optional[Iterable[str]] = None,
+        player_ids: Optional[Iterable[int]] = None,
+        attributes: Optional[Iterable[str]] = ("x", "y"),
+        auto_fix_columns: bool = True,
+    ):
         """Create a CoordinatesDataFrame from a numpy array of either shape (L, N, 2) or (L, N * 2) where L is the number of frames, N is the number of players and 2 is the number of coordinates (x, y).
 
         Args:
-            arr (np.ndarray): Numpy array.
+            arr : Numpy array.
+            team_ids : Team ids. Defaults to None. If None, team ids will be set to 0 for all players. If not None, must have the same length as player_ids
+            Player ids: Player ids. Defaults to None. If None, player ids will be set to 0 for all players. If not None, must have the same length as team_ids
+            attributes : Attribute names to use. Defaults to ("x", "y").
+            auto_fix_columns : If True, will automatically fix the team_ids, player_ids and attributes so that they are equal to the number of columns. Defaults to True.
+
 
         Returns:
             CoordinatesDataFrame: CoordinatesDataFrame.
+
+        Examples:
+            >>> from soccertrack.dataframe import CoordinatesDataFrame
+            >>> import numpy as np
+            >>> arr = np.random.rand(10, 22, 2)
+            >>> codf = CoordinatesDataFrame.from_numpy(arr, team_ids=["0"] * 22, player_ids=list(range(22)))
+
         """
+        n_frames, n_players, n_attributes = arr.shape
+        n_columns = n_players * n_attributes
+
+        if team_ids and player_ids:
+            assert len(team_ids) == len(
+                player_ids
+            ), f"team_ids and player_ids must have the same length. Got {len(team_ids)} and {len(player_ids)} respectively."
+
         assert arr.ndim in (2, 3), "Array must be of shape (L, N, 2) or (L, N * 2)"
         if arr.ndim == 3:
             arr = arr.reshape(arr.shape[0], -1)
 
         df = pd.DataFrame(arr)
 
-        team_ids = ["0"] * 22 + ["1"] * 22 + ["ball"] * 2
-        _players = list(np.linspace(0, 10, 22).round().astype(int))
+        if team_ids is None:
+            if n_players == 23:
+                team_ids = ["0"] * 22 + ["1"] * 22 + ["ball"] * 2
+            else:
+                team_ids = ["0"] * n_players * n_attributes
+        elif auto_fix_columns and len(team_ids) != n_columns:
+            team_ids = np.repeat(team_ids, n_attributes)
 
-        player_ids = _players + _players + [0, 0]
-        attributes = ["x", "y"] * 23
+        if player_ids is None:
+            if n_players == 23:
+                _players = list(np.linspace(0, 10, 22).round().astype(int))
+                player_ids = _players + _players + [0, 0]
+            else:
+                player_ids = list(range(n_players)) * n_attributes
+        elif auto_fix_columns and len(player_ids) != player_ids:
+            player_ids = np.repeat(player_ids, n_attributes)
+
+        attributes = attributes * n_players
+
+        def _assert_correct_length(x, key):
+            assert (
+                len(x) == n_columns
+            ), f"Incorrect number of resulting {key} columns: {len(x)} != {n_columns}. Set auto_fix_columns to False to disable automatic fixing of columns. See docs for more information."
+
+        _assert_correct_length(team_ids, "TeamID")
+        _assert_correct_length(player_ids, "PlayerID")
+        _assert_correct_length(attributes, "Attributes")
 
         idx = pd.MultiIndex.from_arrays(
             [team_ids, player_ids, attributes],
@@ -133,6 +181,57 @@ class CoordinatesDataFrame(SoccerTrackMixin, pd.DataFrame):
 
         df.rename_axis(["TeamID", "PlayerID", "Attributes"], axis=1, inplace=True)
         df.index.name = "frame"
+
+        return CoordinatesDataFrame(df)
+
+    @staticmethod
+    def from_dict(d: dict, attributes: Optional[Iterable[str]] = ("x", "y")):
+        """Create a CoordinatesDataFrame from a nested dictionary contating the coordinates of the players and the ball.
+
+        The input dictionary should be of the form:
+        {
+            home_team_key: {
+                PlayerID: {frame: [x, y], ...},
+                PlayerID: {frame: [x, y], ...},
+                ...
+            },
+            away_team_key: {
+                PlayerID: {frame: [x, y], ...},
+                PlayerID: {frame: [x, y], ...},
+                ...
+            },
+            ball_key: {
+                frame: [x, y],
+                frame: [x, y],
+                ...
+            }
+        }
+        The `PlayerID` can be any unique identifier for the player, e.g. their jersey number or name. The PlayerID for the ball can be omitted, as it will be set to "0". `frame` must be an integer identifier for the frame number.
+
+        Args:
+            dict (dict): Nested dictionary containing the coordinates of the players and the ball.
+            attributes (Optional[Iterable[str]], optional): Attributes to use for the coordinates. Defaults to ("x", "y").
+
+        Returns:
+            CoordinatesDataFrame: CoordinatesDataFrame.
+        """
+        data = []
+        for team, team_dict in d.items():
+            for player, player_dict in team_dict.items():
+                for frame, coords in player_dict.items():
+                    data.append([team, player, frame, *coords])
+
+        df = pd.DataFrame(
+            data,
+            columns=["TeamID", "PlayerID", "frame", *attributes],
+        )
+
+        df = df.pivot(index="frame", columns=["TeamID", "PlayerID"], values=["x", "y"])
+        multi_index = pd.MultiIndex.from_tuples(
+            df.columns.swaplevel(0, 1).swaplevel(1, 2)
+        )
+        df.columns = pd.MultiIndex.from_tuples(multi_index)
+        df.rename_axis(["TeamID", "PlayerID", "Attributes"], axis=1, inplace=True)
 
         return CoordinatesDataFrame(df)
 
