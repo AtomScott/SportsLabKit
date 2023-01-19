@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 from ast import literal_eval
-from typing import Any, Mapping, Optional, Union, Iterable, List, Tuple, Type, Dict
+from typing import Any, Dict, Iterable, List, Mapping, Optional, Tuple, Type, Union
 
 import cv2
 import matplotlib.pyplot as plt
