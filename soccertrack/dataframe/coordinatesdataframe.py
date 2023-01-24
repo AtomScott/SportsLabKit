@@ -232,6 +232,7 @@ class CoordinatesDataFrame(SoccerTrackMixin, pd.DataFrame):
         )
         df.columns = pd.MultiIndex.from_tuples(multi_index)
         df.rename_axis(["TeamID", "PlayerID", "Attributes"], axis=1, inplace=True)
+        df.sort_index(axis=1, inplace=True)
 
         return CoordinatesDataFrame(df)
 
