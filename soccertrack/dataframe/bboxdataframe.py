@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from hashlib import md5
 from pathlib import Path
-from typing import Any, Optional, Type
+from typing import Any, Iterable, Optional, Type
 
 import cv2
 import numpy as np
@@ -145,7 +145,8 @@ class BBoxDataFrame(SoccerTrackMixin, pd.DataFrame):
             x2, y2 = x1 + w, y1 + h
 
             label = f"{team_id}_{player_id}"
-            color = _COLOR_NAMES[int(player_id) % len(_COLOR_NAMES)]
+            player_id_int = sum([int(x) for x in str(hash(player_id))[1:]])
+            color = _COLOR_NAMES[hash(player_id_int) % len(_COLOR_NAMES)]
 
             logger.debug(
                 f"x1: {x1}, y1: {y1}, x2: {x2}, y2: {y2}, label: {label}, color: {color}"
@@ -168,13 +169,13 @@ class BBoxDataFrame(SoccerTrackMixin, pd.DataFrame):
 
         def generator():
             movie_iterator = MovieIterator(video_path)
-            for frame_idx, frame in enumerate(movie_iterator):
-                img_ = self.visualize_frame(frame_idx, frame, **kwargs)
+            for frame_idx, frame in zip(self.index, movie_iterator):
+                img_ = self.visualize_frame(frame_idx, frame)
                 yield img_
 
         input_framerate = get_fps(video_path)
 
-        make_video(generator(), save_path, input_framerate=input_framerate)
+        make_video(generator(), save_path, input_framerate=input_framerate, **kwargs)
 
     def to_yolo_format(self):
         """Convert a dataframe to the YOLO format.
@@ -257,7 +258,7 @@ class BBoxDataFrame(SoccerTrackMixin, pd.DataFrame):
         self,
         mapping: dict[dict[Any, Any], dict[Any, Any]] = None,
         na_class: int | str = "player",
-    ):  # TODO: Add docstring
+    ):
         """Convert a dataframe to a list of tuples.
 
         Converts a dataframe to a list of tuples necessary for calculating object detection metrics such as mAP and AP scores. The specification for each list element is as follows:
@@ -312,13 +313,27 @@ class BBoxDataFrame(SoccerTrackMixin, pd.DataFrame):
             ids (list): List of lists of object ids for each frame.
             dets (list): A list of arrays of detections in the format (x, y, w, h) for each frame.
         """
+        
+        if self.size == 0:
+            return [], []
 
         # make a list of lists such that each list contains the detections for a single frame
         list_of_tuples = self.to_list_of_tuples_format()
+
         list_of_list_of_bboxes = np.split(
             list_of_tuples,
             np.unique(list_of_tuples[:, IMAGE_NAME_INDEX], return_index=True)[1][1:],
         )
+
+        frame_idxs = []
+
+        for list_of_bboxes in list_of_list_of_bboxes:
+            try:
+                frame_idxs.append(
+                    list_of_bboxes[:, IMAGE_NAME_INDEX].astype("int64")[0]
+                )
+            except IndexError:
+                frame_idxs.append(None)
 
         ids = [
             list_of_bboxes[:, OBJECT_ID_INDEX].astype("int64")
@@ -330,7 +345,78 @@ class BBoxDataFrame(SoccerTrackMixin, pd.DataFrame):
             for list_of_bboxes in list_of_list_of_bboxes
         ]
 
+        missing_frames = np.setdiff1d(
+            range(self.index.min(), self.index.max()), frame_idxs
+        )
+        # add empty detections for missing frames
+        for missing_frame in missing_frames:
+            ids.insert(missing_frame, np.array([]))
+            dets.insert(missing_frame, np.array([]))
+
         return ids, dets
+
+    @staticmethod
+    def from_dict(
+        d: dict,
+        attributes: Optional[Iterable[str]] = (
+            "bb_left",
+            "bb_top",
+            "bb_width",
+            "bb_height",
+        ),
+    ):
+        """Create a BBoxDataFrame from a nested dictionary contating the coordinates of the players and the ball.
+
+        The input dictionary should be of the form:
+        {
+            home_team_key: {
+                PlayerID: {frame: [x, y], ...},
+                PlayerID: {frame: [x, y], ...},
+                ...
+            },
+            away_team_key: {
+                PlayerID: {frame: [x, y], ...},
+                PlayerID: {frame: [x, y], ...},
+                ...
+            },
+            ball_key: {
+                frame: [x, y],
+                frame: [x, y],
+                ...
+            }
+        }
+        The `PlayerID` can be any unique identifier for the player, e.g. their jersey number or name. The PlayerID for the ball can be omitted, as it will be set to "0". `frame` must be an integer identifier for the frame number.
+
+        Args:
+            dict (dict): Nested dictionary containing the coordinates of the players and the ball.
+            attributes (Optional[Iterable[str]], optional): Attributes to use for the coordinates. Defaults to ("x", "y").
+
+        Returns:
+            CoordinatesDataFrame: CoordinatesDataFrame.
+        """
+        attributes = list(attributes)  # make sure attributes is a list
+
+        data = []
+        for team, team_dict in d.items():
+            for player, player_dict in team_dict.items():
+                for frame, bbox in player_dict.items():
+                    data.append([team, player, frame, *bbox])
+
+        df = pd.DataFrame(
+            data,
+            columns=["TeamID", "PlayerID", "frame", *attributes],
+        )
+
+        df.pivot(index="frame", columns=["TeamID", "PlayerID"], values=attributes)
+        df = df.pivot(index="frame", columns=["TeamID", "PlayerID"], values=attributes)
+        multi_index = pd.MultiIndex.from_tuples(
+            df.columns.swaplevel(0, 1).swaplevel(1, 2)
+        )
+        df.columns = pd.MultiIndex.from_tuples(multi_index)
+        df.rename_axis(["TeamID", "PlayerID", "Attributes"], axis=1, inplace=True)
+        df.sort_index(axis=1, inplace=True)
+
+        return BBoxDataFrame(df)
 
 
 def add_bbox_to_frame(
