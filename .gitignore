@@ -9,6 +9,7 @@ soccertrack/datasets/top-view
 soccertrack/datasets/wide-view
 soccertrack/datasets/*.json
 tests/outputs/
+bin/*
 
 # Ignore model checkpoints
 *.pt
