@@ -34,7 +34,6 @@ clean:
 	find . -type f -name "*.py[co]" -delete
 	find . -type d -name "__pycache__" -delete
 
-
 ## format python source code
 format:
 	poetry run docformatter --in-place -r $(i)
@@ -50,8 +49,8 @@ lint:
 
 ## Run tests using pytest
 tests:
-	poetry run pytest --cov=./ --cov-report xml 
-	/bin/deepsource report --analyzer test-coverage --key python --value-file ./coverage.xml  
+	poetry run pytest --cov=./ --cov-report xml tests
+	./bin/deepsource report --analyzer test-coverage --key python --value-file ./coverage.xml  
 
 ## Upload Data to S3
 sync_data_to_s3:
@@ -90,7 +89,6 @@ endif
 ## Test python environment is setup correctly
 test_environment:
 	$(PYTHON_INTERPRETER) test_environment.py
-
 
 #################################################################################
 # PROJECT RULES                                                                 #
