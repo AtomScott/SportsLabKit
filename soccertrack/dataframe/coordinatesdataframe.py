@@ -215,6 +215,7 @@ class CoordinatesDataFrame(SoccerTrackMixin, pd.DataFrame):
         Returns:
             CoordinatesDataFrame: CoordinatesDataFrame.
         """
+        attributes = list(attributes)
         data = []
         for team, team_dict in d.items():
             for player, player_dict in team_dict.items():
@@ -226,7 +227,7 @@ class CoordinatesDataFrame(SoccerTrackMixin, pd.DataFrame):
             columns=["TeamID", "PlayerID", "frame", *attributes],
         )
 
-        df = df.pivot(index="frame", columns=["TeamID", "PlayerID"], values=["x", "y"])
+        df = df.pivot(index="frame", columns=["TeamID", "PlayerID"], values=attributes)
         multi_index = pd.MultiIndex.from_tuples(
             df.columns.swaplevel(0, 1).swaplevel(1, 2)
         )
