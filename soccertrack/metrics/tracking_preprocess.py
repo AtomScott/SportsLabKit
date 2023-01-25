@@ -6,26 +6,20 @@ from typing import Any
 import numpy as np
 from scipy.spatial.distance import cdist
 
+from soccertrack import BBoxDataFrame
 from soccertrack.metrics.object_detection import convert_to_x1y1x2y2, iou_score
 
 
-# TODO: Write tests for mot_eval_format
 def to_mot_eval_format(
-    tracker_ids: list[list[int]],
-    tracker_dets: list[list[np.ndarray]],
-    gt_ids: list[list[int]],
-    gt_dets: list[list[np.ndarray]],
+    gt_bbdf: BBoxDataFrame,
+    pred_bbdf: BBoxDataFrame,
 ) -> dict[str, Any]:
-    """Converts tracking and ground truth data to the format(dictionary) required by the MOT metrics.
+    """Converts tracking and ground truth data to the format(dictionary)
+    required by the MOT metrics.
 
     Args:
-        bboxes_gt (BBoxDataFrame): Bbox Dataframe for ground truth in 1 sequence
-        tracker_ids (list[list[int]]): List of lists of tracker ids for each timestep
-        tracker_dets (list[list[np.ndarray]]): List of lists of tracker detections for each timestep
-        tracker_dets_xyxy (list[list[np.ndarray]]): List of lists of tracker detections in xyxy format for each timestep
-        gt_ids (list[list[int]]): List of lists of ground truth ids for each timestep
-        gt_dets (list[list[np.ndarray]]): List of lists of ground truth detections for each timestep
-        gt_dets_xyxy (list[list[np.ndarray]]): List of lists of ground truth detections in xyxy format for each timestep
+        gt_bbdf (BBoxDataFrame): Bbox Dataframe for ground truth tracking data.
+        pred_bbdf (BBoxDataFrame): Bbox Dataframe for predicted tracking data.
 
     Returns:
         dict[str, Any]: Dictionary containing the data required by the MOT metrics
@@ -41,10 +35,13 @@ def to_mot_eval_format(
     reference : https://github.com/JonathonLuiten/TrackEval/blob/ec237ec3ef654548fdc1fa1e100a45b31a6d4499/trackeval/datasets/mots_challenge.py
     """
 
-    num_tracker_dets = sum([len(tracker_dets[i]) for i in range(len(tracker_dets))])
-    num_gt_dets = sum([len(gt_dets[i]) for i in range(len(gt_dets))])
+    pred_ids, pred_dets = pred_bbdf.preprocess_for_mot_eval()
+    gt_ids, gt_dets = gt_bbdf.preprocess_for_mot_eval()
 
-    unique_tracker_ids = np.unique(list(chain.from_iterable(tracker_ids)))
+    num_tracker_dets = sum(len(pred_dets[i]) for i in range(len(pred_dets)))
+    num_gt_dets = sum(len(gt_dets[i]) for i in range(len(gt_dets)))
+
+    unique_tracker_ids = np.unique(list(chain.from_iterable(pred_ids)))
     unique_gt_ids = np.unique(list(chain.from_iterable(gt_ids)))
 
     if num_tracker_dets == 0:
@@ -63,9 +60,9 @@ def to_mot_eval_format(
 
     if num_gt_dets == 0:
         data = {}
-        data["tracker_ids"] = tracker_ids
+        data["tracker_ids"] = pred_ids
         data["gt_ids"] = []
-        data["tracker_dets"] = tracker_dets
+        data["tracker_dets"] = pred_dets
         data["gt_dets"] = []
         data["similarity_scores"] = []
         data["num_tracker_dets"] = num_tracker_dets
@@ -76,8 +73,7 @@ def to_mot_eval_format(
         return data
 
     tracker_dets_xyxy = [
-        [convert_to_x1y1x2y2(bbox) for bbox in frame_dets]
-        for frame_dets in tracker_dets
+        [convert_to_x1y1x2y2(bbox) for bbox in frame_dets] for frame_dets in pred_dets
     ]
     gt_dets_xyxy = [
         [convert_to_x1y1x2y2(bbox) for bbox in frame_dets] for frame_dets in gt_dets
@@ -85,16 +81,16 @@ def to_mot_eval_format(
 
     sim_score_list = []
     for i in range(len(gt_ids)):
-        if len(gt_ids[i]) == 0 or len(tracker_ids[i]) == 0:
+        if len(gt_ids[i]) == 0 or len(pred_ids[i]) == 0:
             sim_score_list.append(np.array([]))
         else:
             sim_score = cdist(gt_dets_xyxy[i], tracker_dets_xyxy[i], iou_score)
             sim_score_list.append(sim_score)
 
     data = {}
-    data["tracker_ids"] = tracker_ids
+    data["tracker_ids"] = pred_ids
     data["gt_ids"] = gt_ids
-    data["tracker_dets"] = tracker_dets
+    data["tracker_dets"] = pred_dets
     data["gt_dets"] = gt_dets
     data["similarity_scores"] = sim_score_list
     data["num_tracker_dets"] = num_tracker_dets
