@@ -313,7 +313,7 @@ class BBoxDataFrame(SoccerTrackMixin, pd.DataFrame):
             ids (list): List of lists of object ids for each frame.
             dets (list): A list of arrays of detections in the format (x, y, w, h) for each frame.
         """
-        
+
         if self.size == 0:
             return [], []
 
