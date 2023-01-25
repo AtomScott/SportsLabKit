@@ -7,8 +7,8 @@ from pathlib import Path
 
 import ndjson
 import requests
-from labelbox import Client
 from dotenv import load_dotenv
+from labelbox import Client
 
 from soccertrack.dataframe import BBoxDataFrame
 from soccertrack.logger import tqdm
