@@ -47,9 +47,7 @@ def mota_score(bboxes_track: BBoxDataFrame, bboxes_gt: BBoxDataFrame) -> dict[st
     code  : https://github.com/JonathonLuiten/TrackEval
     """
 
-    tracker_ids, tracker_dets = bboxes_track.preprocess_for_mot_eval()
-    gt_ids, gt_dets = bboxes_gt.preprocess_for_mot_eval()
-    data = to_mot_eval_format(tracker_ids, tracker_dets, gt_ids, gt_dets)
+    data = to_mot_eval_format(bboxes_gt, bboxes_track)
 
     main_integer_fields = [
         "CLR_TP",

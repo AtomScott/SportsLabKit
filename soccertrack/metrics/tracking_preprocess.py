@@ -34,9 +34,40 @@ def to_mot_eval_format(
 
     reference : https://github.com/JonathonLuiten/TrackEval/blob/ec237ec3ef654548fdc1fa1e100a45b31a6d4499/trackeval/datasets/mots_challenge.py
     """
+    if gt_bbdf.size == 0 and pred_bbdf.size == 0:
+        data = {}
+        data["tracker_ids"] = []
+        data["gt_ids"] = 0
+        data["tracker_dets"] = []
+        data["gt_dets"] = 0
+        data["similarity_scores"] = []
+        data["num_tracker_dets"] = 0
+        data["num_gt_dets"] = 0
+        data["num_tracker_ids"] = 0
+        data["num_gt_ids"] = 0
+        data["num_timesteps"] = 0
+        return data
 
-    pred_ids, pred_dets = pred_bbdf.preprocess_for_mot_eval()
+    min_frame = min(
+        gt_bbdf.first_valid_index() or pred_bbdf.first_valid_index(),
+        pred_bbdf.first_valid_index() or gt_bbdf.first_valid_index(),
+    )
+    max_frame = max(
+        gt_bbdf.last_valid_index() or pred_bbdf.last_valid_index(),
+        pred_bbdf.last_valid_index() or gt_bbdf.last_valid_index(),
+    )
+
+    pred_bbdf = pred_bbdf.reindex(range(min_frame, max_frame + 1))
+    gt_bbdf = gt_bbdf.reindex(range(min_frame, max_frame + 1))
+    assert pred_bbdf.index.equals(
+        gt_bbdf.index
+    ), f"Index mismatch: {pred_bbdf.index} != {gt_bbdf.index}"
+
+    print(min_frame, max_frame)
+    print(pred_bbdf)
+    print(gt_bbdf)
     gt_ids, gt_dets = gt_bbdf.preprocess_for_mot_eval()
+    pred_ids, pred_dets = pred_bbdf.preprocess_for_mot_eval()
 
     num_tracker_dets = sum(len(pred_dets[i]) for i in range(len(pred_dets)))
     num_gt_dets = sum(len(gt_dets[i]) for i in range(len(gt_dets)))

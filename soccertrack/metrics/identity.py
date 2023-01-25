@@ -36,10 +36,7 @@ def identity_score(
     code  : https://github.com/JonathonLuiten/TrackEval
     """
 
-    tracker_ids, tracker_dets = bboxes_track.preprocess_for_mot_eval()
-    gt_ids, gt_dets = bboxes_gt.preprocess_for_mot_eval()
-
-    data = to_mot_eval_format(tracker_ids, tracker_dets, gt_ids, gt_dets)
+    data = to_mot_eval_format(bboxes_gt, bboxes_track)
 
     integer_fields = ["IDTP", "IDFN", "IDFP"]
     float_fields = ["IDF1", "IDR", "IDP"]

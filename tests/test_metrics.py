@@ -215,9 +215,8 @@ class TestMetrics(unittest.TestCase):
 
     def test_mota_score_2(self):
         """Test MOTA score with zero tracking."""
-        bboxes_track = bbdf[0:2].iloc[0:0]
+        bboxes_track = bbdf.iloc[0:0]
         bboxes_gt = bbdf
-        print(type(bboxes_track), bboxes_track)
 
         mota = mota_score(bboxes_track, bboxes_gt)
 
@@ -663,7 +662,7 @@ class TestMetrics(unittest.TestCase):
 
         self.assertDictEqual(hota, ans)
 
-    def test_to_mot_eval_format(self):
+    def test_to_mot_eval_format_1(self):
         gt_bbdf = BBoxDataFrame.from_dict(
             {
                 "home": {
@@ -688,7 +687,6 @@ class TestMetrics(unittest.TestCase):
         )
 
         data = to_mot_eval_format(gt_bbdf, pred_bbdf)
-        print(data)
 
         ans = {
             "tracker_ids": [[0], [0], [1]],
@@ -714,7 +712,6 @@ class TestMetrics(unittest.TestCase):
         for key in ans.keys():
             d = data[key]
             a = ans[key]
-            print(key, d, a)
 
             if key in [
                 "similarity_scores",
