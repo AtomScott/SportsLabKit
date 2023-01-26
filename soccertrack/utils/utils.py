@@ -170,6 +170,7 @@ def make_video(
     width: Optional[int] = -1,
     input_framerate: Optional[int] = None,
     logging: bool = False,
+    custom_ffmpeg: Optional[str] = None,
 ) -> None:
     """Make video from a list of opencv format frames.
 
@@ -239,7 +240,11 @@ def make_video(
     if not Path(outpath).parent.exists():
         os.makedirs(os.path.dirname(outpath), exist_ok=True)
     writer = WriteGear(
-        output_filename=outpath, compression_mode=True, logging=logging, **output_params
+        output_filename=outpath,
+        compression_mode=True,
+        logging=logging,
+        custom_ffmpeg=custom_ffmpeg,
+        **output_params,
     )
 
     # loop over
