@@ -13,7 +13,7 @@ import numpy as np
 
 """ types """
 
-# Box is of shape (1,2xdim), e.g. for dim=2 [xmin, ymin, xmax, ymax] format is accepted
+# Box is of shape (1,2xdim), e.g. for dim=2 [xmin, ymin, width, height] format is accepted
 Box = np.ndarray
 
 # Vector is of shape (1, N)
@@ -33,6 +33,12 @@ class Tracker(ABC):
 
 
 class Detection:
+    """Detection.
+
+    Note:
+        BOX FORMAT: [xmin, ymin, width, height]
+    """
+
     def __init__(
         self,
         box: Box,
