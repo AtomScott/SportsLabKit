@@ -63,9 +63,6 @@ def to_mot_eval_format(
         gt_bbdf.index
     ), f"Index mismatch: {pred_bbdf.index} != {gt_bbdf.index}"
 
-    print(min_frame, max_frame)
-    print(pred_bbdf)
-    print(gt_bbdf)
     gt_ids, gt_dets = gt_bbdf.preprocess_for_mot_eval()
     pred_ids, pred_dets = pred_bbdf.preprocess_for_mot_eval()
 
