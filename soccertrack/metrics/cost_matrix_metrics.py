@@ -7,7 +7,7 @@ import numpy as np
 from scipy.spatial.distance import cdist
 
 from soccertrack.checks import _check_cost_matrix, _check_detections, _check_trackers
-from soccertrack.metrics import iou_score
+from soccertrack.metrics.object_detection import iou_score
 from soccertrack.types import Detection, Tracker
 
 

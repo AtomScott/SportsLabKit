@@ -83,7 +83,7 @@ class SoccerTrackMixin(object):
             else:
                 yield index, group
 
-    def to_long_df(self, level="Attributes"):
+    def to_long_df(self, level="Attributes", dropna=True):
         """Convert a dataframe to a long format.
 
         Args:
@@ -98,7 +98,7 @@ class SoccerTrackMixin(object):
         levels = ["TeamID", "PlayerID", "Attributes"]
         levels.remove(level)
 
-        df = df.stack(level=levels)
+        df = df.stack(level=levels, dropna=dropna)
         return df
 
     def is_long_format(self):

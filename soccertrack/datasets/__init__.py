@@ -11,8 +11,8 @@ __all__ = ["available", "get_path", "KaggleDownloader"]
 _module_path = Path(__file__).parent
 _available_dir = {
     "GNSS": _module_path / "GNSS",
-    "top-view": _module_path / "top-view",
-    "wide-view": _module_path / "wide-view",
+    "top_view": _module_path / "top_view",
+    "wide_view": _module_path / "wide_view",
 }
 
 for d, path in _available_dir.copy().items():

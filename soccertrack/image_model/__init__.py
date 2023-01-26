@@ -1,3 +1,6 @@
+from typing import List, Optional, Sequence, Tuple, Union
+
+import numpy as np
 import pytorch_lightning as pl
 import torch
 import torch.nn.functional as F
@@ -8,6 +11,8 @@ from torch.utils.data import DataLoader, Dataset
 from torchmetrics.functional import accuracy
 from torchvision import models, transforms
 from torchvision.datasets import ImageFolder
+
+from soccertrack.types import Detection
 
 
 class ImageClassificationData(pl.LightningDataModule):
@@ -85,12 +90,47 @@ class ImageEmbedder(pl.LightningModule):
         # add a layer with `num_classes` units
         self.classifier = nn.Linear(hidden_size, num_classes)
 
+        # TODO: define this in a single place
+        # Default Transform
+        self.transform = transforms.Compose(
+            [
+                transforms.Resize((32, 32)),
+                transforms.ToTensor(),
+                transforms.Normalize(
+                    mean=(0.485, 0.456, 0.406),
+                    std=(0.229, 0.224, 0.225),
+                ),
+            ]
+        )
+
     def forward(self, x, return_embeddings=False):
         x = self.feature_extractor(x)
         if return_embeddings:
             return x
         x = self.classifier(x)
         return F.log_softmax(x, dim=1)
+
+    def embed_detections(
+        self, detections: Sequence[Detection], image: Union[Image.Image, np.ndarray]
+    ) -> np.ndarray:
+
+        if isinstance(image, np.ndarray):
+            image = Image.fromarray(image)
+
+        box_images = []
+        for detection in detections:
+            x, y, w, h = detection.box
+            box_image = image.crop((x, y, x + w, y + h))
+            box_images.append(self.transform(box_image))
+
+        x = torch.stack(box_images)
+
+        self.eval()
+
+        with torch.no_grad():
+            z = self.forward(x, return_embeddings=True)
+
+        return z.numpy()
 
     def predict(self, x):
         return self.forward(x, return_embeddings=False).argmax(dim=1)

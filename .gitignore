@@ -6,9 +6,12 @@ data/*
 docs/autoapi
 soccertrack/datasets/GNSS
 soccertrack/datasets/top-view
+soccertrack/datasets/top_view
 soccertrack/datasets/wide-view
+soccertrack/datasets/wide_view
 soccertrack/datasets/*.json
 tests/outputs/
+bin/*
 
 # Ignore model checkpoints
 *.pt

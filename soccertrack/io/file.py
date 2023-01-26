@@ -229,7 +229,7 @@ def get_gps_loader(
     raise ValueError(f"Unknown format {format}")
 
 
-def load_coordinates(
+def load_codf(
     filename: _pathlike,
     format: Optional[str] = None,
     playerid: Optional[int] = None,
@@ -585,7 +585,7 @@ def load_df(
     if df_type == "bbox":
         df = load_bbox(filename)
     elif df_type == "coordinates":
-        df = load_coordinates(filename)
+        df = load_codf(filename)
     else:
         raise ValueError(
             f"Unknown dataframe type {df_type}, must be 'bbox' or 'coordinates'"

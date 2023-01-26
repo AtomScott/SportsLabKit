@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 from ast import literal_eval
-from typing import Any, Mapping, Optional, Union
+from typing import Any, Dict, Iterable, List, Mapping, Optional, Tuple, Type, Union
 
 import cv2
 import matplotlib.pyplot as plt
@@ -15,6 +15,18 @@ from numpy.typing import ArrayLike, NDArray
 from soccertrack.dataframe.base import SoccerTrackMixin
 from soccertrack.logger import logger
 from soccertrack.types import _pathlike
+
+
+def merge_dicts(*dicts):
+    """Merge dictionaries.
+
+    Later dictionaries take precedence.
+    """
+    merged = {}
+    for d in dicts:
+        if d is not None:
+            merged.update(d)
+    return merged
 
 
 class CoordinatesDataFrame(SoccerTrackMixin, pd.DataFrame):
@@ -91,26 +103,74 @@ class CoordinatesDataFrame(SoccerTrackMixin, pd.DataFrame):
     # def visualize_frames
 
     @staticmethod
-    def from_numpy(arr: np.ndarray):
+    def from_numpy(
+        arr: np.ndarray,
+        team_ids: Optional[Iterable[str]] = None,
+        player_ids: Optional[Iterable[int]] = None,
+        attributes: Optional[Iterable[str]] = ("x", "y"),
+        auto_fix_columns: bool = True,
+    ):
         """Create a CoordinatesDataFrame from a numpy array of either shape (L, N, 2) or (L, N * 2) where L is the number of frames, N is the number of players and 2 is the number of coordinates (x, y).
 
         Args:
-            arr (np.ndarray): Numpy array.
+            arr : Numpy array.
+            team_ids : Team ids. Defaults to None. If None, team ids will be set to 0 for all players. If not None, must have the same length as player_ids
+            Player ids: Player ids. Defaults to None. If None, player ids will be set to 0 for all players. If not None, must have the same length as team_ids
+            attributes : Attribute names to use. Defaults to ("x", "y").
+            auto_fix_columns : If True, will automatically fix the team_ids, player_ids and attributes so that they are equal to the number of columns. Defaults to True.
+
 
         Returns:
             CoordinatesDataFrame: CoordinatesDataFrame.
+
+        Examples:
+            >>> from soccertrack.dataframe import CoordinatesDataFrame
+            >>> import numpy as np
+            >>> arr = np.random.rand(10, 22, 2)
+            >>> codf = CoordinatesDataFrame.from_numpy(arr, team_ids=["0"] * 22, player_ids=list(range(22)))
+
         """
+        n_frames, n_players, n_attributes = arr.shape
+        n_columns = n_players * n_attributes
+
+        if team_ids and player_ids:
+            assert len(team_ids) == len(
+                player_ids
+            ), f"team_ids and player_ids must have the same length. Got {len(team_ids)} and {len(player_ids)} respectively."
+
         assert arr.ndim in (2, 3), "Array must be of shape (L, N, 2) or (L, N * 2)"
         if arr.ndim == 3:
             arr = arr.reshape(arr.shape[0], -1)
 
         df = pd.DataFrame(arr)
 
-        team_ids = ["0"] * 22 + ["1"] * 22 + ["ball"] * 2
-        _players = list(np.linspace(0, 10, 22).round().astype(int))
+        if team_ids is None:
+            if n_players == 23:
+                team_ids = ["0"] * 22 + ["1"] * 22 + ["ball"] * 2
+            else:
+                team_ids = ["0"] * n_players * n_attributes
+        elif auto_fix_columns and len(team_ids) != n_columns:
+            team_ids = np.repeat(team_ids, n_attributes)
 
-        player_ids = _players + _players + [0, 0]
-        attributes = ["x", "y"] * 23
+        if player_ids is None:
+            if n_players == 23:
+                _players = list(np.linspace(0, 10, 22).round().astype(int))
+                player_ids = _players + _players + [0, 0]
+            else:
+                player_ids = list(range(n_players)) * n_attributes
+        elif auto_fix_columns and len(player_ids) != player_ids:
+            player_ids = np.repeat(player_ids, n_attributes)
+
+        attributes = attributes * n_players
+
+        def _assert_correct_length(x, key):
+            assert (
+                len(x) == n_columns
+            ), f"Incorrect number of resulting {key} columns: {len(x)} != {n_columns}. Set auto_fix_columns to False to disable automatic fixing of columns. See docs for more information."
+
+        _assert_correct_length(team_ids, "TeamID")
+        _assert_correct_length(player_ids, "PlayerID")
+        _assert_correct_length(attributes, "Attributes")
 
         idx = pd.MultiIndex.from_arrays(
             [team_ids, player_ids, attributes],
@@ -121,6 +181,59 @@ class CoordinatesDataFrame(SoccerTrackMixin, pd.DataFrame):
 
         df.rename_axis(["TeamID", "PlayerID", "Attributes"], axis=1, inplace=True)
         df.index.name = "frame"
+
+        return CoordinatesDataFrame(df)
+
+    @staticmethod
+    def from_dict(d: dict, attributes: Optional[Iterable[str]] = ("x", "y")):
+        """Create a CoordinatesDataFrame from a nested dictionary contating the coordinates of the players and the ball.
+
+        The input dictionary should be of the form:
+        {
+            home_team_key: {
+                PlayerID: {frame: [x, y], ...},
+                PlayerID: {frame: [x, y], ...},
+                ...
+            },
+            away_team_key: {
+                PlayerID: {frame: [x, y], ...},
+                PlayerID: {frame: [x, y], ...},
+                ...
+            },
+            ball_key: {
+                frame: [x, y],
+                frame: [x, y],
+                ...
+            }
+        }
+        The `PlayerID` can be any unique identifier for the player, e.g. their jersey number or name. The PlayerID for the ball can be omitted, as it will be set to "0". `frame` must be an integer identifier for the frame number.
+
+        Args:
+            dict (dict): Nested dictionary containing the coordinates of the players and the ball.
+            attributes (Optional[Iterable[str]], optional): Attributes to use for the coordinates. Defaults to ("x", "y").
+
+        Returns:
+            CoordinatesDataFrame: CoordinatesDataFrame.
+        """
+        attributes = list(attributes)
+        data = []
+        for team, team_dict in d.items():
+            for player, player_dict in team_dict.items():
+                for frame, coords in player_dict.items():
+                    data.append([team, player, frame, *coords])
+
+        df = pd.DataFrame(
+            data,
+            columns=["TeamID", "PlayerID", "frame", *attributes],
+        )
+
+        df = df.pivot(index="frame", columns=["TeamID", "PlayerID"], values=attributes)
+        multi_index = pd.MultiIndex.from_tuples(
+            df.columns.swaplevel(0, 1).swaplevel(1, 2)
+        )
+        df.columns = pd.MultiIndex.from_tuples(multi_index)
+        df.rename_axis(["TeamID", "PlayerID", "Attributes"], axis=1, inplace=True)
+        df.sort_index(axis=1, inplace=True)
 
         return CoordinatesDataFrame(df)
 
@@ -141,12 +254,14 @@ class CoordinatesDataFrame(SoccerTrackMixin, pd.DataFrame):
 
         Visualize a frame given a frame number and save it to a path. The `CoordinatesDataFrame` is expected to already have been normalized so that the pitch is 105x68, e.g. coordinates on the x-axis range from 0 to 105 and coordinates on the y-axis range from 0 to 68.
 
+        Similarly, you can pass keyword arguments to change the appearance of the markers. For example, to change the size of the markers, you can pass `ms=6` to `away_kwargs` by, e.g. `codf.visualize_frames("animation.gif", away_kwargs={"ms": 6})`. See the `matplotlib.pyplot.plot` documentation for more information. Note that `marker_kwargs` will be used for all markers but will be overwritten by `ball_kwargs`, `home_kwargs` and `away_kwargs` if a dictionary with the same key is passed (later dictionaries take precedence).
+
         Args:
             frame_idx: Frame number.
             save_path: Path to save the image. Defaults to None.
-            ball_key: Key for the ball. Defaults to "ball".
-            home_key: Key for the home team. Defaults to "0".
-            away_key: Key for the away team. Defaults to "1".
+            ball_key: Key (TeamID) for the ball. Defaults to "ball".
+            home_key: Key (TeamID) for the home team. Defaults to "0".
+            away_key: Key (TeamID) for the away team. Defaults to "1".
             marker_kwargs: Keyword arguments for the markers.
             ball_kwargs: Keyword arguments specifically for the ball marker.
             home_kwargs: Keyword arguments specifically for the home team markers.
@@ -156,6 +271,9 @@ class CoordinatesDataFrame(SoccerTrackMixin, pd.DataFrame):
         Note:
             `marker_kwargs` will be used for all markers but will be overwritten by `ball_kwargs`, `home_kwargs` and `away_kwargs`. All keyword arguments are passed to `plt.plot`. `save_kwargs` are passed to `plt.savefig`.
 
+        Warning:
+            All keyword arguments are passed to `plt.plot`. If you pass an invalid keyword argument, you will get an error.
+
         Example:
             >>> codf = CoordinatesDataFrame.from_numpy(np.random.randint(0, 105, (1, 23, 2)))
             >>> codf.visualize_frame(0)
@@ -163,22 +281,34 @@ class CoordinatesDataFrame(SoccerTrackMixin, pd.DataFrame):
         .. image:: /_static/visualize_frame.png
         """
 
-        _marker_kwargs = dict(
-            marker="o",
-            markeredgecolor="None",
-            linestyle="None",
-            **(marker_kwargs) or {},
+        _marker_kwargs = merge_dicts(
+            {"marker": "o", "markeredgecolor": "None", "linestyle": "None"},
+            marker_kwargs,
         )
-        _ball_kwargs = dict(
-            _marker_kwargs, zorder=3, ms=6, markerfacecolor="w", **(ball_kwargs) or {}
+
+        _ball_kwargs = merge_dicts(
+            _marker_kwargs,
+            {"zorder": 3, "ms": 6, "markerfacecolor": "w"},
+            marker_kwargs,
+            ball_kwargs,
         )
-        _home_kwargs = dict(
-            _marker_kwargs, ms=10, markerfacecolor="b", **(home_kwargs) or {}
+        _home_kwargs = merge_dicts(
+            _marker_kwargs,
+            {"zorder": 10, "ms": 10, "markerfacecolor": "b"},
+            marker_kwargs,
+            home_kwargs,
         )
-        _away_kwargs = dict(
-            _marker_kwargs, ms=10, markerfacecolor="r", **(away_kwargs) or {}
+
+        _away_kwargs = merge_dicts(
+            _marker_kwargs,
+            {"zorder": 10, "ms": 10, "markerfacecolor": "r"},
+            marker_kwargs,
+            home_kwargs,
         )
-        _save_kwargs = dict(facecolor="black", pad_inches=0.0, **(save_kwargs) or {})
+
+        _save_kwargs = merge_dicts(
+            {"facecolor": "black", "pad_inches": 0.0}, save_kwargs
+        )
 
         _df = self.copy()
         _df = _df[_df.index == frame_idx]
@@ -228,16 +358,20 @@ class CoordinatesDataFrame(SoccerTrackMixin, pd.DataFrame):
         away_kwargs: Optional[dict[str, Any]] = None,
         save_kwargs: Optional[dict[str, Any]] = None,
     ):
-        """Visualize a single frame.
+        """Visualize multiple frames using matplotlib.animation.FuncAnimation.
 
         Visualizes the frames and generates a pitch animation. The `CoordinatesDataFrame` is expected to already have been normalized so that the pitch is 105x68, e.g. coordinates on the x-axis range from 0 to 105 and coordinates on the y-axis range from 0 to 68.
+
+        To customize the animation, you can pass keyword arguments to `matplotlib.animation.FuncAnimation`. For example, to change the frame rate, you can pass `fps=30` to `save_kwargs` by, e.g. `codf.visualize_frames("animation.gif", save_kwargs={"fps": 30})`. See the `matplotlib.animation.FuncAnimation` documentation for more information.
+
+        Similarly, you can pass keyword arguments to change the appearance of the markers. For example, to change the size of the markers, you can pass `ms=6` to `away_kwargs` by, e.g. `codf.visualize_frames("animation.gif", away_kwargs={"ms": 6})`. See the `matplotlib.pyplot.plot` documentation for more information.  Note that `marker_kwargs` will be used for all markers but will be overwritten by `ball_kwargs`, `home_kwargs` and `away_kwargs` if a dictionary with the same key is passed (later dictionaries take precedence).
 
         Args:
             frame_idx: Frame number.
             save_path: Path to save the image. Defaults to None.
-            ball_key: Key for the ball. Defaults to "ball".
-            home_key: Key for the home team. Defaults to "0".
-            away_key: Key for the away team. Defaults to "1".
+            ball_key: Key (TeamID) for the ball. Defaults to "ball".
+            home_key: Key (TeamID) for the home team. Defaults to "0".
+            away_key: Key (TeamID) for the away team. Defaults to "1".
             marker_kwargs: Keyword arguments for the markers.
             ball_kwargs: Keyword arguments specifically for the ball marker.
             home_kwargs: Keyword arguments specifically for the home team markers.
@@ -247,31 +381,53 @@ class CoordinatesDataFrame(SoccerTrackMixin, pd.DataFrame):
         Note:
             `marker_kwargs` will be used for all markers but will be overwritten by `ball_kwargs`, `home_kwargs` and `away_kwargs`. All keyword arguments are passed to `plt.plot`. `save_kwargs` are passed to `FuncAnimation.save`.
 
+        Warning:
+            All keyword arguments are passed either to `plt.plot` and `FuncAnimation.save`. If you pass an invalid keyword argument, you will get an error.
+
         Example:
             >>> codf = load_codf("/path/to/codf.csv")
             >>> codf.visualize_frames("/path/to/save.mp4")
+            ...
+            # Heres a demo using random data
+            >>> codf = CoordinatesDataFrame.from_numpy(np.random.randint(0, 50, (1, 23, 2)))
+            >>> codf = codf.loc[codf.index.repeat(5)] # repeat the same frame 5 times
+            >>> codf += np.array([[0,1,2,3,4]]).T # add some movment
+            >>> codf.visualize_frames('visualize_frames.gif', save_kwargs={'fps':2})
+
+        .. image:: /_static/visualize_frames.gif
         """
-        _marker_kwargs = dict(
-            marker="o",
-            markeredgecolor="None",
-            linestyle="None",
-            **(marker_kwargs) or {},
+        _marker_kwargs = merge_dicts(
+            {"marker": "o", "markeredgecolor": "None", "linestyle": "None"},
+            marker_kwargs,
         )
-        _ball_kwargs = dict(
-            _marker_kwargs, zorder=3, ms=6, markerfacecolor="w", **(ball_kwargs) or {}
+
+        _ball_kwargs = merge_dicts(
+            _marker_kwargs,
+            {"zorder": 3, "ms": 6, "markerfacecolor": "w"},
+            marker_kwargs,
+            ball_kwargs,
         )
-        _home_kwargs = dict(
-            _marker_kwargs, ms=10, markerfacecolor="b", **(home_kwargs) or {}
+        _home_kwargs = merge_dicts(
+            _marker_kwargs,
+            {"zorder": 10, "ms": 10, "markerfacecolor": "b"},
+            marker_kwargs,
+            home_kwargs,
         )
-        _away_kwargs = dict(
-            _marker_kwargs, ms=10, markerfacecolor="r", **(away_kwargs) or {}
+
+        _away_kwargs = merge_dicts(
+            _marker_kwargs,
+            {"zorder": 10, "ms": 10, "markerfacecolor": "r"},
+            marker_kwargs,
+            away_kwargs,
         )
-        _save_kwargs = dict(
-            dpi=100,
-            fps=10,
-            extra_args=["-vcodec", "libx264", "-pix_fmt", "yuv420p"],
-            savefig_kwargs=dict(facecolor="black", pad_inches=0.0),
-            **(save_kwargs) or {},
+
+        _save_kwargs = merge_dicts(
+            {
+                "dpi": 100,
+                "fps": 10,
+                "savefig_kwargs": {"facecolor": "black", "pad_inches": 0.0},
+            },
+            save_kwargs,
         )
 
         _df = self.copy()

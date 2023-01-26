@@ -3,10 +3,18 @@
 # Ordered for the documentation
 
 from soccertrack.tracking_model.multi_object_tracker import MultiObjectTracker
-from soccertrack.tracking_model.single_object_tracker import SingleObjectTracker
+from soccertrack.tracking_model.single_object_tracker import (
+    SingleObjectTracker,
+    KalmanTracker,
+)
 from soccertrack.tracking_model.matching import MotionVisualMatchingFunction
 
-__all__ = ["MultiObjectTracker", "SingleObjectTracker", "MotionVisualMatchingFunction"]
+__all__ = [
+    "MultiObjectTracker",
+    "SingleObjectTracker",
+    "KalmanTracker",
+    "MotionVisualMatchingFunction",
+]
 
 
 # import numpy as np

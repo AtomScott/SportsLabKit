@@ -39,9 +39,7 @@ def hota_score(bboxes_track: BBoxDataFrame, bboxes_gt: BBoxDataFrame) -> dict[st
     code  : https://github.com/JonathonLuiten/TrackEval
     """
 
-    tracker_ids, tracker_dets = bboxes_track.preprocess_for_mot_eval()
-    gt_ids, gt_dets = bboxes_gt.preprocess_for_mot_eval()
-    data = to_mot_eval_format(tracker_ids, tracker_dets, gt_ids, gt_dets)
+    data = to_mot_eval_format(bboxes_gt, bboxes_track)
 
     array_labels = np.arange(0.05, 0.99, 0.05)
     integer_array_fields = ["HOTA_TP", "HOTA_FN", "HOTA_FP"]

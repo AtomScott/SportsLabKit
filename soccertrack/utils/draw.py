@@ -2,6 +2,7 @@ from typing import Any, List, Optional, Tuple, Type, Union
 
 import matplotlib
 import numpy as np
+from mplsoccer import Pitch
 from PIL import Image, ImageColor, ImageDraw, ImageFont
 
 from soccertrack.logger import logger
