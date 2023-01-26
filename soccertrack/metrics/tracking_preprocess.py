@@ -66,7 +66,7 @@ def to_mot_eval_format(
 
     gt_ids, gt_dets = gt_bbdf.preprocess_for_mot_eval()
     pred_ids, pred_dets = pred_bbdf.preprocess_for_mot_eval()
-    
+
     print(pred_bbdf)
     print(pred_ids)
 

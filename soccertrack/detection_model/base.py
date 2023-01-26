@@ -11,9 +11,10 @@ import requests
 import torch
 from PIL import Image
 
+from soccertrack.types import Detection
+
 from ..logger import logger
 from ..utils.draw import draw_bounding_boxes
-from soccertrack.types import Detection
 
 
 def read_image(img):

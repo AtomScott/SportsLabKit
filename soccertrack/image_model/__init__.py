@@ -1,3 +1,6 @@
+from typing import List, Optional, Sequence, Tuple, Union
+
+import numpy as np
 import pytorch_lightning as pl
 import torch
 import torch.nn.functional as F
@@ -10,8 +13,6 @@ from torchvision import models, transforms
 from torchvision.datasets import ImageFolder
 
 from soccertrack.types import Detection
-import numpy as np
-from typing import List, Optional, Sequence, Tuple, Union
 
 
 class ImageClassificationData(pl.LightningDataModule):
@@ -123,7 +124,7 @@ class ImageEmbedder(pl.LightningModule):
             box_images.append(self.transform(box_image))
 
         x = torch.stack(box_images)
-        
+
         self.eval()
 
         with torch.no_grad():

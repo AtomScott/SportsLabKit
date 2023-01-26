@@ -2,10 +2,10 @@ from typing import Any, List, Optional, Tuple, Type, Union
 
 import matplotlib
 import numpy as np
+from mplsoccer import Pitch
 from PIL import Image, ImageColor, ImageDraw, ImageFont
 
 from soccertrack.logger import logger
-from mplsoccer import Pitch
 
 
 def _generate_color_palette(n: int) -> np.ndarray:

@@ -121,4 +121,3 @@ class SoccerTrackMixin(object):
         if self.is_long_format():
             return self.xs(frame, level="frame")
         return self[self.index == frame]
-
