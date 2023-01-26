@@ -23,23 +23,22 @@ A Dataset and Tracking Algorithm for Soccer with Fish-eye and Drone Videos.
 
 * [Project page](https://atomscott.github.io/SoccerTrack/)
 * [Paper](https://openaccess.thecvf.com/content/CVPR2022W/CVSports/papers/Scott_SoccerTrack_A_Dataset_and_Tracking_Algorithm_for_Soccer_With_Fish-Eye_CVPRW_2022_paper.pdf)
-* [Dataset Download](https://atomscott.github.io/SoccerTrack/#download) 🌟 NEW
 * [Tracking Algorithm](https://github.com/AtomScott/SoccerTrack) (Work In Progress)
 * [Documentation](https://soccertrack.readthedocs.io/) (Work In Progress)
 
 
 ## Dataset Details
 
- -/- | **Wide-View Camera** | **Top-View Camera** | **GNSS** 
----|---|---|---
- Device | Z CAM E2-F8 | DJI Mavic 3 | STATSPORTS APEX 10 Hz 
- Resolution | 8K (7,680 × 4,320 pixel) | 4K (3,840 × 2,160 pixesl) | Abs. err. in 20-m run: 0.22 ± 0.20 m  
- FPS | 30 | 30 | 10 
- Player tracking | ✅ | ✅ | ✅ 
- Ball tracking | ✅ | ✅ | - 
- Bounding box | ✅ | ✅ | - 
- Location data | ✅ | ✅ | ✅ 
- Player ID | ✅ | ✅ | ✅
+ | -/-             | **Wide-View Camera**     | **Top-View Camera**       | **GNSS**                             |
+ | --------------- | ------------------------ | ------------------------- | ------------------------------------ |
+ | Device          | Z CAM E2-F8              | DJI Mavic 3               | STATSPORTS APEX 10 Hz                |
+ | Resolution      | 8K (7,680 × 4,320 pixel) | 4K (3,840 × 2,160 pixesl) | Abs. err. in 20-m run: 0.22 ± 0.20 m |
+ | FPS             | 30                       | 30                        | 10                                   |
+ | Player tracking | ✅                        | ✅                         | ✅                                    |
+ | Ball tracking   | ✅                        | ✅                         | -                                    |
+ | Bounding box    | ✅                        | ✅                         | -                                    |
+ | Location data   | ✅                        | ✅                         | ✅                                    |
+ | Player ID       | ✅                        | ✅                         | ✅                                    |
 
 All data in SoccerTrack was obtained from 11-vs-11 soccer games between college-aged athletes. Measurements were conducted after we received the approval of Tsukuba university’s ethics committee, and all participants provided signed informed permission. After recording several soccer matches, the videos were semi-automatically annotated based on the GNSS coordinates of each player.
 
@@ -65,15 +64,23 @@ https://user-images.githubusercontent.com/22371492/178085027-5d25781d-e3ed-4791-
 
 ## Dataset Download
 
-The SoccerTrack Dataset is available to download from the links below!
-
-* [Top-view](https://drive.google.com/drive/folders/12rasAk-52YSAwReJNIlTZIa794UhRU4J?usp=sharing)
-* [Wide-view](https://drive.google.com/drive/folders/1XgrPHBYnz-LOB2vZsB4koVUMgjl_gwqF?usp=sharing)
-* [GNSS data](https://drive.google.com/drive/folders/15i4GJ1Rl5rwnOOuHv34Ar1K8wxKifnIJ?usp=sharing)
+All the data can be downloaded from [Kaggle](https://www.kaggle.com/datasets/atomscott/soccertrack)!
 
 For more details on how to use the dataset, please see the section "[Dataset Preparation](https://soccertrack.readthedocs.io/en/latest/01_get_started/dataset_preparation.html)".
 
-## Docker
+## Install
+
+### pip
+
+The software can be installed using `pip`.
+
+```bash
+pip install soccertrack
+```
+
+> **Note** The software is currently in development so it will break and change frequently!
+
+### Docker
 
 [Dockerhub](https://hub.docker.com/repository/docker/atomscott/soccertrack)
 
@@ -115,6 +122,7 @@ See the [Contributing Guide](https://soccertrack.readthedocs.io/en/latest/contri
 </table>
 
 ## Citation
+
 ```
 @inproceedings{scott2022soccertrack,
   title={SoccerTrack: A Dataset and Tracking Algorithm for Soccer With Fish-Eye and Drone Videos},
