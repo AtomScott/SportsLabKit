@@ -221,7 +221,6 @@ class KalmanTracker(SingleObjectTracker):
 
         self.model_kwargs: dict = model_kwargs
         self.model = Model(**self.model_kwargs)
-
         if x0 is None:
             x0 = self.model.box_to_x(box0)
 
