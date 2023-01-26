@@ -13,6 +13,7 @@ from PIL import Image
 
 from ..logger import logger
 from ..utils.draw import draw_bounding_boxes
+from soccertrack.types import Detection
 
 
 def read_image(img):
@@ -35,21 +36,21 @@ def read_image(img):
     return img
 
 
-class Detection:
-    def __init__(
-        self,
-        box: np.ndarray,
-        score: Optional[float] = None,
-        class_id: Optional[int] = None,
-        feature: Optional[np.ndarray] = None,
-    ):
-        self.box = box
-        self.score = score
-        self.class_id = class_id
-        self.feature = feature
+# class Detection:
+#     def __init__(
+#         self,
+#         box: np.ndarray,
+#         score: Optional[float] = None,
+#         class_id: Optional[int] = None,
+#         feature: Optional[np.ndarray] = None,
+#     ):
+#         self.box = box
+#         self.score = score
+#         self.class_id = class_id
+#         self.feature = feature
 
-    def __repr__(self):
-        return f"Detection(box={self.box}, score={self.score:.5f}, class_id={self.class_id}, feature={self.feature})"
+#     def __repr__(self):
+#         return f"Detection(box={self.box}, score={self.score:.5f}, class_id={self.class_id}, feature={self.feature})"
 
 
 class Detections:

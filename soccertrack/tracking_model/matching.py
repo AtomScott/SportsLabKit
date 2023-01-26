@@ -16,7 +16,7 @@ from soccertrack.checks import (
     _check_matches,
     _check_trackers,
 )
-from soccertrack.metrics import BaseCostMatrixMetric, CosineCMM, IoUCMM, iou_score
+from soccertrack.metrics import BaseCostMatrixMetric, CosineCMM, IoUCMM
 from soccertrack.tracking_model import SingleObjectTracker
 from soccertrack.types import Detection
 
