@@ -1,15 +1,13 @@
-from glob import glob
 import os
+from glob import glob
 from typing import Optional
 
 import numpy as np
-import gdown
-
 from fire import Fire
 
-from soccertrack.utils.camera import find_intrinsic_camera_parameters, Camera
-from soccertrack.utils.utils import make_video
 from soccertrack.utils import logger, set_log_level
+from soccertrack.utils.camera import Camera, find_intrinsic_camera_parameters
+from soccertrack.utils.utils import make_video
 
 
 class CLI:
@@ -95,7 +93,7 @@ class CLI:
         **kwargs,
     ):
         """Calibrate a video using precomputed calibration parameters
-        
+
         Args:
             input (str): _description_
             npzfile (str): _description_
@@ -105,7 +103,7 @@ class CLI:
 
         Note:
             kwargs are passed to `make_video`, so it is recommended that you refere to the documentation for `make_video`.
-            
+
         """
         mtx, dist, mapx, mapy = np.load(npzfile).values()
 
@@ -130,7 +128,7 @@ class CLI:
         camera.save_calibrated_video(
             save_path=output,
             **kwargs,
-            )
+        )
         logger.info(f"Video saved to {output}")
 
     def calibrate(

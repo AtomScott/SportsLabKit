@@ -1,4 +1,4 @@
-.PHONY: clean data format lint requirements sync_data_to_s3 sync_data_from_s3 show-d
+.PHONY: clean data format lint requirements sync_data_to_s3 sync_data_from_s3 show-d tests
 
 #################################################################################
 # GLOBALS                                                                       #
@@ -34,15 +34,23 @@ clean:
 	find . -type f -name "*.py[co]" -delete
 	find . -type d -name "__pycache__" -delete
 
-
 ## format python source code
 format:
-	$(PYTHON_INTERPRETER) -m black src/
-	$(PYTHON_INTERPRETER) -m isort src/
+	poetry run docformatter --in-place -r $(i)
+	poetry run black $(i)
+	poetry run isort $(i)
 
 ## Lint using flake8
 lint:
-	flake8 src
+	poetry run docformatter --in-place -r $(i)
+	poetry run black $(i)
+	poetry run isort $(i)
+	poetry run prospector --profile profile.prospector.yaml $(i)
+
+## Run tests using pytest
+tests:
+	poetry run pytest --cov=./ --cov-report xml tests
+	./bin/deepsource report --analyzer test-coverage --key python --value-file ./coverage.xml  
 
 ## Upload Data to S3
 sync_data_to_s3:
@@ -81,7 +89,6 @@ endif
 ## Test python environment is setup correctly
 test_environment:
 	$(PYTHON_INTERPRETER) test_environment.py
-
 
 #################################################################################
 # PROJECT RULES                                                                 #
@@ -156,14 +163,25 @@ help:
 
 .PHONY: docker
 docker:
-	docker build -t atomscott/soccertrack:latest . --no-cache
+	docker build -t atomscott/soccertrack:latest . 
 	docker run -t atomscott/soccertrack:latest echo "atomscott/soccertrack done"
+# docker run --platform linux/amd64 -t atomscott/soccertrack:latest echo "atomscott/soccertrack done"
+# if cpu dont user --gpus all
+# if m1 mac add --platform linux/amd64 before the image name
+
+.PHONY: docker-cpu
+docker-check-gpu:
+	docker run --gpus all -t atomscott/soccertrack:latest  nvidia-smi
+
 
 .PHONY: docker-push
 docker-push:
 	docker login
 	docker push atomscott/soccertrack:latest
 
+.PHONY: docker-run
+docker-run:
+	docker run --rm -it -v $(PWD):/workspace atomscott/soccertrack:latest bash
 
 #################################################################################
 # Singularity                                                     #
@@ -171,3 +189,11 @@ docker-push:
 .PHONY: singularity-pull
 singularity-pull:
 	singularity pull docker://atomscott/soccertrack:latest
+
+
+#################################################################################
+# Poetry                                                     #
+#################################################################################
+# .PHONY: requirements
+# requirements:
+# 	poetry export -f requirements.txt --output requirements.txt

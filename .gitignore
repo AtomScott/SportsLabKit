@@ -1,6 +1,19 @@
 x_ignore/*
-data/results/*
+external/*
+logs/*
+models/*
+data/*
+docs/autoapi
+soccertrack/datasets/GNSS
+soccertrack/datasets/top-view
+soccertrack/datasets/top_view
+soccertrack/datasets/wide-view
+soccertrack/datasets/wide_view
+soccertrack/datasets/*.json
+tests/outputs/
+bin/*
 
+# Ignore model checkpoints
 *.pt
 
 # Byte-compiled / optimized / DLL files
@@ -90,3 +103,9 @@ target/
 
 # Mypy cache
 .mypy_cache/
+
+# Don't ignore the .gitignore file
+!.gitignore
+
+# Don't ignore the .gitkeep file
+!.gitkeep

@@ -3,19 +3,68 @@ import itertools
 import os
 from collections import deque
 from datetime import datetime
+from pathlib import Path
 from typing import Iterable, Optional
 
+import cv2
 import cv2 as cv
 import numpy as np
 from numpy.typing import NDArray
 from omegaconf import OmegaConf
 from PIL import Image
-from soccertrack.utils import logger, tqdm
 from vidgear.gears import WriteGear
+
+from soccertrack.logger import logger, tqdm
 
 OmegaConf.register_new_resolver(
     "now", lambda x: datetime.now().strftime(x), replace=True
 )
+
+from ast import literal_eval
+from itertools import zip_longest
+from typing import Any, Union
+
+import dateutil.parser
+import git
+import numpy as np
+import pandas as pd
+from pandas._typing import FilePath, WriteBuffer
+
+
+def auto_string_parser(value: str) -> Any:
+    """Auxiliary function to parse string values.
+
+    Args:
+        value (str): String value to parse.
+
+    Returns:
+        value (any): Parsed string value.
+    """
+    # automatically parse values to correct type
+    if value.isdigit():
+        return int(value)
+    if value.replace(".", "", 1).isdigit():
+        return float(value)
+    if value.lower() == "true":
+        return True
+    if value.lower() == "false":
+        return False
+    if value.lower() == "nan":
+        return np.nan
+    if value.lower() == "inf":
+        return np.inf
+    if value.lower() == "-inf":
+        return -np.inf
+
+    try:
+        return literal_eval(value)
+    except (ValueError, SyntaxError):
+        pass
+    try:
+        return dateutil.parser.parse(value)
+    except (ValueError, TypeError):
+        pass
+    return value
 
 
 def count_iter_items(iterable: Iterable) -> int:
@@ -101,10 +150,17 @@ def cv2pil(image: NDArray[np.uint8]) -> Image.Image:
     return new_image
 
 
+def get_fps(path):
+    path = str(path)
+    cap = cv2.VideoCapture(path)
+    return cap.get(cv2.CAP_PROP_FPS)
+
+
 def make_video(
     frames: Iterable[NDArray[np.uint8]],
     outpath: str,
     vcodec: str = "libx264",
+    pix_fmt: str = "yuv420p",
     preset: str = "medium",
     crf: Optional[int] = None,
     ss: Optional[int] = None,
@@ -114,6 +170,7 @@ def make_video(
     width: Optional[int] = -1,
     input_framerate: Optional[int] = None,
     logging: bool = False,
+    custom_ffmpeg: Optional[str] = None,
 ) -> None:
     """Make video from a list of opencv format frames.
 
@@ -158,11 +215,11 @@ def make_video(
     """
 
     scale_filter = f"scale={width}:{height}"
-    print(input_framerate)
     output_params = {
         k: v
         for k, v in {
             "-vcodec": vcodec,
+            "-pix_fmt": pix_fmt,
             # encoding quality
             "-crf": crf,
             "-preset": preset,
@@ -179,9 +236,15 @@ def make_video(
     }
 
     logger.debug(f"output_params: {output_params}")
-    os.makedirs(os.path.dirname(outpath), exist_ok=True)
+
+    if not Path(outpath).parent.exists():
+        os.makedirs(os.path.dirname(outpath), exist_ok=True)
     writer = WriteGear(
-        output_filename=outpath, compression_mode=True, logging=logging, **output_params
+        output_filename=outpath,
+        compression_mode=True,
+        logging=logging,
+        custom_ffmpeg=custom_ffmpeg,
+        **output_params,
     )
 
     # loop over
@@ -218,6 +281,7 @@ class MovieIterator:
         if not os.path.isfile(path):
             raise FileNotFoundError
 
+        path = str(path)
         vcInput = cv.VideoCapture(path)
         self.vcInput = vcInput
         self.video_fps: int = round(vcInput.get(cv.CAP_PROP_FPS))
@@ -295,6 +359,13 @@ def merge_dict_of_lists(d1: dict, d2: dict) -> dict:
     keys = set(d1.keys()).union(d2.keys())
     ret = {k: list(d1.get(k, [])) + list(d2.get(k, [])) for k in keys}
     return ret
+
+
+def get_git_root():
+    """Get the root of the git repository."""
+    git_repo = git.Repo(__file__, search_parent_directories=True)
+    git_root = git_repo.git.rev_parse("--show-toplevel")
+    return Path(git_root)
 
 
 # Due to memory consumption concerns, the function below has been replaced by the function that uses vidgear above.
