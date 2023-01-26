@@ -34,6 +34,8 @@ def _check_detections(detections: Sequence[Detection]) -> None:
 
 
 def _check_cost_matrix(cost_matrix: np.ndarray, trackers, detections) -> None:
+    if len(trackers) == 0 or len(detections) == 0:
+        return
     if not isinstance(cost_matrix, np.ndarray):
         raise TypeError(
             f"cost_matrix should be a numpy array, but is {type(cost_matrix).__name__}."
