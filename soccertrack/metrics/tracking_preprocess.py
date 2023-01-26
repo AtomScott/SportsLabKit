@@ -59,12 +59,16 @@ def to_mot_eval_format(
 
     pred_bbdf = pred_bbdf.reindex(range(min_frame, max_frame + 1))
     gt_bbdf = gt_bbdf.reindex(range(min_frame, max_frame + 1))
+
     assert pred_bbdf.index.equals(
         gt_bbdf.index
     ), f"Index mismatch: {pred_bbdf.index} != {gt_bbdf.index}"
 
     gt_ids, gt_dets = gt_bbdf.preprocess_for_mot_eval()
     pred_ids, pred_dets = pred_bbdf.preprocess_for_mot_eval()
+    
+    print(pred_bbdf)
+    print(pred_ids)
 
     num_tracker_dets = sum(len(pred_dets[i]) for i in range(len(pred_dets)))
     num_gt_dets = sum(len(gt_dets[i]) for i in range(len(gt_dets)))
@@ -109,6 +113,7 @@ def to_mot_eval_format(
 
     sim_score_list = []
     for i in range(len(gt_ids)):
+
         if len(gt_ids[i]) == 0 or len(pred_ids[i]) == 0:
             sim_score_list.append(np.array([]))
         else:

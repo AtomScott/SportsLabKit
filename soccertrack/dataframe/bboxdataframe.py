@@ -313,7 +313,7 @@ class BBoxDataFrame(SoccerTrackMixin, pd.DataFrame):
             ids (list): List of lists of object ids for each frame.
             dets (list): A list of arrays of detections in the format (x, y, w, h) for each frame.
         """
-        
+
         if self.size == 0:
             return [], []
 
@@ -345,13 +345,17 @@ class BBoxDataFrame(SoccerTrackMixin, pd.DataFrame):
             for list_of_bboxes in list_of_list_of_bboxes
         ]
 
-        missing_frames = np.setdiff1d(
-            range(self.index.min(), self.index.max()), frame_idxs
-        )
+        start_frame = self.index.min()
+        end_frame = self.index.max()
+        missing_frames = np.setdiff1d(range(start_frame, end_frame), frame_idxs)
+
         # add empty detections for missing frames
         for missing_frame in missing_frames:
-            ids.insert(missing_frame, np.array([]))
-            dets.insert(missing_frame, np.array([]))
+            # index to insert is not always the same as the missing frame index
+            # example. if starting frame is 10 and missing frame is 12, insert index is 2
+            insert_index = missing_frame - start_frame
+            ids.insert(insert_index, np.array([]))
+            dets.insert(insert_index, np.array([]))
 
         return ids, dets
 
