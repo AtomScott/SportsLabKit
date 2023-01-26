@@ -314,6 +314,9 @@ class Camera:
             dst = np.squeeze(cv.fisheye.undistortPoints(points, mtx, dist, P=mtx_new))
         return dst
 
+    def pitch_contour(self, frame_num):
+        pass
+
     def undistort_image(self, image: NDArray) -> NDArray:
         undistorted_image = cv.remap(
             image,
