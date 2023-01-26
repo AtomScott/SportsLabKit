@@ -67,9 +67,6 @@ def to_mot_eval_format(
     gt_ids, gt_dets = gt_bbdf.preprocess_for_mot_eval()
     pred_ids, pred_dets = pred_bbdf.preprocess_for_mot_eval()
 
-    print(pred_bbdf)
-    print(pred_ids)
-
     num_tracker_dets = sum(len(pred_dets[i]) for i in range(len(pred_dets)))
     num_gt_dets = sum(len(gt_dets[i]) for i in range(len(gt_dets)))
 
@@ -115,7 +112,7 @@ def to_mot_eval_format(
     for i in range(len(gt_ids)):
 
         if len(gt_ids[i]) == 0 or len(pred_ids[i]) == 0:
-            sim_score_list.append(np.array([]))
+            sim_score_list.append(np.array([[]]))
         else:
             sim_score = cdist(gt_dets_xyxy[i], tracker_dets_xyxy[i], iou_score)
             sim_score_list.append(sim_score)

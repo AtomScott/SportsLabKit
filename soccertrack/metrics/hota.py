@@ -91,6 +91,7 @@ def hota_score(bboxes_track: BBoxDataFrame, bboxes_gt: BBoxDataFrame) -> dict[st
     for t, (gt_ids_t, tracker_ids_t, gt_det_t, tracker_det_t) in enumerate(
         zip(data["gt_ids"], data["tracker_ids"], data["gt_dets"], data["tracker_dets"])
     ):
+
         # Count the potential matches between ids in each timestep
         # These are normalised, weighted by the match similarity.
         similarity = data["similarity_scores"][t]
@@ -99,18 +100,26 @@ def hota_score(bboxes_track: BBoxDataFrame, bboxes_gt: BBoxDataFrame) -> dict[st
             + similarity.sum(1)[:, np.newaxis]
             - similarity
         )
-        sim_iou = np.zeros_like(similarity)
-        sim_iou_mask = sim_iou_denom > 0 + np.finfo("float").eps
-        sim_iou[sim_iou_mask] = similarity[sim_iou_mask] / sim_iou_denom[sim_iou_mask]
-        potential_matches_count[
-            gt_ids_t[:, np.newaxis], tracker_ids_t[np.newaxis, :]
-        ] += sim_iou
+
+        if similarity.size:
+            sim_iou = np.zeros_like(similarity)
+            sim_iou_mask = sim_iou_denom > 0 + np.finfo("float").eps
+            sim_iou[sim_iou_mask] = (
+                similarity[sim_iou_mask] / sim_iou_denom[sim_iou_mask]
+            )
+
+            potential_matches_count[
+                # Use list to allow for empty arrays
+                list(gt_ids_t[:, np.newaxis]),
+                list(tracker_ids_t[np.newaxis, :]),
+            ] += sim_iou
+
         # Calculate the total number of dets for each gt_id and tracker_id.
         count = np.array(
             [[0 if row[0] == -1 else 1 for _, row in enumerate(gt_det_t)]]
         ).T
-        gt_id_count[gt_ids_t] += list(count)
-        tracker_id_count[0, tracker_ids_t] += [
+        gt_id_count[list(gt_ids_t)] += list(count)
+        tracker_id_count[0, list(tracker_ids_t)] += [
             0 if row[0] == -1 else 1 for _, row in enumerate(tracker_det_t)
         ]
 

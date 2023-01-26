@@ -74,12 +74,12 @@ def identity_score(
         matches_mask = np.greater_equal(data["similarity_scores"][t], threshold)
         match_idx_gt, match_idx_tracker = np.nonzero(matches_mask)
         potential_matches_count[
-            gt_ids_t[match_idx_gt], tracker_ids_t[match_idx_tracker]
+            list(gt_ids_t[match_idx_gt]), list(tracker_ids_t[match_idx_tracker])
         ] += 1
 
         # Calculate the total number of dets for each gt_id and tracker_id.
-        gt_id_count[gt_ids_t] += 1
-        tracker_id_count[tracker_ids_t] += 1
+        gt_id_count[list(gt_ids_t)] += 1
+        tracker_id_count[list(tracker_ids_t)] += 1
 
     # Calculate optimal assignment cost matrix for ID metrics
     num_gt_ids = data["num_gt_ids"]
