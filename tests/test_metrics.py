@@ -725,6 +725,28 @@ class TestMetrics(unittest.TestCase):
             else:
                 self.assertEqual(d, a)
 
+    def test_all_metrics_1(self):
+        bbdf_1 = bbdf[0:2]
+        bbdf_2 = bbdf[1:5]
+
+        mota_score(bbdf_1, bbdf_2)
+        mota_score(bbdf_2, bbdf_1)
+        hota_score(bbdf_1, bbdf_2)
+        hota_score(bbdf_2, bbdf_1)
+        identity_score(bbdf_1, bbdf_2)
+        identity_score(bbdf_2, bbdf_1)
+
+    def test_all_metrics_2(self):
+        bbdf_1 = bbdf[0:0]
+        bbdf_2 = bbdf[18:23]
+
+        mota_score(bbdf_1, bbdf_2)
+        mota_score(bbdf_2, bbdf_1)
+        hota_score(bbdf_1, bbdf_2)
+        hota_score(bbdf_2, bbdf_1)
+        identity_score(bbdf_1, bbdf_2)
+        identity_score(bbdf_2, bbdf_1)
+
 
 if __name__ == "__main__":
     unittest.main()
