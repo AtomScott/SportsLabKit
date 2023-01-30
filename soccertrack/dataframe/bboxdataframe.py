@@ -254,7 +254,7 @@ class BBoxDataFrame(SoccerTrackMixin, pd.DataFrame):
         """
         raise NotImplementedError
 
-    def to_labelbox_ndjson(self): #TODO
+    def to_labelbox_ndjson(self):  # TODO
         raise NotImplementedError
 
     def to_list_of_tuples_format(

@@ -6,6 +6,7 @@ import uuid
 from pathlib import Path
 from typing import Any, Dict
 
+import dotenv
 import pandas as pd
 from labelbox import Client, Dataset, LabelingFrontend, Project
 from labelbox.schema.media_type import MediaType
@@ -16,8 +17,6 @@ import soccertrack
 from soccertrack.logger import (  # This just makes the df viewable in the notebook.
     show_df,
 )
-
-import dotenv
 
 dotenv.load_dotenv()
 import os
