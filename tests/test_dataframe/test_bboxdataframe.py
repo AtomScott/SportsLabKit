@@ -94,3 +94,7 @@ class TestBBoxDataFrame(unittest.TestCase):
 
         for i in range(len(dets)):
             np.testing.assert_almost_equal(dets[i], ans_dets[i])
+
+    def test_to_labelbox_ndjson():
+        # TODO: implement
+        raise NotImplementedError

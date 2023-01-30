@@ -1,3 +1,4 @@
+# TODO: Write a script to upload the data to labelbox.
 from __future__ import annotations
 
 import argparse
@@ -12,9 +13,14 @@ from labelbox.schema.ontology import OntologyBuilder, Tool
 from tqdm import tqdm
 
 import soccertrack
-from soccertrack.logging import (  # This just makes the df viewable in the notebook.
+from soccertrack.logger import (  # This just makes the df viewable in the notebook.
     show_df,
 )
+
+import dotenv
+
+dotenv.load_dotenv()
+import os
 
 
 def create_ndjson(
@@ -94,7 +100,7 @@ def get_segment(bbdf, KEYFRAME_WINDOW):
                             },
                         }
                     )
-                except ValueError:
+                except ValueError as e:
                     print("ValueError occured :", feature_name, "frame_num :", idx)
 
         segment[feature_name] = [key_frames_dict]
@@ -103,18 +109,20 @@ def get_segment(bbdf, KEYFRAME_WINDOW):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--API_key", help="Enter your API key here : ")
-    parser.add_argument("--PROJECT_NAME", help="Enter your project name here : ")
-    parser.add_argument("--DATASET_NAME", help="Enter your dataset name here : ")
-    parser.add_argument("--ONTOLOGY_NAME", help="Enter your ontology name here : ")
+    parser.add_argument("-p", "--PROJECT_NAME", help="Enter your project name here : ")
+    parser.add_argument("-d", "--DATASET_NAME", help="Enter your dataset name here : ")
     parser.add_argument(
+        "-o", "--ONTOLOGY_NAME", help="Enter your ontology name here : "
+    )
+    parser.add_argument(
+        "-i",
         "--input_csv_file",
         help="Enter the name of the csv file that contains the bbdf information :  ",
     )
 
     args = parser.parse_args()
 
-    API_KEY = args.API_key  # Add your api key
+    API_KEY = os.getenv("LABELBOX_API_KEY")
     PROJECT_NAME = (
         args.PROJECT_NAME
     )  # This is the name of the project you want to upload the data to.

@@ -123,7 +123,7 @@ class BBoxDataFrame(SoccerTrackMixin, pd.DataFrame):
 
         for (team_id, player_id), player_df in frame_df.iter_players():
             if player_df.isnull().any(axis=None):
-                logger.warning(
+                logger.debug(
                     f"NaN value found at frame {frame_idx}, team {team_id}, player {player_id}. Skipping..."
                 )
                 continue
@@ -252,6 +252,9 @@ class BBoxDataFrame(SoccerTrackMixin, pd.DataFrame):
         Returns:
             pd.DataFrame: Dataframe in MOT format.
         """
+        raise NotImplementedError
+
+    def to_labelbox_ndjson(self): #TODO
         raise NotImplementedError
 
     def to_list_of_tuples_format(
