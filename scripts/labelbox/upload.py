@@ -33,44 +33,13 @@ def create_ndjson(
     }
 
 
-def _fix_frame(
-    bbdf_tmp,
-    data_row_list,
-    data_row,
-    input_csv_file,
-    SECOND_START_IDX,
-    THRESHOLD_SECOND_START,
-    THRESHOLD_SECOND_END,
-    DATA_ROW_IDX,
-):
-    # データフレームのズレの修正
-    start_second = int(data_row.external_id.split("_")[SECOND_START_IDX])
-    if (
-        start_second
-        >= THRESHOLD_SECOND_START & start_second
-        < THRESHOLD_SECOND_END - 30
-    ):
-        _data_row = list(reversed(data_row_list))[DATA_ROW_IDX + 1]
-        _bbdf_file_name = (
-            Path(input_csv_file) / f"{_data_row.external_id.split('.')[0]}.csv"
-        )
-        _bbdf = soccertrack.load_df(_bbdf_file_name)
-        bbdf = pd.concat([bbdf_tmp[2:], _bbdf[0:2]], axis=0)
-
-    elif start_second >= THRESHOLD_SECOND_END - 30:
-        bbdf = bbdf_tmp[2:]
-
-    else:
-        bbdf = bbdf_tmp
-    bbdf.index = [i + 1 for i in range(len(bbdf))]
-    return bbdf
-
-
 def get_segment(bbdf, KEYFRAME_WINDOW):
     segment = dict()
     for (team_id, player_id), player_df in bbdf.iter_players():
 
         if team_id == "3":
+            feature_name = "BALL"
+        elif team_id == "BALL" and player_id == "BALL":
             feature_name = "BALL"
         elif team_id == "1" and int(player_id) >= 11:
             feature_name = team_id + "_" + str(int(player_id) - 11)
@@ -100,7 +69,9 @@ def get_segment(bbdf, KEYFRAME_WINDOW):
                         }
                     )
                 except ValueError as e:
-                    print("ValueError occured :", feature_name, "frame_num :", idx)
+                    continue
+                    #Todo Think about what to do when an exception is handled. Currently, if we print or logger everything, we get a lot of logs and the output we want is buried.
+                    # print("ValueError occured :", feature_name, "frame_num :", idx)
 
         segment[feature_name] = [key_frames_dict]
     return segment
@@ -162,42 +133,33 @@ def main():
         )
         try:
             bbdf_tmp = soccertrack.load_df(bbdf_file_name)
+
+
+
+            segment = get_segment(bbdf_tmp, KEYFRAME_WINDOW)
+
+            uploads = []
+            for schema_name, schema_id in schema_lookup.items():
+                if schema_name in segment:
+                    uploads.append(
+                        create_ndjson(data_row.uid, schema_id, segment[schema_name])
+                    )
+            upload_task = project.upload_annotations(
+                name=f"upload-job-{uuid.uuid4()}", annotations=uploads, validate=False
+            )
+            # Wait for upload to finish (Will take up to five minutes)
+            upload_task.wait_until_done()
+            # Review the upload status
+            print(
+                "Done!",
+                " Video_name : ",
+                data_row.external_id,
+                ": Errors",
+                upload_task.errors,
+            )
         except FileNotFoundError:  # If the file doesn't exist, we'll skip it.
             print("FileNotFoundError", data_row.external_id)
             continue
-
-        # Correction of data frame misalignment
-        bbdf = _fix_frame(
-            bbdf_tmp,
-            data_row_list,
-            data_row,
-            input_csv_file,
-            SECOND_START_IDX,
-            THRESHOLD_SECOND_START,
-            THRESHOLD_SECOND_END,
-            DATA_ROW_IDX,
-        )
-        segment = get_segment(bbdf, KEYFRAME_WINDOW)
-
-        uploads = []
-        for schema_name, schema_id in schema_lookup.items():
-            if schema_name in segment:
-                uploads.append(
-                    create_ndjson(data_row.uid, schema_id, segment[schema_name])
-                )
-        upload_task = project.upload_annotations(
-            name=f"upload-job-{uuid.uuid4()}", annotations=uploads, validate=False
-        )
-        # Wait for upload to finish (Will take up to five minutes)
-        upload_task.wait_until_done()
-        # Review the upload status
-        print(
-            "Done!",
-            " Video_name : ",
-            data_row.external_id,
-            ": Errors",
-            upload_task.errors,
-        )
 
 
 if __name__ == "__main__":

@@ -7,8 +7,8 @@ from typing import Any, Iterable, Optional, Type
 import cv2
 import numpy as np
 import pandas as pd
+import uuid
 
-from soccertrack.logger import tqdm
 from soccertrack.utils import make_video
 
 from ..logger import logger
@@ -253,9 +253,96 @@ class BBoxDataFrame(SoccerTrackMixin, pd.DataFrame):
             pd.DataFrame: Dataframe in MOT format.
         """
         raise NotImplementedError
+    
+    def to_labelbox_segment(
+        self, 
+        KEYFRAME_WINDOW
+    ):
+        """Convert a dataframe to the Labelbox segment format.
+        
+        Args:
+            KEYFRAME_WINDOW (int): Interval at which keyframes are given.
+        
+        Returns:
+            segment: Dictionary in Labelbox segment format.
+            
+        Notes:
+            The Labelbox segment format is a dictionary with the following structure:
+            
+            {}
+        """
+        segment = dict()
+        for (team_id, player_id), player_bbdf in self.iter_players():
 
-    def to_labelbox_ndjson(self):  # TODO
-        raise NotImplementedError
+            if team_id == "3":
+                feature_name = "BALL"
+            elif team_id == "BALL" and player_id == "BALL":
+                feature_name = "BALL"
+            elif team_id == "1" and int(player_id) >= 11:
+                feature_name = team_id + "_" + str(int(player_id) - 11)
+            elif team_id == "0" and player_id == "21":
+                feature_name = "1" + "_" + str(int(player_id) - 11)
+            elif team_id == "0" and player_id == "11":
+                feature_name = "0" + "_" + str(int(player_id) - 11)
+
+            else:
+                feature_name = team_id + "_" + str(int(player_id))
+
+            key_frames_dict = dict()
+            key_frames_dict["keyframes"] = []
+
+            for idx, row in player_bbdf.iterrows():
+                if idx % KEYFRAME_WINDOW == 0:
+                    try:
+                        key_frames_dict["keyframes"].append(
+                            {
+                                "frame": idx,
+                                "bbox": {
+                                    "top": int(row["bb_top"]),
+                                    "left": int(row["bb_left"]),
+                                    "height": int(row["bb_height"]),
+                                    "width": int(row["bb_width"]),
+                                },
+                            }
+                        )
+                    except ValueError as e:
+                        continue
+                        # print("ValueError occured :", feature_name, "frame_num :", idx)
+
+            segment[feature_name] = [key_frames_dict]
+        return segment
+
+    def to_labelbox_data(
+        self, 
+        data_row,
+        schema_lookup, 
+        KEYFRAME_WINDOW
+        ): 
+        """Convert a dataframe to the Labelbox format.
+        
+        Args:
+            self (BBoxDataFrame): BBoxDataFrame object.
+            data_row (DataRow): DataRow object.
+            schema_lookup(dict): Dictionary of label names and label ids.
+            
+        """
+        #create
+        segment = self.to_labelbox_segment(KEYFRAME_WINDOW)
+        
+        uploads = []
+        for schema_name, schema_id in schema_lookup.items():
+            if schema_name in segment:
+                uploads.append(
+                    {
+                        "uuid": str(uuid.uuid4()),
+                        "schemaId": schema_id,
+                        "dataRow": {"id": data_row.uid},
+                        "segments": segment[schema_name],
+                        
+                    }
+                )
+
+        return uploads
 
     def to_list_of_tuples_format(
         self,
