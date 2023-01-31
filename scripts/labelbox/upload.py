@@ -70,7 +70,7 @@ def get_segment(bbdf, KEYFRAME_WINDOW):
                     )
                 except ValueError as e:
                     continue
-                    #Todo Think about what to do when an exception is handled. Currently, if we print or logger everything, we get a lot of logs and the output we want is buried.
+                    # Todo Think about what to do when an exception is handled. Currently, if we print or logger everything, we get a lot of logs and the output we want is buried.
                     # print("ValueError occured :", feature_name, "frame_num :", idx)
 
         segment[feature_name] = [key_frames_dict]
@@ -133,8 +133,6 @@ def main():
         )
         try:
             bbdf_tmp = soccertrack.load_df(bbdf_file_name)
-
-
 
             segment = get_segment(bbdf_tmp, KEYFRAME_WINDOW)
 
