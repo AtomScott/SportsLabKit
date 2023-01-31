@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import uuid
 from hashlib import md5
 from pathlib import Path
 from typing import Any, Iterable, Optional, Type
@@ -7,7 +8,6 @@ from typing import Any, Iterable, Optional, Type
 import cv2
 import numpy as np
 import pandas as pd
-import uuid
 
 from soccertrack.utils import make_video
 
@@ -253,22 +253,19 @@ class BBoxDataFrame(SoccerTrackMixin, pd.DataFrame):
             pd.DataFrame: Dataframe in MOT format.
         """
         raise NotImplementedError
-    
-    def to_labelbox_segment(
-        self, 
-        KEYFRAME_WINDOW
-    ):
+
+    def to_labelbox_segment(self, KEYFRAME_WINDOW):
         """Convert a dataframe to the Labelbox segment format.
-        
+
         Args:
             KEYFRAME_WINDOW (int): Interval at which keyframes are given.
-        
+
         Returns:
             segment: Dictionary in Labelbox segment format.
-            
+
         Notes:
             The Labelbox segment format is a dictionary with the following structure:
-            
+
             {}
         """
         segment = dict()
@@ -312,23 +309,18 @@ class BBoxDataFrame(SoccerTrackMixin, pd.DataFrame):
             segment[feature_name] = [key_frames_dict]
         return segment
 
-    def to_labelbox_data(
-        self, 
-        data_row,
-        schema_lookup, 
-        KEYFRAME_WINDOW
-        ): 
+    def to_labelbox_data(self, data_row, schema_lookup, KEYFRAME_WINDOW):
         """Convert a dataframe to the Labelbox format.
-        
+
         Args:
             self (BBoxDataFrame): BBoxDataFrame object.
             data_row (DataRow): DataRow object.
             schema_lookup(dict): Dictionary of label names and label ids.
-            
+
         """
-        #create
+        # create
         segment = self.to_labelbox_segment(KEYFRAME_WINDOW)
-        
+
         uploads = []
         for schema_name, schema_id in schema_lookup.items():
             if schema_name in segment:
@@ -338,7 +330,6 @@ class BBoxDataFrame(SoccerTrackMixin, pd.DataFrame):
                         "schemaId": schema_id,
                         "dataRow": {"id": data_row.uid},
                         "segments": segment[schema_name],
-                        
                     }
                 )
 
