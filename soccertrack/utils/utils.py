@@ -367,6 +367,31 @@ def get_git_root():
     git_root = git_repo.git.rev_parse("--show-toplevel")
     return Path(git_root)
 
+def get_labelbox_feature_name(team_id:str, player_id: str) -> str:
+    """Get the labelbox feature name for a given team and player id.
+    
+    Args:
+        team_id (str): Team id
+        player_id (str): Player id
+    
+    Returns:
+        str: Labelbox feature name
+    """
+    if team_id == "3":
+        feature_name = "BALL_BALL"
+    elif team_id == "BALL" and player_id == "BALL":
+        feature_name = "BALL_BALL"
+    elif team_id == "1" and int(player_id) >= 11:
+        feature_name = team_id + "_" + str(int(player_id) - 11)
+    elif team_id == "0" and player_id == "21":
+        feature_name = "1" + "_" + str(int(player_id) - 11)
+    elif team_id == "0" and player_id == "11":
+        feature_name = "0" + "_" + str(int(player_id) - 11)
+
+    else:
+        feature_name = team_id + "_" + str(int(player_id))
+    
+    return feature_name
 
 # Due to memory consumption concerns, the function below has been replaced by the function that uses vidgear above.
 # ===

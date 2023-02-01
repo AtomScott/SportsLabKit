@@ -9,7 +9,7 @@ import cv2
 import numpy as np
 import pandas as pd
 
-from soccertrack.utils import make_video
+from soccertrack.utils import make_video, get_labelbox_feature_name
 
 from ..logger import logger
 from ..utils import MovieIterator, get_fps
@@ -265,26 +265,27 @@ class BBoxDataFrame(SoccerTrackMixin, pd.DataFrame):
 
         Notes:
             The Labelbox segment format is a dictionary with the following structure:
-
-            {}
+            {feature_name: 
+                {keyframes: 
+                    {frame: 
+                        {bbox: 
+                            {top: XX, 
+                            left: XX, 
+                            height: XX, 
+                            width: XX}, 
+                        label: label
+                        }
+                    },
+                    {frame:
+                    ...
+                    
+                    }
+                }
+            }
         """
         segment = dict()
         for (team_id, player_id), player_bbdf in self.iter_players():
-
-            if team_id == "3":
-                feature_name = "BALL"
-            elif team_id == "BALL" and player_id == "BALL":
-                feature_name = "BALL"
-            elif team_id == "1" and int(player_id) >= 11:
-                feature_name = team_id + "_" + str(int(player_id) - 11)
-            elif team_id == "0" and player_id == "21":
-                feature_name = "1" + "_" + str(int(player_id) - 11)
-            elif team_id == "0" and player_id == "11":
-                feature_name = "0" + "_" + str(int(player_id) - 11)
-
-            else:
-                feature_name = team_id + "_" + str(int(player_id))
-
+            feature_name = get_labelbox_feature_name(team_id, player_id)
             key_frames_dict = dict()
             key_frames_dict["keyframes"] = []
 
@@ -304,7 +305,8 @@ class BBoxDataFrame(SoccerTrackMixin, pd.DataFrame):
                         )
                     except ValueError as e:
                         continue
-                        # print("ValueError occured :", feature_name, "frame_num :", idx)
+                    #Todo : Add a logger output that does not fill up the output log
+                    # print("ValueError occured :", feature_name, "frame_num :", idx)
 
             segment[feature_name] = [key_frames_dict]
         return segment
@@ -318,7 +320,7 @@ class BBoxDataFrame(SoccerTrackMixin, pd.DataFrame):
             schema_lookup(dict): Dictionary of label names and label ids.
 
         """
-        # create
+        # convert to labelbox segment format
         segment = self.to_labelbox_segment(KEYFRAME_WINDOW)
 
         uploads = []
