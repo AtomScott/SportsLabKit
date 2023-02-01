@@ -9,7 +9,7 @@ import cv2
 import numpy as np
 import pandas as pd
 
-from soccertrack.utils import make_video, get_labelbox_feature_name
+from soccertrack.utils import get_labelbox_feature_name, make_video
 
 from ..logger import logger
 from ..utils import MovieIterator, get_fps
@@ -265,20 +265,20 @@ class BBoxDataFrame(SoccerTrackMixin, pd.DataFrame):
 
         Notes:
             The Labelbox segment format is a dictionary with the following structure:
-            {feature_name: 
-                {keyframes: 
-                    {frame: 
-                        {bbox: 
-                            {top: XX, 
-                            left: XX, 
-                            height: XX, 
-                            width: XX}, 
+            {feature_name:
+                {keyframes:
+                    {frame:
+                        {bbox:
+                            {top: XX,
+                            left: XX,
+                            height: XX,
+                            width: XX},
                         label: label
                         }
                     },
                     {frame:
                     ...
-                    
+
                     }
                 }
             }
@@ -305,7 +305,7 @@ class BBoxDataFrame(SoccerTrackMixin, pd.DataFrame):
                         )
                     except ValueError as e:
                         continue
-                    #Todo : Add a logger output that does not fill up the output log
+                    # Todo : Add a logger output that does not fill up the output log
 
             segment[feature_name] = [key_frames_dict]
         return segment
