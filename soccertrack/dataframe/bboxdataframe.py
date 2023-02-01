@@ -294,7 +294,7 @@ class BBoxDataFrame(SoccerTrackMixin, pd.DataFrame):
                     try:
                         key_frames_dict["keyframes"].append(
                             {
-                                "frame": idx,
+                                "frame": idx + 1,
                                 "bbox": {
                                     "top": int(row["bb_top"]),
                                     "left": int(row["bb_left"]),
@@ -306,7 +306,6 @@ class BBoxDataFrame(SoccerTrackMixin, pd.DataFrame):
                     except ValueError as e:
                         continue
                     #Todo : Add a logger output that does not fill up the output log
-                    # print("ValueError occured :", feature_name, "frame_num :", idx)
 
             segment[feature_name] = [key_frames_dict]
         return segment
