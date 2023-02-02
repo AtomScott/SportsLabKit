@@ -6,16 +6,19 @@ import uuid
 from pathlib import Path
 
 from dotenv import load_dotenv
-from labelbox import Client, Dataset, Project
+from labelbox import Client, Dataset, Project, MALPredictionImport
 from labelbox.schema.ontology import OntologyBuilder, Tool
 
 import soccertrack
 from soccertrack.logger import tqdm
+from time import time
 
 load_dotenv()
 
 LABELBOX_API_KEY = os.getenv("LABELBOX_API_KEY")
 KEYFRAME_WINDOW = 1  # Keyframe Interval to upload
+
+client = Client(api_key=LABELBOX_API_KEY)
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
@@ -35,7 +38,7 @@ args = parser.parse_args()
 def upload_annotations(
     project: object, data_row: object, labelbox_data: object
 ) -> None:
-    """Upload annotations to Labelbox.
+    """Upload annotations to Labelbox as model assisted labels.
 
     Args:
         project (object): The Labelbox project to upload to.
@@ -45,26 +48,34 @@ def upload_annotations(
     Returns:
         None
     """
-    upload_task = project.upload_annotations(
-        name=f"upload-job-{data_row.external_id}",
-        annotations=labelbox_data,
-        validate=False,
+    # timestampを入れたほうが親切かな
+    # 同じ名前のtask_nameがあるとエラーになるので、一意な名前をつける意味も
+    upload_task_name = f"upload-job-{data_row.external_id}-{time()}"
+
+    # Use MAL since LabelImport has strict API rate limits
+    upload_job = MALPredictionImport.create_from_objects(
+        client=client,
+        project_id=project.uid,
+        name="mal_job" + str(uuid.uuid4()),
+        predictions=labelbox_data,
     )
+
     # Wait for upload to finish
-    upload_task.wait_until_done()
+    upload_job.wait_until_done()
+
     # Review the upload status
     print(
         "Done!",
-        " Video_name : ",
-        data_row.external_id,
+        " job name : ",
+        upload_task_name,
         ": Errors",
-        upload_task.errors,
+        upload_job.errors,
     )
 
 
 if __name__ == "__main__":
     # set up project information
-    client = Client(api_key=LABELBOX_API_KEY)
+
     project = next(
         client.get_projects(where=Project.name == args.LABELBOX_PROJECT_NAME), None
     )
@@ -73,6 +84,9 @@ if __name__ == "__main__":
     )
     ontology = OntologyBuilder.from_project(project)
     schema_lookup = {tool.name: tool.feature_schema_id for tool in ontology.tools}
+
+    # ソートすると0000からスタートする
+    data_rows = sorted(dataset.data_rows(), key=lambda x: x.external_id)
 
     # create a sample upload
     data_rows = list(dataset.data_rows())[::-1]
