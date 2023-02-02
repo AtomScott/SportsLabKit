@@ -1,4 +1,11 @@
 """Script to download data from Labelbox.
+
+Example:
+
+"clahkbqgx1hae09wf4wc88oou" # This is the project ID for the top-view dataset
+"cldmd6hrx08ej07yt2rydfine" # This is the project ID for the wide-view dataset
+
+poetry run python scripts/labelbox/download_v6.py --project_id <project_id> --save_root <save_root>
 """
 
 import argparse
