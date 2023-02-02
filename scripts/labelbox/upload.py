@@ -4,14 +4,14 @@ import argparse
 import os
 import uuid
 from pathlib import Path
+from time import time
 
 from dotenv import load_dotenv
-from labelbox import Client, Dataset, Project, MALPredictionImport
+from labelbox import Client, Dataset, MALPredictionImport, Project
 from labelbox.schema.ontology import OntologyBuilder, Tool
 
 import soccertrack
 from soccertrack.logger import tqdm
-from time import time
 
 load_dotenv()
 
