@@ -240,7 +240,7 @@ def make_video(
     if not Path(outpath).parent.exists():
         os.makedirs(os.path.dirname(outpath), exist_ok=True)
     writer = WriteGear(
-        output_filename=outpath,
+        output=outpath,
         compression_mode=True,
         logging=logging,
         custom_ffmpeg=custom_ffmpeg,
