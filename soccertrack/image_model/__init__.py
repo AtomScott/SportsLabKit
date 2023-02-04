@@ -13,6 +13,19 @@ from torchvision import models, transforms
 from torchvision.datasets import ImageFolder
 
 from soccertrack.types import Detection
+from soccertrack.image_model.torchreid import (
+    show_torchreid_models,
+    TorchReIDModel,
+)
+from soccertrack.image_model.visualization import plot_tsne
+
+__all__ = [
+    "ImageClassificationData",
+    "ImageClassificationModel",
+    "TorchReIDModel",
+    "plot_tsne",
+    "show_torchreid_models",
+]
 
 
 class ImageClassificationData(pl.LightningDataModule):
