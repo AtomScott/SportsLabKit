@@ -16,7 +16,6 @@ from soccertrack.logger import tqdm
 load_dotenv()
 
 LABELBOX_API_KEY = os.getenv("LABELBOX_API_KEY")
-KEYFRAME_WINDOW = 1  # Keyframe Interval to upload
 
 client = Client(api_key=LABELBOX_API_KEY)
 
@@ -97,7 +96,7 @@ if __name__ == "__main__":
         try:
             bbdf = soccertrack.load_df(bbdf_file_path)
             labelbox_data = bbdf.to_labelbox_data(
-                data_row, schema_lookup, KEYFRAME_WINDOW
+                data_row, schema_lookup
             )
             upload_annotations(project, data_row, labelbox_data)
 
