@@ -9,7 +9,7 @@ import cv2
 import numpy as np
 import pandas as pd
 
-from soccertrack.utils import get_labelbox_feature_name, make_video
+from soccertrack.utils import make_video
 
 from ..logger import logger
 from ..utils import MovieIterator, get_fps
