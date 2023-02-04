@@ -254,11 +254,11 @@ class BBoxDataFrame(SoccerTrackMixin, pd.DataFrame):
         """
         raise NotImplementedError
 
-    def to_labelbox_segment(self, KEYFRAME_WINDOW):
+    def to_labelbox_segment(self):
         """Convert a dataframe to the Labelbox segment format.
 
         Args:
-            KEYFRAME_WINDOW (int): Interval at which keyframes are given.
+            self (BBoxDataFrame): BBoxDataFrame object.
 
         Returns:
             segment: Dictionary in Labelbox segment format.
@@ -285,32 +285,34 @@ class BBoxDataFrame(SoccerTrackMixin, pd.DataFrame):
         """
         segment = dict()
         for (team_id, player_id), player_bbdf in self.iter_players():
-            feature_name = get_labelbox_feature_name(team_id, player_id)
+            feature_name = f'{team_id}_{player_id}'
             key_frames_dict = dict()
             key_frames_dict["keyframes"] = []
-
+            missing_bbox = 0
+            
             for idx, row in player_bbdf.iterrows():
-                if idx % KEYFRAME_WINDOW == 0:
-                    try:
-                        key_frames_dict["keyframes"].append(
-                            {
-                                "frame": idx + 1,
-                                "bbox": {
-                                    "top": int(row["bb_top"]),
-                                    "left": int(row["bb_left"]),
-                                    "height": int(row["bb_height"]),
-                                    "width": int(row["bb_width"]),
-                                },
-                            }
-                        )
-                    except ValueError as e:
-                        continue
-                    # Todo : Add a logger output that does not fill up the output log
+                #Processing when player_bbdf contains no data
+                try:
+                    key_frames_dict["keyframes"].append(
+                        {
+                            "frame": idx + 1,
+                            "bbox": {
+                                "top": int(row["bb_top"]),
+                                "left": int(row["bb_left"]),
+                                "height": int(row["bb_height"]),
+                                "width": int(row["bb_width"]),
+                            },
+                        }
+                    )
+                except ValueError as e:
+                    missing_bbox += 1
 
+            if missing_bbox > 0:
+                logger.warning(f"Missing {missing_bbox} bounding boxes for {feature_name}")
             segment[feature_name] = [key_frames_dict]
         return segment
 
-    def to_labelbox_data(self, data_row, schema_lookup, KEYFRAME_WINDOW):
+    def to_labelbox_data(self, data_row, schema_lookup):
         """Convert a dataframe to the Labelbox format.
 
         Args:
@@ -320,7 +322,7 @@ class BBoxDataFrame(SoccerTrackMixin, pd.DataFrame):
 
         """
         # convert to labelbox segment format
-        segment = self.to_labelbox_segment(KEYFRAME_WINDOW)
+        segment = self.to_labelbox_segment()
 
         uploads = []
         for schema_name, schema_id in schema_lookup.items():
