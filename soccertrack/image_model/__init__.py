@@ -12,12 +12,9 @@ from torchmetrics.functional import accuracy
 from torchvision import models, transforms
 from torchvision.datasets import ImageFolder
 
-from soccertrack.types import Detection
-from soccertrack.image_model.torchreid import (
-    show_torchreid_models,
-    TorchReIDModel,
-)
+from soccertrack.image_model.torchreid import TorchReIDModel, show_torchreid_models
 from soccertrack.image_model.visualization import plot_tsne
+from soccertrack.types import Detection
 
 __all__ = [
     "ImageClassificationData",

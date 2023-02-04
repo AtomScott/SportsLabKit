@@ -1,10 +1,11 @@
-import os, sys
-import requests
+import os
+import sys
 
+import requests
 from torchreid.utils import FeatureExtractor
 
 from soccertrack.logger import logger
-from soccertrack.utils import get_git_root, download_file_from_google_drive
+from soccertrack.utils import download_file_from_google_drive, get_git_root
 
 model_save_dir = get_git_root() / "models" / "torchreid"
 
