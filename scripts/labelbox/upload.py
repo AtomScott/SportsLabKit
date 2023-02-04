@@ -48,8 +48,7 @@ def upload_annotations(
     Returns:
         None
     """
-    # timestampを入れたほうが親切かな
-    # 同じ名前のtask_nameがあるとエラーになるので、一意な名前をつける意味も
+
     upload_task_name = f"upload-job-{data_row.external_id}-{time()}"
 
     # Use MAL since LabelImport has strict API rate limits
@@ -85,7 +84,7 @@ if __name__ == "__main__":
     ontology = OntologyBuilder.from_project(project)
     schema_lookup = {tool.name: tool.feature_schema_id for tool in ontology.tools}
 
-    # ソートすると0000からスタートする
+    # Sort to start at 0000.
     data_rows = sorted(dataset.data_rows(), key=lambda x: x.external_id)
 
     # create a sample upload

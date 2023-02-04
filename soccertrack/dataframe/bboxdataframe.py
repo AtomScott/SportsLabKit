@@ -254,7 +254,7 @@ class BBoxDataFrame(SoccerTrackMixin, pd.DataFrame):
         """
         raise NotImplementedError
 
-    def to_labelbox_segment(self):
+    def to_labelbox_segment(self: BBoxDataFrame) -> dict:
         """Convert a dataframe to the Labelbox segment format.
 
         Args:
@@ -314,13 +314,20 @@ class BBoxDataFrame(SoccerTrackMixin, pd.DataFrame):
             segment[feature_name] = [key_frames_dict]
         return segment
 
-    def to_labelbox_data(self, data_row, schema_lookup):
+    def to_labelbox_data(
+        self: BBoxDataFrame, 
+        data_row : object, 
+        schema_lookup : dict
+        ) -> list:
         """Convert a dataframe to the Labelbox format.
 
         Args:
             self (BBoxDataFrame): BBoxDataFrame object.
             data_row (DataRow): DataRow object.
             schema_lookup(dict): Dictionary of label names and label ids.
+        
+        Returns:
+            uploads(list): List of dictionaries in Labelbox format.
 
         """
         # convert to labelbox segment format
