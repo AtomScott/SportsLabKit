@@ -95,9 +95,7 @@ if __name__ == "__main__":
         # load the bbdf and convert to labelbox format
         try:
             bbdf = soccertrack.load_df(bbdf_file_path)
-            labelbox_data = bbdf.to_labelbox_data(
-                data_row, schema_lookup
-            )
+            labelbox_data = bbdf.to_labelbox_data(data_row, schema_lookup)
             upload_annotations(project, data_row, labelbox_data)
 
         # If the file doesn't exist, we'll skip it.
