@@ -308,7 +308,7 @@ class BBoxDataFrame(SoccerTrackMixin, pd.DataFrame):
                     missing_bbox += 1
 
             if missing_bbox > 0:
-                logger.warning(
+                logger.debug(
                     f"Missing {missing_bbox} bounding boxes for {feature_name}"
                 )
             segment[feature_name] = [key_frames_dict]
