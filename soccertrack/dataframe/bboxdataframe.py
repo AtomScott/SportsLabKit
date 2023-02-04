@@ -315,17 +315,15 @@ class BBoxDataFrame(SoccerTrackMixin, pd.DataFrame):
         return segment
 
     def to_labelbox_data(
-        self: BBoxDataFrame, 
-        data_row : object, 
-        schema_lookup : dict
-        ) -> list:
+        self: BBoxDataFrame, data_row: object, schema_lookup: dict
+    ) -> list:
         """Convert a dataframe to the Labelbox format.
 
         Args:
             self (BBoxDataFrame): BBoxDataFrame object.
             data_row (DataRow): DataRow object.
             schema_lookup(dict): Dictionary of label names and label ids.
-        
+
         Returns:
             uploads(list): List of dictionaries in Labelbox format.
 
