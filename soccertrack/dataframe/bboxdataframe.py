@@ -285,13 +285,13 @@ class BBoxDataFrame(SoccerTrackMixin, pd.DataFrame):
         """
         segment = dict()
         for (team_id, player_id), player_bbdf in self.iter_players():
-            feature_name = f'{team_id}_{player_id}'
+            feature_name = f"{team_id}_{player_id}"
             key_frames_dict = dict()
             key_frames_dict["keyframes"] = []
             missing_bbox = 0
-            
+
             for idx, row in player_bbdf.iterrows():
-                #Processing when player_bbdf contains no data
+                # Processing when player_bbdf contains no data
                 try:
                     key_frames_dict["keyframes"].append(
                         {
@@ -308,7 +308,9 @@ class BBoxDataFrame(SoccerTrackMixin, pd.DataFrame):
                     missing_bbox += 1
 
             if missing_bbox > 0:
-                logger.warning(f"Missing {missing_bbox} bounding boxes for {feature_name}")
+                logger.warning(
+                    f"Missing {missing_bbox} bounding boxes for {feature_name}"
+                )
             segment[feature_name] = [key_frames_dict]
         return segment
 
