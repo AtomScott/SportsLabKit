@@ -85,14 +85,14 @@ pip install torch torchvision pytorch-lightning
 
 To use torch reid, you will need to install the following dependencies:
 ```bash
-git clone https://github.com/KaiyangZhou/deep-person-reid.git {root}/external/deep-person-reid
-pip install --quiet -r {root}/external/deep-person-reid/requirements.txt
-pip install --quiet -e {root}/external/deep-person-reid
+pip install git+https://github.com/KaiyangZhou/deep-person-reid.git
 ```
 
 We recommed using poetry to handle dependencies. So install poetry and run the following command:
 ```bash
 poetry install
+poetry run pip install torch torchvision pytorch-lightning 
+poetry run pip install git+https://github.com/KaiyangZhou/deep-person-reid.git
 ```
 
 > **Note** The software is currently in development so it will break and change frequently!
