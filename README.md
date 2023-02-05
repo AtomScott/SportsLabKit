@@ -78,11 +78,24 @@ The software can be installed using `pip`.
 pip install soccertrack
 ```
 
+You will neeed to install the following dependencies:
+```bash
+pip install torch torchvision pytorch-lightning
+```
+
+To use torch reid, you will need to install the following dependencies:
+```bash
+git clone https://github.com/KaiyangZhou/deep-person-reid.git {root}/external/deep-person-reid
+pip install --quiet -r {root}/external/deep-person-reid/requirements.txt
+pip install --quiet -e {root}/external/deep-person-reid
+```
+
+We recommed using poetry to handle dependencies. So install poetry and run the following command:
+```bash
+poetry install
+```
+
 > **Note** The software is currently in development so it will break and change frequently!
-
-### Docker
-
-[Dockerhub](https://hub.docker.com/repository/docker/atomscott/soccertrack)
 
 ## Contributing
 
