@@ -9,10 +9,10 @@ from typing import Iterable, Optional
 import cv2
 import cv2 as cv
 import numpy as np
+import requests
 from numpy.typing import NDArray
 from omegaconf import OmegaConf
 from PIL import Image
-import requests
 from vidgear.gears import WriteGear
 
 from soccertrack.logger import logger, tqdm
