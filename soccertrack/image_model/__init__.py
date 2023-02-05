@@ -21,7 +21,7 @@ from soccertrack.image_model.visualization import plot_tsne
 
 __all__ = [
     "ImageClassificationData",
-    "ImageClassificationModel",
+    "ImageEmbedder",
     "TorchReIDModel",
     "plot_tsne",
     "show_torchreid_models",
