@@ -1,10 +1,13 @@
 import numpy as np
 
+
 def get_agg_func(agg_func):
     if agg_func is None:
         return lambda x: x
     elif agg_func == "w_mean":
-            return lambda metrics_mtx, ma_count_arr: np.sum(metrics_mtx * ma_count_arr) / np.sum(ma_count_arr)
+        return lambda metrics_mtx, ma_count_arr: np.sum(
+            metrics_mtx * ma_count_arr
+        ) / np.sum(ma_count_arr)
     elif agg_func == "mean":
         return lambda metrics_mtx, ma_count_arr: np.mean(metrics_mtx * ma_count_arr)
     elif agg_func == "median":
