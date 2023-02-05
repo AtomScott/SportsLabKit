@@ -9,6 +9,7 @@ soccertrack/datasets/top-view
 soccertrack/datasets/top_view
 soccertrack/datasets/wide-view
 soccertrack/datasets/wide_view
+soccertrack/datasets/SoccerData
 soccertrack/datasets/*.json
 tests/outputs/
 bin/*
