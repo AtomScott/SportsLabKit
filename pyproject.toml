@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "soccertrack"
-version = "0.2.2"
+version = "0.2.3"
 description = "A dataset and algorithm for multi-object tracking in sports"
 authors = ["Atom Scott <atom.james.scott@gmail.com>"]
 license = "LICENSE"
