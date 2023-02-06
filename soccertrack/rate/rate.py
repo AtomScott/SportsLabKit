@@ -6,10 +6,10 @@ from soccertrack.rate.agg_func import get_agg_func
 
 # setup initial variables
 
-grid_xmin = -52.5
-grid_ymin = -34
-grid_xmax = 52.5
-grid_ymax = 34
+grid_xmin = 0
+grid_ymin = 0
+grid_xmax = 105
+grid_ymax = 68
 window_x = 16
 window_y = 12
 
