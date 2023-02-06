@@ -1,5 +1,6 @@
 import unittest
 from test.support import captured_stdout
+from collections import namedtuple
 
 import numpy as np
 
@@ -95,6 +96,20 @@ class TestBBoxDataFrame(unittest.TestCase):
         for i in range(len(dets)):
             np.testing.assert_almost_equal(dets[i], ans_dets[i])
 
-    def test_to_labelbox_ndjson():
-        # TODO: implement
+    def test_to_labelbox_data(self):
+        bbdf = BBoxDataFrame.from_dict(
+            {
+                "home": {
+                    "1": {0: [10, 10, 25, 25, 1], 1: [0, 0, 20, 20, 1]},
+                    "2": {2: [2, 1, 25, 25, 1]},
+                }
+            },
+            attributes=["bb_left", "bb_top", "bb_width", "bb_height", "conf"],
+        )
+        MockDataRow = namedtuple("DataRow", ["uid"])
+        mock_data_row = MockDataRow("test")
+
+        schema_lookup = {"1": "3q4fhvwui45yt", "2": "sadfjdhjf1241"}
+
+        data = bbdf.to_labelbox_ndjson(mock_data_row, schema_lookup)
         raise NotImplementedError
