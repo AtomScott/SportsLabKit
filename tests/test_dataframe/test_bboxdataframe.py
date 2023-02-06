@@ -1,6 +1,6 @@
 import unittest
-from test.support import captured_stdout
 from collections import namedtuple
+from test.support import captured_stdout
 
 import numpy as np
 
