@@ -1,5 +1,4 @@
 import numpy as np
-import pandas as pd
 
 from soccertrack.dataframe import CoordinatesDataFrame
 from soccertrack.rate.agg_func import get_agg_func, get_time_series_agg_func
