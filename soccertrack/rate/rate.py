@@ -56,6 +56,7 @@ def rate_xG(codf: CoordinatesDataFrame, agg_func="w_mean"):
     xg_score = get_agg_func(agg_func)(xg_mtx, moving_area_count)
     return xg_score
 
+
 def rate_xG_time_series(codf: CoordinatesDataFrame, agg_func="nframe_diff_max"):
     """calculate Time-Series xG score for a given CoordinatesDataFrame.
     
@@ -78,6 +79,7 @@ def rate_xG_time_series(codf: CoordinatesDataFrame, agg_func="nframe_diff_max"):
             xg_score_per_frame[idx] = xg_mtx_flatten[int(row)]
     xg_score = get_time_series_agg_func(agg_func)(xg_score_per_frame)
     return xg_score
+
 
 # calulate xT
 def rate_xT(codf: CoordinatesDataFrame, agg_func="w_mean"):

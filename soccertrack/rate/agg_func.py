@@ -89,6 +89,8 @@ def get_time_series_agg_func(agg_func: str):
     elif agg_func == "nframe_agg":
         return lambda time_series_metrics: get_time_series_agg(time_series_metrics)
     elif agg_func == "nframe_diff_max":
-        return lambda time_series_metrics: np.max(np.diff(get_time_series_agg(time_series_metrics)))
+        return lambda time_series_metrics: np.max(
+            np.diff(get_time_series_agg(time_series_metrics))
+        )
     else:
         raise ValueError(f"Aggregation function {agg_func} not supported.")
