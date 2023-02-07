@@ -2,24 +2,19 @@ import numpy as np
 import pandas as pd
 
 from soccertrack.dataframe import CoordinatesDataFrame
-from soccertrack.rate.agg_func import get_agg_func
+from soccertrack.rate.agg_func import get_agg_func, get_time_series_agg_func
 
 
-def grid_count(ball_traj: np.ndarray) -> list[int]:
+def grid_count(ball_traj: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     """
     Divides the trajectory of a ball into a grid and returns a list of moving areas and corresponding counts.
 
     Args:
         ball_traj(np.ndarray): A 2D numpy array representing the trajectory of a ball.
-        grid_xmin(float): The minimum x value of the grid.
-        grid_ymin(float): The minimum y value of the grid.
-        grid_xmax(float): The maximum x value of the grid.
-        grid_ymax(float): The maximum y value of the grid.
-        window_x(int): The number of divisions along the x axis.
-        window_y(int): The number of divisions along the y axis.
 
     Returns:
-    moving_area_count(list[int]): A tuple of two lists, the first of which is a list of moving areas (each of which is a 2D numpy array) and the second of which is a corresponding list of counts of the number of elements in each moving area.
+        moving_area_count(np.ndarray): A 2D numpy array representing the count of elements in each moving area.
+        moving_area_indices(np.ndarray): A 1D numpy array representing the indices of the moving area for each element of `ball_traj`.
     """
     # setup initial variables
     grid_xmin = 0
@@ -32,33 +27,65 @@ def grid_count(ball_traj: np.ndarray) -> list[int]:
     pitch_length_x = np.linspace(grid_xmin, grid_xmax, window_x + 1)
     pitch_length_y = np.linspace(grid_ymin, grid_ymax, window_y + 1)
 
-    moving_area_count = []
+    moving_area_count = np.zeros((window_x, window_y), dtype=int)
+    moving_area_indices = np.zeros(len(ball_traj), dtype=float)
+    moving_area_indices.fill(np.nan)
 
-    for idx_x in range(1, window_x + 1, 1):
-        for idx_y in range(1, window_y + 1, 1):
+    for idx_x in range(window_x):
+        for idx_y in range(window_y):
             moving_area = ball_traj[
-                (ball_traj[:, 0] >= pitch_length_x[idx_x - 1])
-                & (ball_traj[:, 0] <= pitch_length_x[idx_x])
-                & (ball_traj[:, 1] >= pitch_length_y[idx_y - 1])
-                & (ball_traj[:, 1] <= pitch_length_y[idx_y])
+                (ball_traj[:, 0] >= pitch_length_x[idx_x]) &
+                (ball_traj[:, 0] <= pitch_length_x[idx_x + 1]) &
+                (ball_traj[:, 1] >= pitch_length_y[idx_y]) &
+                (ball_traj[:, 1] <= pitch_length_y[idx_y + 1])
             ]
-            moving_area_count.append(len(moving_area))
-    return np.array(moving_area_count).reshape(window_x, window_y)
+            moving_area_count[idx_x, idx_y] = len(moving_area)
+
+    for idx, coord in enumerate(ball_traj):
+        for idx_x in range(window_x):
+            for idx_y in range(window_y):
+                if (
+                    coord[0] >= pitch_length_x[idx_x] and
+                    coord[0] <= pitch_length_x[idx_x + 1] and
+                    coord[1] >= pitch_length_y[idx_y] and
+                    coord[1] <= pitch_length_y[idx_y + 1]
+                ):
+                    moving_area_indices[idx] = int(idx_x * window_y + idx_y)
+                    break
+            else:
+                continue
+            break
+
+    return moving_area_count, moving_area_indices
+
+
 
 
 # calulate xG
 def rate_xG(codf: CoordinatesDataFrame, agg_func="w_mean"):
     ball_traj = list(codf.iter_players())[-1][1].values
-    moving_area_count = grid_count(ball_traj)
+    moving_area_count, _ = grid_count(ball_traj)
 
     xg_score = get_agg_func(agg_func)(xg_mtx, moving_area_count)
     return xg_score
 
+def rate_xG_time_series(codf: CoordinatesDataFrame, agg_func="nframe_diff_max"):
+    ball_traj = list(codf.iter_players())[-1][1].values
+    _, moving_area_indices = grid_count(ball_traj)
+    xg_mtx_flatten = xg_mtx.flatten()
+    xg_score_per_frame = np.zeros(len(moving_area_indices))
+    for idx, row in enumerate(moving_area_indices):
+        if np.isnan(row):
+            xg_score_per_frame[idx] = 0
+        else:
+            xg_score_per_frame[idx] = xg_mtx_flatten[int(row)]
+    xg_score = get_time_series_agg_func(agg_func)(xg_score_per_frame)
+    return xg_score
 
 # calulate xT
 def rate_xT(codf: CoordinatesDataFrame, agg_func="w_mean"):
     ball_traj = list(codf.iter_players())[-1][1].values
-    moving_area_count = grid_count(ball_traj)
+    moving_area_count, _ = grid_count(ball_traj)
 
     xt_score = get_agg_func(agg_func)(xt_mtx, moving_area_count)
     return xt_score
