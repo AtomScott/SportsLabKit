@@ -4,7 +4,6 @@ import pandas as pd
 from soccertrack.dataframe import CoordinatesDataFrame
 from soccertrack.rate.agg_func import get_agg_func, get_time_series_agg_func
 
-
 def grid_count(ball_traj: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     """
     Divides the trajectory of a ball into a grid and returns a list of moving areas and corresponding counts.
@@ -27,42 +26,31 @@ def grid_count(ball_traj: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     pitch_length_x = np.linspace(grid_xmin, grid_xmax, window_x + 1)
     pitch_length_y = np.linspace(grid_ymin, grid_ymax, window_y + 1)
 
-    moving_area_count = np.zeros((window_x, window_y), dtype=int)
+    moving_area_count, _, _ = np.histogram2d(ball_traj[:,0], ball_traj[:,1], bins=(pitch_length_x, pitch_length_y))
+    moving_area_count = moving_area_count.astype(int)
+
     moving_area_indices = np.zeros(len(ball_traj), dtype=float)
     moving_area_indices.fill(np.nan)
-
-    for idx_x in range(window_x):
-        for idx_y in range(window_y):
-            moving_area = ball_traj[
-                (ball_traj[:, 0] >= pitch_length_x[idx_x]) &
-                (ball_traj[:, 0] <= pitch_length_x[idx_x + 1]) &
-                (ball_traj[:, 1] >= pitch_length_y[idx_y]) &
-                (ball_traj[:, 1] <= pitch_length_y[idx_y + 1])
-            ]
-            moving_area_count[idx_x, idx_y] = len(moving_area)
-
     for idx, coord in enumerate(ball_traj):
-        for idx_x in range(window_x):
-            for idx_y in range(window_y):
-                if (
-                    coord[0] >= pitch_length_x[idx_x] and
-                    coord[0] <= pitch_length_x[idx_x + 1] and
-                    coord[1] >= pitch_length_y[idx_y] and
-                    coord[1] <= pitch_length_y[idx_y + 1]
-                ):
-                    moving_area_indices[idx] = int(idx_x * window_y + idx_y)
-                    break
-            else:
-                continue
-            break
+        x_bin = np.digitize(coord[0], pitch_length_x) - 1
+        y_bin = np.digitize(coord[1], pitch_length_y) - 1
+        if x_bin >= 0 and x_bin < window_x and y_bin >= 0 and y_bin < window_y:
+            moving_area_indices[idx] = int(x_bin * window_y + y_bin)
 
     return moving_area_count, moving_area_indices
 
 
-
-
 # calulate xG
 def rate_xG(codf: CoordinatesDataFrame, agg_func="w_mean"):
+    """calculate xG score for a given CoordinatesDataFrame.
+    
+    Args:
+        codf (CoordinatesDataFrame): A CoordinatesDataFrame object.
+        agg_func (str, optional): Aggregation function. Defaults to "w_mean".
+    
+    Returns:
+        xg_score (float): xG score.
+    """
     ball_traj = list(codf.iter_players())[-1][1].values
     moving_area_count, _ = grid_count(ball_traj)
 
@@ -70,8 +58,18 @@ def rate_xG(codf: CoordinatesDataFrame, agg_func="w_mean"):
     return xg_score
 
 def rate_xG_time_series(codf: CoordinatesDataFrame, agg_func="nframe_diff_max"):
+    """calculate Time-Series xG score for a given CoordinatesDataFrame.
+    
+    Args:
+        codf (CoordinatesDataFrame): A CoordinatesDataFrame object.
+        agg_func (str, optional): Aggregation function. Defaults to "nframe_diff_max".
+    
+    Returns:
+        xg_score (float): Time-Series xG score.
+    """
     ball_traj = list(codf.iter_players())[-1][1].values
     _, moving_area_indices = grid_count(ball_traj)
+    
     xg_mtx_flatten = xg_mtx.flatten()
     xg_score_per_frame = np.zeros(len(moving_area_indices))
     for idx, row in enumerate(moving_area_indices):
@@ -84,10 +82,42 @@ def rate_xG_time_series(codf: CoordinatesDataFrame, agg_func="nframe_diff_max"):
 
 # calulate xT
 def rate_xT(codf: CoordinatesDataFrame, agg_func="w_mean"):
+    """calculate xT score for a given CoordinatesDataFrame.
+    
+    Args:
+        codf (CoordinatesDataFrame): A CoordinatesDataFrame object.
+        agg_func (str, optional): Aggregation function. Defaults to "w_mean".
+    
+    Returns:
+        xt_score (float): xT score.
+    """
     ball_traj = list(codf.iter_players())[-1][1].values
     moving_area_count, _ = grid_count(ball_traj)
 
     xt_score = get_agg_func(agg_func)(xt_mtx, moving_area_count)
+    return xt_score
+
+def rate_xT_time_series(codf: CoordinatesDataFrame, agg_func="nframe_diff_max"):
+    """calculate Time-Series xT score for a given CoordinatesDataFrame.
+    
+    Args:
+        codf (CoordinatesDataFrame): A CoordinatesDataFrame object.
+        agg_func (str, optional): Aggregation function. Defaults to "nframe_diff_max".
+    
+    Returns:
+        xt_score (float): Time-Series xT score.
+    """
+    ball_traj = list(codf.iter_players())[-1][1].values
+    _, moving_area_indices = grid_count(ball_traj)
+    
+    xt_mtx_flatten = xt_mtx.flatten()
+    xt_score_per_frame = np.zeros(len(moving_area_indices))
+    for idx, row in enumerate(moving_area_indices):
+        if np.isnan(row):
+            xt_score_per_frame[idx] = 0
+        else:
+            xt_score_per_frame[idx] = xt_mtx_flatten[int(row)]
+    xt_score = get_time_series_agg_func(agg_func)(xt_score_per_frame)
     return xt_score
 
 
