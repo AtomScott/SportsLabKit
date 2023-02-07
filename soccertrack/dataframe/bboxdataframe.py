@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import uuid
 from hashlib import md5
 from pathlib import Path
 from typing import Any, Iterable, Optional, Type
@@ -8,7 +9,6 @@ import cv2
 import numpy as np
 import pandas as pd
 
-from soccertrack.logger import tqdm
 from soccertrack.utils import make_video
 
 from ..logger import logger
@@ -253,6 +253,97 @@ class BBoxDataFrame(SoccerTrackMixin, pd.DataFrame):
             pd.DataFrame: Dataframe in MOT format.
         """
         raise NotImplementedError
+
+    def to_labelbox_segment(self: BBoxDataFrame) -> dict:
+        """Convert a dataframe to the Labelbox segment format.
+
+        Args:
+            self (BBoxDataFrame): BBoxDataFrame object.
+
+        Returns:
+            segment: Dictionary in Labelbox segment format.
+
+        Notes:
+            The Labelbox segment format is a dictionary with the following structure:
+            {feature_name:
+                {keyframes:
+                    {frame:
+                        {bbox:
+                            {top: XX,
+                            left: XX,
+                            height: XX,
+                            width: XX},
+                        label: label
+                        }
+                    },
+                    {frame:
+                    ...
+
+                    }
+                }
+            }
+        """
+        segment = dict()
+        for (team_id, player_id), player_bbdf in self.iter_players():
+            feature_name = f"{team_id}_{player_id}"
+            key_frames_dict = dict()
+            key_frames_dict["keyframes"] = []
+            missing_bbox = 0
+
+            for idx, row in player_bbdf.iterrows():
+                # Processing when player_bbdf contains no data
+                try:
+                    key_frames_dict["keyframes"].append(
+                        {
+                            "frame": idx + 1,
+                            "bbox": {
+                                "top": int(row["bb_top"]),
+                                "left": int(row["bb_left"]),
+                                "height": int(row["bb_height"]),
+                                "width": int(row["bb_width"]),
+                            },
+                        }
+                    )
+                except ValueError as e:
+                    missing_bbox += 1
+
+            if missing_bbox > 0:
+                logger.debug(
+                    f"Missing {missing_bbox} bounding boxes for {feature_name}"
+                )
+            segment[feature_name] = [key_frames_dict]
+        return segment
+
+    def to_labelbox_data(
+        self: BBoxDataFrame, data_row: object, schema_lookup: dict
+    ) -> list:
+        """Convert a dataframe to the Labelbox format.
+
+        Args:
+            self (BBoxDataFrame): BBoxDataFrame object.
+            data_row (DataRow): DataRow object.
+            schema_lookup(dict): Dictionary of label names and label ids.
+
+        Returns:
+            uploads(list): List of dictionaries in Labelbox format.
+
+        """
+        # convert to labelbox segment format
+        segment = self.to_labelbox_segment()
+
+        uploads = []
+        for schema_name, schema_id in schema_lookup.items():
+            if schema_name in segment:
+                uploads.append(
+                    {
+                        "uuid": str(uuid.uuid4()),
+                        "schemaId": schema_id,
+                        "dataRow": {"id": data_row.uid},
+                        "segments": segment[schema_name],
+                    }
+                )
+
+        return uploads
 
     def to_list_of_tuples_format(
         self,
