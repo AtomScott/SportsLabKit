@@ -34,10 +34,10 @@ def grid_count(ball_traj: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     for idx_x in range(window_x):
         for idx_y in range(window_y):
             moving_area = ball_traj[
-                (ball_traj[:, 0] >= pitch_length_x[idx_x]) &
-                (ball_traj[:, 0] <= pitch_length_x[idx_x + 1]) &
-                (ball_traj[:, 1] >= pitch_length_y[idx_y]) &
-                (ball_traj[:, 1] <= pitch_length_y[idx_y + 1])
+                (ball_traj[:, 0] >= pitch_length_x[idx_x])
+                & (ball_traj[:, 0] <= pitch_length_x[idx_x + 1])
+                & (ball_traj[:, 1] >= pitch_length_y[idx_y])
+                & (ball_traj[:, 1] <= pitch_length_y[idx_y + 1])
             ]
             moving_area_count[idx_x, idx_y] = len(moving_area)
 
@@ -45,10 +45,10 @@ def grid_count(ball_traj: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
         for idx_x in range(window_x):
             for idx_y in range(window_y):
                 if (
-                    coord[0] >= pitch_length_x[idx_x] and
-                    coord[0] <= pitch_length_x[idx_x + 1] and
-                    coord[1] >= pitch_length_y[idx_y] and
-                    coord[1] <= pitch_length_y[idx_y + 1]
+                    coord[0] >= pitch_length_x[idx_x]
+                    and coord[0] <= pitch_length_x[idx_x + 1]
+                    and coord[1] >= pitch_length_y[idx_y]
+                    and coord[1] <= pitch_length_y[idx_y + 1]
                 ):
                     moving_area_indices[idx] = int(idx_x * window_y + idx_y)
                     break
@@ -59,8 +59,6 @@ def grid_count(ball_traj: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     return moving_area_count, moving_area_indices
 
 
-
-
 # calulate xG
 def rate_xG(codf: CoordinatesDataFrame, agg_func="w_mean"):
     ball_traj = list(codf.iter_players())[-1][1].values
@@ -68,6 +66,7 @@ def rate_xG(codf: CoordinatesDataFrame, agg_func="w_mean"):
 
     xg_score = get_agg_func(agg_func)(xg_mtx, moving_area_count)
     return xg_score
+
 
 def rate_xG_time_series(codf: CoordinatesDataFrame, agg_func="nframe_diff_max"):
     ball_traj = list(codf.iter_players())[-1][1].values
@@ -81,6 +80,7 @@ def rate_xG_time_series(codf: CoordinatesDataFrame, agg_func="nframe_diff_max"):
             xg_score_per_frame[idx] = xg_mtx_flatten[int(row)]
     xg_score = get_time_series_agg_func(agg_func)(xg_score_per_frame)
     return xg_score
+
 
 # calulate xT
 def rate_xT(codf: CoordinatesDataFrame, agg_func="w_mean"):
