@@ -26,6 +26,7 @@ def rate_xG(
     xg_scores = get_agg_func(agg_func, **agg_kwargs)(xg_mtx[x_bin, y_bin])
     return xg_scores
 
+
 def rate_xT(
     codf: CoordinatesDataFrame,
     agg_func=None,

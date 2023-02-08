@@ -1,6 +1,7 @@
-import numpy as np
-from typing import Optional
 from functools import partial
+from typing import Optional
+
+import numpy as np
 
 
 def get_agg_func(agg_func: Optional[str] = None, **agg_kwargs):
@@ -24,11 +25,14 @@ def get_agg_func(agg_func: Optional[str] = None, **agg_kwargs):
     elif agg_func == "var":
         return lambda x: np.var(x)
     elif agg_func == "nframe_diff_max":
-        return partial(nframe_diff_max, num_agg_frame=agg_kwargs.get("num_agg_frame", 10))
+        return partial(
+            nframe_diff_max, num_agg_frame=agg_kwargs.get("num_agg_frame", 10)
+        )
     elif callable(agg_func):
         return agg_func
     else:
         raise ValueError(f"agg_func {agg_func} is not supported.")
+
 
 def nframe_diff_max(time_series_metrics: np.ndarray, num_agg_frame: int = 10):
     """Returns the aggregated time series scores of the metrics matrix.
