@@ -1,41 +1,36 @@
 import numpy as np
+from typing import Optional
+from functools import partial
 
 
-def get_agg_func(agg_func: str):
-    """Returns a function that aggregates the metrics matrix.
-
-    Args:
-        agg_func (str): Aggregation function. Can be one of the following:
-
-            - None: No aggregation. Returns the metrics matrix.
-            - "w_mean": Weighted mean. Returns the weighted mean of the metrics matrix.
-            - "mean": Mean. Returns the mean of the metrics matrix.
-            - "median": Median. Returns the median of the metrics matrix.
-            - "max": Maximum. Returns the maximum of the metrics matrix.
-            - "min": Minimum. Returns the minimum of the metrics matrix.
-
-    Returns:
-        function: Aggregation function.
-    """
+def get_agg_func(agg_func: Optional[str] = None, **agg_kwargs):
     if agg_func is None:
-        return lambda metrics_mtx, ma_count_arr: metrics_mtx * ma_count_arr
+        return lambda x: x
+
     elif agg_func == "w_mean":
-        return lambda metrics_mtx, ma_count_arr: np.sum(
-            metrics_mtx * ma_count_arr
-        ) / np.sum(ma_count_arr)
+        return lambda x: np.average(x, weights=agg_kwargs.get("weights", None))
     elif agg_func == "mean":
-        return lambda metrics_mtx, ma_count_arr: np.mean(metrics_mtx * ma_count_arr)
+        return lambda x: np.mean(x)
     elif agg_func == "median":
-        return lambda metrics_mtx, ma_count_arr: np.median(metrics_mtx * ma_count_arr)
+        return lambda x: np.median(x)
     elif agg_func == "max":
-        return lambda metrics_mtx, ma_count_arr: np.max(metrics_mtx * ma_count_arr)
+        return lambda x: np.max(x)
     elif agg_func == "min":
-        return lambda metrics_mtx, ma_count_arr: np.min(metrics_mtx * ma_count_arr)
+        return lambda x: np.min(x)
+    elif agg_func == "sum":
+        return lambda x: np.sum(x)
+    elif agg_func == "std":
+        return lambda x: np.std(x)
+    elif agg_func == "var":
+        return lambda x: np.var(x)
+    elif agg_func == "nframe_diff_max":
+        return partial(nframe_diff_max, num_agg_frame=agg_kwargs.get("num_agg_frame", 10))
+    elif callable(agg_func):
+        return agg_func
     else:
-        raise ValueError(f"Aggregation function {agg_func} not supported.")
+        raise ValueError(f"agg_func {agg_func} is not supported.")
 
-
-def get_time_series_agg(time_series_metrics: np.ndarray, num_agg_frame: int = 10):
+def nframe_diff_max(time_series_metrics: np.ndarray, num_agg_frame: int = 10):
     """Returns the aggregated time series scores of the metrics matrix.
 
     Args:
@@ -53,44 +48,5 @@ def get_time_series_agg(time_series_metrics: np.ndarray, num_agg_frame: int = 10
         start += 10
         end += 10
     nframe_sum.append(sum(time_series_metrics[start:]))
-    return np.array(nframe_sum)
-
-
-def get_time_series_agg_func(agg_func: str):
-    """Returns a function that aggregates the time series metrics.
-
-    Args:
-        agg_func (str): Aggregation function. Can be one of the following:
-
-            - None: No aggregation. Returns the time series metrics.
-            - "sum": Sum. Returns the sum of the time series metrics.
-            - "mean": Mean. Returns the mean of the time series metrics.
-            - "median": Median. Returns the median of the time series metrics.
-            - "max": Maximum. Returns the maximum of the time series metrics.
-            - "min": Minimum. Returns the minimum of the time series metrics.
-            - "nframe_agg": Sum of aggregated time series metrics. Returns the aggregated time series metrics.
-            - "nframe_diff_max": Returns the maximum of the difference of aggregated time series metrics.
-
-    Returns:
-        function: Aggregation function.
-    """
-    if agg_func is None:
-        return lambda time_series_metrics: time_series_metrics
-    elif agg_func == "sum":
-        return lambda time_series_metrics: np.sum(time_series_metrics)
-    elif agg_func == "mean":
-        return lambda time_series_metrics: np.mean(time_series_metrics)
-    elif agg_func == "median":
-        return lambda time_series_metrics: np.median(time_series_metrics)
-    elif agg_func == "max":
-        return lambda time_series_metrics: np.max(time_series_metrics)
-    elif agg_func == "min":
-        return lambda time_series_metrics: np.min(time_series_metrics)
-    elif agg_func == "nframe_agg":
-        return lambda time_series_metrics: get_time_series_agg(time_series_metrics)
-    elif agg_func == "nframe_diff_max":
-        return lambda time_series_metrics: np.max(
-            np.diff(get_time_series_agg(time_series_metrics))
-        )
-    else:
-        raise ValueError(f"Aggregation function {agg_func} not supported.")
+    nframe_diff_max = np.max(np.diff(nframe_sum))
+    return nframe_diff_max
