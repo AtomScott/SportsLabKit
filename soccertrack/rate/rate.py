@@ -50,9 +50,6 @@ def rate_xT(
     return xt_scores
 
 
-window_x = 16
-window_y = 12
-
 xg_mtx = np.array(
     [
         [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],

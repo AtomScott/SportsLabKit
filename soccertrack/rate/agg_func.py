@@ -7,7 +7,6 @@ import numpy as np
 def get_agg_func(agg_func: Optional[str] = None, **agg_kwargs):
     if agg_func is None:
         return lambda x: x
-
     elif agg_func == "w_mean":
         return lambda x: np.average(x, weights=agg_kwargs.get("weights", None))
     elif agg_func == "mean":
@@ -29,7 +28,7 @@ def get_agg_func(agg_func: Optional[str] = None, **agg_kwargs):
             nframe_diff_max, num_agg_frame=agg_kwargs.get("num_agg_frame", 10)
         )
     elif callable(agg_func):
-        return agg_func
+        return partial(agg_func, **agg_kwargs)
     else:
         raise ValueError(f"agg_func {agg_func} is not supported.")
 
