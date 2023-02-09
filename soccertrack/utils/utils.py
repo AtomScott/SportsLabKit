@@ -131,7 +131,7 @@ def pil2cv(image: Image.Image) -> NDArray[np.uint8]:
     return new_image
 
 
-def cv2pil(image: NDArray[np.uint8]) -> Image.Image:
+def cv2pil(image: NDArray[np.uint8], convert_bgr2rgb=True) -> Image.Image:
     """Convert OpenCV image to PIL image.
 
     Args:
@@ -144,9 +144,11 @@ def cv2pil(image: NDArray[np.uint8]) -> Image.Image:
     if new_image.ndim == 2:  # モノクロ
         pass
     elif new_image.shape[2] == 3:  # カラー
-        new_image = cv.cvtColor(new_image, cv.COLOR_BGR2RGB)
+        if convert_bgr2rgb:
+            new_image = cv.cvtColor(new_image, cv.COLOR_BGR2RGB)
     elif new_image.shape[2] == 4:  # 透過
-        new_image = cv.cvtColor(new_image, cv.COLOR_BGRA2RGBA)
+        if convert_bgr2rgb:
+            new_image = cv.cvtColor(new_image, cv.COLOR_BGRA2RGBA)
     new_image = Image.fromarray(new_image)
     return new_image
 
@@ -250,7 +252,6 @@ def make_video(
 
     # loop over
     for frame in tqdm(frames, desc=f"Writing video", level="INFO"):
-
         # simulating RGB frame for example
         frame_rgb = frame[:, :, ::-1]
 
@@ -303,7 +304,7 @@ class MovieIterator:
             ret, img = self.vcInput.read()
             if ret:
                 self._index += 1
-                return img
+                return cv.cvtColor(img, cv.COLOR_BGR2RGB)
             logger.debug("Unexpected end.")  # <- Not sure why this happens
         raise StopIteration
 
