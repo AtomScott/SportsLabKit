@@ -7,7 +7,6 @@ body:
     attributes:
       value: |
         Thank you for submitting a SoccerTrack 🐛 Bug Report!
-
   - type: checkboxes
     attributes:
       label: Search before asking
@@ -51,7 +50,8 @@ body:
       label: Environment
       description: Please specify the software and hardware you used to produce the bug.
       placeholder: |
-        - YOLO: SoccerTrack 🚀 v6.0-67-g60e42e1 torch 1.9.0+cu111 CUDA:0 (A100-SXM4-40GB, 40536MiB)
+        - SoccerTrack: 0.2.0 
+        - torch 1.9.0+cu111 CUDA:0 (A100-SXM4-40GB, 40536MiB)
         - OS: Ubuntu 20.04
         - Python: 3.9.0
     validations:
