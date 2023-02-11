@@ -10,6 +10,10 @@
 [![DeepSource](https://deepsource.io/gh/AtomScott/SoccerTrack.svg/?label=active+issues&show_trend=true&token=TIxJg8BLzszYnWeVDMHr6pMU)](https://deepsource.io/gh/AtomScott/SoccerTrack/?ref=repository-badge)
 [![DeepSource](https://deepsource.io/gh/AtomScott/SoccerTrack.svg/?label=resolved+issues&show_trend=true&token=TIxJg8BLzszYnWeVDMHr6pMU)](https://deepsource.io/gh/AtomScott/SoccerTrack/?ref=repository-badge)
 
+
+[IMPORTANT (2023/02/08)]
+We have finished fixing the datasets and have also uploaded extra footage with complete annotations! The dataset can be downloaded from [Kaggle](https://www.kaggle.com/datasets/atomscott/soccertrack).
+
 **[IMPORTANT (2022/11/03)]**
 
 After receving reports of erroneous  data, we have fixed and reuploaded a majority of SoccerTrack. We are also adding videos with visualized bounding boxes so that you can be sure that the data is good. The visualizations can be found in the viz_results directory under Top-view/Wide-view (see [Kaggle](https://www.kaggle.com/datasets/atomscott/soccertrack)).
