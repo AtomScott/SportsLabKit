@@ -1,6 +1,7 @@
 """Create a camera object that can be used to read frames from a video file."""
 
 from __future__ import annotations
+
 from functools import cached_property
 from typing import (
     Dict,
@@ -20,11 +21,7 @@ import numpy as np
 from numpy.typing import ArrayLike, NDArray
 
 from soccertrack.camera.videoreader import VideoReader
-from soccertrack.utils import (
-    logger,
-    make_video,
-    tqdm,
-)
+from soccertrack.utils import logger, make_video, tqdm
 
 
 class Camera(VideoReader):
@@ -257,10 +254,10 @@ class Camera(VideoReader):
 
     #     """
     #     movie_iterator = (
-    #         self.undistort_image(frame) for frame in 
+    #         self.undistort_image(frame) for frame in
     #     )
     #     make_video(movie_iterator, outpath=save_path, **kwargs)
-        
+
     #     if not calibrate:
     #         for i, frame in enumerate(self.iter_frames()):
     #             yield frame
