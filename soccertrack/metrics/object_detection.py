@@ -353,7 +353,7 @@ def ap_score(
     # compute precision, recall and average precision
     acc_FP = np.cumsum(FP)
     acc_TP = np.cumsum(TP)
-    rec = acc_TP / n_dets
+    rec = acc_TP / n_gts
     prec = np.divide(acc_TP, (acc_FP + acc_TP))
 
     # Depending on the method, call the right implementation
