@@ -1,19 +1,19 @@
-ARG python_image_v="python:3.10-buster"
-FROM ${python_image_v}
+ARG CUDA_VERSION=11.4.0
 
-WORKDIR /workspace
+FROM pytorch/pytorch:1.13.1-cuda11.6-cudnn8-runtime
 
-RUN apt-get -y update
-RUN apt-get -y upgrade
+# Set the working directory
+WORKDIR /app
 
-# Install ffmpeg
-RUN apt-get -y update
-RUN apt-get -y upgrade
-RUN apt-get install -y ffmpeg
+
+# Install required packages
+RUN apt-get update
+RUN DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get -y install tzdata
+RUN apt-get install -y git ffmpeg
 
 # install opencv
-RUN apt-get update && apt-get install -y python3-opencv
-RUN pip install opencv-python
+RUN apt-get update
+RUN apt-get install -y python3-opencv
 
 # install gnu time
 RUN apt-get install time
@@ -21,19 +21,14 @@ RUN apt-get install time
 # Install essential packages
 Run apt-get install --no-install-recommends -y curl build-essential 
 
-RUN DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get -y install tzdata
-RUN apt-get install -y git
 
-################
 # Install pandoc
-################
-
 RUN apt-get install -y pandoc
 
-EXPOSE 8000
-EXPOSE 8080
-
+# Install SoccerTrack and dependencies
 COPY pyproject.toml .
-RUN pip install poetry
-RUN poetry install
-RUN rm pyproject.toml
+RUN pip install -e git+https://github.com/AtomScott/SoccerTrack.git#egg=soccertrack
+RUN pip install cython gdown pytorch-lightning pytest
+RUN pip install git+https://github.com/KaiyangZhou/deep-person-reid.git
+
+WORKDIR /workspace
