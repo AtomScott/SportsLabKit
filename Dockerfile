@@ -1,10 +1,4 @@
-ARG CUDA_VERSION=11.4.0
-
 FROM pytorch/pytorch:1.13.1-cuda11.6-cudnn8-runtime
-
-# Set the working directory
-WORKDIR /app
-
 
 # Install required packages
 RUN apt-get update
@@ -20,7 +14,6 @@ RUN apt-get install time
 
 # Install essential packages
 Run apt-get install --no-install-recommends -y curl build-essential 
-
 
 # Install pandoc
 RUN apt-get install -y pandoc
