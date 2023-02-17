@@ -1,18 +1,10 @@
 """Create a camera object that can be used to read frames from a video file."""
 
 from __future__ import annotations
+
 from functools import cached_property
-from typing import (
-    Dict,
-    Generator,
-    Iterable,
-    List,
-    Mapping,
-    Optional,
-    Sequence,
-    Tuple,
-    Union,
-)
+from typing import (Dict, Generator, Iterable, List, Mapping, Optional,
+                    Sequence, Tuple, Union)
 from xml.etree import ElementTree
 
 import cv2 as cv
@@ -20,11 +12,7 @@ import numpy as np
 from numpy.typing import ArrayLike, NDArray
 
 from soccertrack.camera.videoreader import VideoReader
-from soccertrack.utils import (
-    logger,
-    make_video,
-    tqdm,
-)
+from soccertrack.utils import logger, make_video, tqdm
 
 
 class Camera(VideoReader):
