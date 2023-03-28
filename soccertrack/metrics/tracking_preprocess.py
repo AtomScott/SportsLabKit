@@ -110,7 +110,6 @@ def to_mot_eval_format(
 
     sim_score_list = []
     for i in range(len(gt_ids)):
-
         if len(gt_ids[i]) == 0 or len(pred_ids[i]) == 0:
             sim_score_list.append(np.array([[]]))
         else:

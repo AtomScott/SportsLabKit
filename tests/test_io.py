@@ -15,7 +15,6 @@ sys.path.insert(0, PROJECT_DIR)
 
 class TestIO(unittest.TestCase):
     def test_auto_string_parser(self):
-
         for value in [True, False, 500, 50.0, "Hellow World"]:
             s = f"{value}"
             parsed_value = auto_string_parser(s)

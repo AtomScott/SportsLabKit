@@ -91,7 +91,6 @@ def hota_score(bboxes_track: BBoxDataFrame, bboxes_gt: BBoxDataFrame) -> dict[st
     for t, (gt_ids_t, tracker_ids_t, gt_det_t, tracker_det_t) in enumerate(
         zip(data["gt_ids"], data["tracker_ids"], data["gt_dets"], data["tracker_dets"])
     ):
-
         # Count the potential matches between ids in each timestep
         # These are normalised, weighted by the match similarity.
         similarity = data["similarity_scores"][t]

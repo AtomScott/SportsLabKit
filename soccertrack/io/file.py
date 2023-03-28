@@ -259,9 +259,7 @@ def load_codf(
 
 def load_gps(
     filenames: Union[
-        Sequence[
-            _pathlike,
-        ],
+        Sequence[_pathlike,],
         _pathlike,
     ],
     playerids: Union[Sequence[int], int] = (),
