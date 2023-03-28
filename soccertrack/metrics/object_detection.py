@@ -311,7 +311,6 @@ def ap_score(
     TP = np.zeros(len(bboxes_det_per_class))
     FP = np.zeros(len(bboxes_det_per_class))
     for d, bbox_det in enumerate(bboxes_det_per_class):
-
         # Find ground truth image
         image_name = bbox_det[IMAGE_NAME_INDEX]
         gt_bboxes = gts.get(image_name, [])
@@ -344,7 +343,7 @@ def ap_score(
                 iouMax_list.append(iouMax)
 
         # Assign detection as true positive/don't care/false positive
-        if iouMax >= iou_threshold:
+        if iouMax >= iou_threshold and det[image_name][jmax] != 1:
             TP[d] = 1  # count as true positive
             det[image_name][jmax] = 1  # flag as already 'seen'
         else:
@@ -379,7 +378,6 @@ def ap_score_range(
     end_threshold: float = 0.95,
     step: float = 0.05,
 ) -> float:
-
     """Calculate average precision in the specified range.
 
     Args:
