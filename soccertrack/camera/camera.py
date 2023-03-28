@@ -3,8 +3,17 @@
 from __future__ import annotations
 
 from functools import cached_property
-from typing import (Dict, Generator, Iterable, List, Mapping, Optional,
-                    Sequence, Tuple, Union)
+from typing import (
+    Dict,
+    Generator,
+    Iterable,
+    List,
+    Mapping,
+    Optional,
+    Sequence,
+    Tuple,
+    Union,
+)
 from xml.etree import ElementTree
 
 import cv2 as cv
@@ -245,10 +254,10 @@ class Camera(VideoReader):
 
     #     """
     #     movie_iterator = (
-    #         self.undistort_image(frame) for frame in 
+    #         self.undistort_image(frame) for frame in
     #     )
     #     make_video(movie_iterator, outpath=save_path, **kwargs)
-        
+
     #     if not calibrate:
     #         for i, frame in enumerate(self.iter_frames()):
     #             yield frame
