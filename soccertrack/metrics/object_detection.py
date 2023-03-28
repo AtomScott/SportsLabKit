@@ -344,7 +344,7 @@ def ap_score(
                 iouMax_list.append(iouMax)
 
         # Assign detection as true positive/don't care/false positive
-        if iouMax >= iou_threshold:
+        if iouMax >= iou_threshold and det[image_name][jmax] != 1:
             TP[d] = 1  # count as true positive
             det[image_name][jmax] = 1  # flag as already 'seen'
         else:
