@@ -1,15 +1,14 @@
 from __future__ import annotations
 
-import numpy as np
 import cv2
-
+import numpy as np
+from numpy.typing import NDArray
 from sklearn.decomposition import PCA
 from vidgear.gears.stabilizer import Stabilizer
 
-from numpy.typing import NDArray
 from soccertrack import Camera
+from soccertrack.logger import logger, tqdm
 from soccertrack.types import _pathlike
-from soccertrack.logger import tqdm, logger
 from soccertrack.utils import make_video
 
 
@@ -139,7 +138,7 @@ def calibrate_camera_zhang(objpoints, imgpoints, dim):
     return K, D, mapx, mapy
 
 
-def calibrate_camera_fisheye(objpoints, imgpoints, dim, balance=0.5):
+def calibrate_camera_fisheye(objpoints, imgpoints, dim, balance=1):
     """Compute camera matrix and distortion coefficients using fisheye method.
 
     Args:
@@ -171,7 +170,7 @@ def calibrate_camera_fisheye(objpoints, imgpoints, dim, balance=0.5):
         (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 1e-6),
     )
     new_K = cv2.fisheye.estimateNewCameraMatrixForUndistortRectify(
-        K, D, dim, np.eye(3), balance=balance
+        K, D, dim, np.eye(3), balance=2
     )
     mapx, mapy = cv2.fisheye.initUndistortRectifyMap(
         K, D, np.eye(3), new_K, dim, cv2.CV_32FC1
