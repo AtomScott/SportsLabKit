@@ -81,7 +81,6 @@ class EuclideanCMM(BaseCostMatrixMetric):
     def compute_metric(
         self, trackers: Sequence[Tracker], detections: Sequence[Detection]
     ) -> np.ndarray:
-
         centers1 = np.array(
             [(t.box[0] + t.box[2] / 2, t.box[1] + t.box[3] / 2) for t in trackers]
         )

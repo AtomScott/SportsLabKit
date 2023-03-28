@@ -38,7 +38,6 @@ class SingleObjectTracker(Tracker):
         keep_observations: bool = True,
         keep_predictions: bool = True,
     ):
-
         # initialize states
         self.id: int = int(str(int(uuid.uuid4()))[:12])
         self.steps_alive: int = 0
@@ -100,7 +99,6 @@ class SingleObjectTracker(Tracker):
         raise AttributeError("class_id is read-only")
 
     def _update_observation(self, detection: Union[Detection, None]) -> None:
-
         box = detection.box if detection is not None else None
         score = detection.score if detection is not None else None
         feature = detection.feature if detection is not None else None

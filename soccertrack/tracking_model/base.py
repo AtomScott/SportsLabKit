@@ -51,7 +51,6 @@ class Model:
         r_var_size: float = 1,
         p_cov_p0: float = 1000.0,
     ):
-
         self.dt = dt
         self.order_pos = order_pos
         self.dim_pos = dim_pos
@@ -139,6 +138,7 @@ class Model:
 
     def build_H(self):
         """measurement matrix"""
+
         # we only measure the first variable in each dimension
         def _base_block(order):
             return np.array([1] + [0] * order)

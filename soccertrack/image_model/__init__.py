@@ -80,7 +80,6 @@ class ImageClassificationData(pl.LightningDataModule):
 
 class ImageEmbedder(pl.LightningModule):
     def __init__(self, num_classes, hidden_size=64, learning_rate=2e-4):
-
         super().__init__()
 
         # We take in input dimensions as parameters and use those to dynamically build model.
@@ -123,7 +122,6 @@ class ImageEmbedder(pl.LightningModule):
     def embed_detections(
         self, detections: Sequence[Detection], image: Union[Image.Image, np.ndarray]
     ) -> np.ndarray:
-
         if isinstance(image, np.ndarray):
             image = Image.fromarray(image)
 

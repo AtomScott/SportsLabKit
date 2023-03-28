@@ -1,15 +1,14 @@
 from __future__ import annotations
 
-import numpy as np
 import cv2
-
+import numpy as np
+from numpy.typing import NDArray
 from sklearn.decomposition import PCA
 from vidgear.gears.stabilizer import Stabilizer
 
-from numpy.typing import NDArray
 from soccertrack import Camera
+from soccertrack.logger import logger, tqdm
 from soccertrack.types import _pathlike
-from soccertrack.logger import tqdm, logger
 from soccertrack.utils import make_video
 
 

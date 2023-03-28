@@ -1,9 +1,9 @@
-import cv2
-import numpy as np
 import threading
-
 from queue import Queue
 from time import sleep
+
+import cv2
+import numpy as np
 
 
 class VideoReader:

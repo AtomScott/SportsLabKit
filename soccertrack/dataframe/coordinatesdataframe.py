@@ -30,7 +30,6 @@ def merge_dicts(*dicts):
 
 
 class CoordinatesDataFrame(SoccerTrackMixin, pd.DataFrame):
-
     _metadata = [
         "source_keypoints",
         "target_keypoints",

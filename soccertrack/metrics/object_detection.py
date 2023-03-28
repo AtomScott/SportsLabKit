@@ -311,7 +311,6 @@ def ap_score(
     TP = np.zeros(len(bboxes_det_per_class))
     FP = np.zeros(len(bboxes_det_per_class))
     for d, bbox_det in enumerate(bboxes_det_per_class):
-
         # Find ground truth image
         image_name = bbox_det[IMAGE_NAME_INDEX]
         gt_bboxes = gts.get(image_name, [])
@@ -379,7 +378,6 @@ def ap_score_range(
     end_threshold: float = 0.95,
     step: float = 0.05,
 ) -> float:
-
     """Calculate average precision in the specified range.
 
     Args:

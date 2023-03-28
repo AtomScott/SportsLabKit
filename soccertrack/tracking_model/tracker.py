@@ -216,7 +216,6 @@ class KalmanTracker(SingleObjectTracker):
         box0: Optional[Box] = None,
         **kwargs,
     ) -> None:
-
         super().__init__(**kwargs)
 
         self.model_kwargs: dict = model_kwargs
