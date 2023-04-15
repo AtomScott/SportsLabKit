@@ -63,7 +63,6 @@ class VideoReader:
         frames = None
         if isinstance(index, int):  # single frame
             ret, frames = self.read(index)
-            frames = cv2.cvtColor(frames, cv2.COLOR_BGR2RGB)
         elif isinstance(index, slice):  # slice of frames
             frames = np.stack([self[ii] for ii in range(*index.indices(len(self)))])
         elif isinstance(index, range):  # range of frames
