@@ -569,7 +569,6 @@ def add_bbox_to_frame(
     image = cv2.rectangle(image, (left, top), (right, bottom), color_value, 2)
 
     if label:
-
         _, image_width, _ = image.shape
         fontface = cv2.FONT_HERSHEY_TRIPLEX
         fontscale = 0.5
