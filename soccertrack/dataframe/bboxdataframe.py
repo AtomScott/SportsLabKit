@@ -438,7 +438,7 @@ class BBoxDataFrame(SoccerTrackMixin, pd.DataFrame):
 
         start_frame = self.index.min()
         end_frame = self.index.max()
-        missing_frames = np.setdiff1d(range(start_frame, end_frame), frame_idxs)
+        missing_frames = np.setdiff1d(range(start_frame, end_frame + 1), frame_idxs)
 
         # add empty detections for missing frames
         for missing_frame in missing_frames:
