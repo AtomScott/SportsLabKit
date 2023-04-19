@@ -11,6 +11,7 @@ soccertrack/datasets/wide-view
 soccertrack/datasets/wide_view
 soccertrack/datasets/*.json
 tests/outputs/
+outputs/
 bin/*
 
 # Ignore model checkpoints
