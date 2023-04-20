@@ -43,8 +43,6 @@ The sections below outline the steps in each case.
 
 In case you feel like you've made a valuable contribution, but you don't know how to write or run tests for it, or how to generate the documentation: don't let this discourage you from making the pull request; we can help you! Just go ahead and submit the pull request, but keep in mind that you might be asked to append additional commits to your pull request.
 
-## Documentation
-
 ## How to contribute to the documentation
 
 If you would like to contribute to the documentation, you can do so by following the steps below. If you are new to Sphinx, you can read the [reStructuredText Primer](https://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html) to get started.
@@ -78,6 +76,21 @@ Your project’s pull request build status will show as one of your pull request
 
 <img src='https://raw.githubusercontent.com/AtomScott/SoccerTrack/feature/major_refactor/docs/_static/contributing/docs_01.webp'/>
 <img src='https://raw.githubusercontent.com/AtomScott/SoccerTrack/feature/major_refactor/docs/_static/contributing/docs_02.webp'/>
+
+### How to add a new notebook to the documentation
+
+In the `./docs` folder, try to look for `index.rst`. This is the main file that will be used to generate the documentation.  If you want to add a new notebook, you can add it to the `./notebooks` folder and then add the line above to the `index.rst` file. For example, you can add a new notebook by adding the following line to the `index.rst` file:
+
+```rst
+..  toctree::
+        :maxdepth: 2
+        :caption: User Guide
+        :hidden:
+
+        notebooks/02_user_guide/new_notebook.ipynb
+```
+
+This will add a `new_notebook.ipynb` to the documentation. The notebook itself will be copied from the `./notebooks` folder when `make html` is run, so make sure to add the notebook there. Do not add the notebook to the `./docs/notebooks` folder.
 
 ## Try to use optimized images
 
