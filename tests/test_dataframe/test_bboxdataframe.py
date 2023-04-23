@@ -6,11 +6,11 @@ from unittest import mock
 
 import numpy as np
 
+from soccertrack import Camera
 from soccertrack.dataframe import BBoxDataFrame
 from soccertrack.io.file import load_codf
 from soccertrack.logger import *
 from soccertrack.types import Detection
-from soccertrack import Camera
 from soccertrack.utils import get_git_root
 
 csv_path = (
