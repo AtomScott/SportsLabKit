@@ -252,11 +252,7 @@ def make_video(
 
     # loop over
     for frame in tqdm(frames, desc=f"Writing video", level="INFO"):
-        # simulating RGB frame for example
-        frame_rgb = frame[:, :, ::-1]
-
-        # writing RGB frame to writer
-        writer.write(frame_rgb, rgb_mode=True)  # activate RGB Mode
+        writer.write(frame, rgb_mode=True)  # activate RGB Mode
 
     writer.close()
 

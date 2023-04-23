@@ -1,3 +1,4 @@
+import tempfile
 import unittest
 from collections import namedtuple
 from test.support import captured_stdout
@@ -9,12 +10,20 @@ from soccertrack.dataframe import BBoxDataFrame
 from soccertrack.io.file import load_codf
 from soccertrack.logger import *
 from soccertrack.types import Detection
+from soccertrack import Camera
 from soccertrack.utils import get_git_root
 
 csv_path = (
     get_git_root() / "tests" / "assets" / "codf_sample.csv"
 )  # already in pitch coordinates
 outputs_path = get_git_root() / "tests" / "outputs"
+
+root = (
+    get_git_root()
+)  # A 2x2 video with 100 frames and goes from red to green to blue to black in 25 frames each
+
+# A 2x2 video with 100 frames and goes from red to green to blue to black in 25 frames each
+rgb_video_path = root / "tests" / "assets" / "videos" / "rgb_video.avi"
 
 
 class TestBBoxDataFrame(unittest.TestCase):
@@ -209,3 +218,50 @@ class TestBBoxDataFrame(unittest.TestCase):
             ],
         }
         self.assertDictEqual(data, ans)
+
+    def test_visualize_frame(self):
+        """Test for visualizing frame"""
+        bbdf = BBoxDataFrame.from_dict(
+            {
+                "home": {
+                    "1": {0: [10, 10, 25, 25, 1]},
+                }
+            },
+            attributes=["bb_left", "bb_top", "bb_width", "bb_height", "conf"],
+        )
+
+        cam = Camera(rgb_video_path)
+        frame = cam.get_frame(1)
+
+        new_frame = bbdf.visualize_frame(1, frame.copy())
+        # Check that the frame is red
+        self.assertTrue(np.all(new_frame[0, 0] == [255, 0, 0]))
+
+    def test_visualize_frames(self):
+        """Test for visualizing frames"""
+        bbdf = BBoxDataFrame.from_dict(
+            {
+                "home": {
+                    "0": {0: [10, 10, 25, 25, 1]},
+                    "1": {0: [10, 10, 25, 25, 1]},
+                }
+            },
+            attributes=["bb_left", "bb_top", "bb_width", "bb_height", "conf"],
+        )
+
+        # save to temp directory
+        with tempfile.TemporaryDirectory() as tmpdirname:
+            save_path = os.path.join(tmpdirname, "video.avi")
+            bbdf.visualize_frames(rgb_video_path, save_path)
+
+            # check that the video was saved
+            self.assertTrue(os.path.exists(save_path))
+
+            # load the video and check that the first frame is red
+            cam = Camera(save_path)
+
+            frame = cam.get_frame(0)
+            print(frame)
+            self.assertTrue(
+                np.all(frame[0, 0] == [252, 0, 0])
+            )  # value is 252 after compression
