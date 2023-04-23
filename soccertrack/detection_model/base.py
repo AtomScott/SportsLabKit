@@ -5,6 +5,7 @@ from typing import Optional
 from urllib.request import urlopen
 
 import cv2
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import requests
@@ -15,7 +16,6 @@ from soccertrack.types import Detection
 
 from ..logger import logger
 from ..utils.draw import draw_bounding_boxes
-import matplotlib.pyplot as plt
 
 
 def read_image(img):
