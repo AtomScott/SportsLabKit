@@ -2,16 +2,15 @@ import argparse
 from pathlib import Path
 from typing import Optional
 
-import soccertrack
+import numpy as np
 from omegaconf import OmegaConf
+
+import soccertrack
 from soccertrack import Camera, detection_model
 from soccertrack.logger import inspect, logger, set_log_level, tqdm
 from soccertrack.metrics.object_detection import map_score
 from soccertrack.types import _pathlike
-from soccertrack.utils import get_git_root
-
-import numpy as np
-from soccertrack.utils import make_video
+from soccertrack.utils import get_git_root, make_video
 from soccertrack.utils.draw import draw_bounding_boxes
 
 
