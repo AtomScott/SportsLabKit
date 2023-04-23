@@ -4,14 +4,40 @@ from .base import BaseDetectionModel
 
 
 class YOLOv5(BaseDetectionModel):
-    def __init__(self, model_name, model_repo, model_ckpt, **kwargs):
-        super().__init__(model_name, model_repo, model_ckpt)
-        self.model.conf = 0.8
+    """YOLOv5 model wrapper.
+
+    YOLOv5 has options that can be set on instantiation and during inference. However, frror compatibility with the rest of the codebase, we only support setting options during instantiation. Therefore, if you want to set options for inference, you must pass the options as a dictionary to the `model_config` argument. For example:
+
+    ```python
+    model = YOLOv5(
+        model_name="yolov5s",
+        model_repo="ultralytics/yolov5",
+        model_ckpt="yolov5s.pt",
+        model_config={"augment": True}
+    )
+    ```
+    """
+
+    def __init__(self, model_name, model_repo, model_ckpt, model_config, **rkwags):
+        super().__init__(model_name, model_repo, model_ckpt, model_config)
+
+        self.size = model_config.get("size", 640)
+        self.augment = model_config.get("augment", False)
+        self.profile = model_config.get("profile", False)
 
     def load(self):
-        return torch.hub.load(
+        model = torch.hub.load(
             str(self.model_repo), "custom", path=str(self.model_ckpt), source="local"
         )
+
+        model.conf = self.model_config.get("conf", 0.25)
+        model.iou = self.model_config.get("iou", 0.45)
+        model.agnostic = self.model_config.get("agnostic", False)
+        model.multi_label = self.model_config.get("multi_label", False)
+        model.classes = self.model_config.get("classes", None)
+        model.max_det = self.model_config.get("max_det", 1000)
+        model.amp = self.model_config.get("amp", False)
+        return model
 
     def forward(self, x, **kwargs):
         def to_dict(r):
@@ -26,7 +52,7 @@ class YOLOv5(BaseDetectionModel):
                 "class": r[:, 5],
             }
 
-        results = self.model(x, **kwargs).xywh
+        results = self.model(x, self.size, self.augment, self.profile).xywh
         results = [to_dict(r) for r in results]
 
         return results

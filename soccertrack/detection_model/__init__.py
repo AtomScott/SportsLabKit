@@ -1,5 +1,5 @@
 from ..logger import logger
-from .base import BaseDetectionModel
+from .base import BaseDetectionModel, Detection
 from .yolov5 import YOLOv5
 
 
@@ -15,10 +15,10 @@ def inheritors(cls):
     return subclasses
 
 
-def load(model_name, model_repo, model_ckpt, **kwargs):
+def load(model_name, model_repo, model_ckpt, model_config=None, **kwargs):
     for cls in inheritors(BaseDetectionModel):
         if model_name in [cls.__name__.lower(), cls.__name__]:
-            return cls(model_name, model_repo, model_ckpt, **kwargs)
+            return cls(model_name, model_repo, model_ckpt, model_config, **kwargs)
     logger.warning(
         f"Model {model_name} not found. Available models: {[cls.__name__ for cls in inheritors(BaseDetectionModel)]} (lowercase is allowed)"
     )

@@ -15,9 +15,16 @@ from soccertrack.types import Detection
 
 from ..logger import logger
 from ..utils.draw import draw_bounding_boxes
+import matplotlib.pyplot as plt
 
 
 def read_image(img):
+    """Reads an image from a file, URL, or a numpy array.
+    Args:
+        img (str, Path, Image.Image, or np.ndarray): The image to read.
+    Returns:
+        np.ndarray: The image as a numpy array.
+    """
     if isinstance(img, str):
         if img.startswith("http"):
             img = requests.get(img, stream=True).raw
@@ -34,6 +41,7 @@ def read_image(img):
         raise ValueError(f"Unsupported input shape: {img.shape}")
     if img.shape[2] not in [1, 3]:
         raise ValueError(f"Unsupported input shape: {img.shape}")
+
     return img
 
 
@@ -146,11 +154,12 @@ class Detections:
 
 
 class BaseDetectionModel(ABC):
-    def __init__(self, model_name, model_repo, model_ckpt):
+    def __init__(self, model_name, model_repo, model_ckpt, model_config=None):
         super().__init__()
         self.model_name = model_name
         self.model_repo = model_repo
         self.model_ckpt = model_ckpt
+        self.model_config = model_config
         self.model = self.load()
 
     def __call__(self, inputs, **kwargs):

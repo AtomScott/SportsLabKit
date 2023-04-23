@@ -111,6 +111,7 @@ def run(
     det_model_name: str = "yolov5",
     det_model_repo: _pathlike = "external/yolov5",
     det_model_ckpt: _pathlike = "models/yolov5/yolov5x_last.pt",
+    det_model_conf: dict = {},
     save_path: _pathlike = "output/deepsort",
     save_results: bool = False,
     save_video: bool = False,
@@ -121,7 +122,9 @@ def run(
     root = get_git_root()
 
     # Define the object detection model
-    det_model = detection_model.load(det_model_name, det_model_repo, det_model_ckpt)
+    det_model = detection_model.load(
+        det_model_name, det_model_repo, det_model_ckpt, det_model_conf
+    )
 
     # Define the camera
     cam = Camera(path_to_mp4)  # Camera object will be used to load frames
@@ -129,7 +132,7 @@ def run(
     # Perform detection
     results = []
     for frames in tqdm(cam[:4]):
-        det_result = det_model(frames, augment=True, size=6500)
+        det_result = det_model(frames)
         results.append(det_result)
 
     # Evaluate the detections

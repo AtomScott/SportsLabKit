@@ -1,6 +1,12 @@
 det_model_name: yolov5
 det_model_repo: external/yolov5
 det_model_ckpt: models/yolov5/yolov5x.pt
+det_model_conf:
+  size: 3000
+  augment: false
+  profile: false
+  conf: 0.5
+
 # path_to_csv: 
 path_to_mp4: ./soccertrack/datasets/wide_view/videos/F_20200220_1_0000_0030.mp4
 # path_to_csv: ./soccertrack/datasets/top_view/annotations/D_20220220_1_0000_0030.csv
