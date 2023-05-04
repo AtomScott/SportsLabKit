@@ -5,11 +5,12 @@ from typing import List, Optional, Sequence, Tuple, Union
 import numpy as np
 import torch
 from PIL import Image
+from torchreid.utils import FeatureExtractor
+from torchvision import transforms
+
 from soccertrack.logger import logger
 from soccertrack.types import Detection
 from soccertrack.utils import download_file_from_google_drive, get_git_root
-from torchreid.utils import FeatureExtractor
-from torchvision import transforms
 
 model_save_dir = get_git_root() / "models" / "torchreid"
 
@@ -114,7 +115,6 @@ class TorchReIDModel(FeatureExtractor):
     def embed_detections(
         self, detections: Sequence[Detection], image: Union[Image.Image, np.ndarray]
     ) -> np.ndarray:
-
         transform = transforms.Compose(
             [
                 transforms.Resize((32, 32)),
