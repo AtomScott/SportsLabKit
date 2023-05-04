@@ -1,11 +1,15 @@
 import os
 import sys
+from typing import List, Optional, Sequence, Tuple, Union
 
-import requests
-from torchreid.utils import FeatureExtractor
-
+import numpy as np
+import torch
+from PIL import Image
 from soccertrack.logger import logger
+from soccertrack.types import Detection
 from soccertrack.utils import download_file_from_google_drive, get_git_root
+from torchreid.utils import FeatureExtractor
+from torchvision import transforms
 
 model_save_dir = get_git_root() / "models" / "torchreid"
 
@@ -35,6 +39,10 @@ def show_torchreid_models():
 
 
 def download_model(model_name):
+    if model_name not in model_dict:
+        raise ValueError(
+            f"Model {model_name} not available. Available models are: {show_torchreid_models()}"
+        )
     url = model_dict[model_name]
     filename = model_name + ".pth"
     file_path = model_save_dir / filename
@@ -102,3 +110,30 @@ class TorchReIDModel(FeatureExtractor):
                 device,
                 verbose,
             )
+
+    def embed_detections(
+        self, detections: Sequence[Detection], image: Union[Image.Image, np.ndarray]
+    ) -> np.ndarray:
+
+        transform = transforms.Compose(
+            [
+                transforms.Resize((32, 32)),
+                transforms.ToTensor(),
+            ]
+        )
+
+        if isinstance(image, np.ndarray):
+            image = Image.fromarray(image)
+
+        box_images = []
+        for detection in detections:
+            x, y, w, h = detection.box
+            box_image = image.crop((x, y, x + w, y + h))
+            box_images.append(transform(box_image))
+
+        x = torch.stack(box_images)
+
+        with torch.no_grad():
+            z = self(x)
+
+        return z.numpy()
