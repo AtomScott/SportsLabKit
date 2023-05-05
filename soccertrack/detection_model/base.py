@@ -215,8 +215,7 @@ class BaseDetectionModel(ABC):
 
         # batched inference
         git_root = get_git_root()
-        # im_path = git_root / "data" / "samples" / "ney.jpeg"
-        im_path = "/Users/agiats/Projects/soccernet_tracking/data/SoccerNet/tracking-2023/train/SNMOT-060/img1/000001.jpg"
+        im_path = git_root / "data" / "samples" / "ney.jpeg"
         imgs = [
             str(im_path),  # filename
             im_path,  # Path
