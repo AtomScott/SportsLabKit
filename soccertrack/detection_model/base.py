@@ -1,21 +1,14 @@
 from abc import ABC, abstractmethod
-from copy import copy
 from pathlib import Path
-from typing import Optional
-from urllib.request import urlopen
+from typing import Any, Dict
 
-import cv2
 import numpy as np
 import pandas as pd
 import requests
-import torch
 from PIL import Image
 
 from soccertrack.types import Detection
-
-from ..logger import logger
-from ..utils.draw import draw_bounding_boxes
-import matplotlib.pyplot as plt
+from soccertrack.utils.draw import draw_bounding_boxes
 
 
 def read_image(img):
@@ -154,12 +147,13 @@ class Detections:
 
 
 class BaseDetectionModel(ABC):
-    def __init__(self, model_name, model_repo, model_ckpt, model_config=None):
+    def __init__(
+        self, model_name: str, model_ckpt: str, inference_config: Dict[str, Any] = {}
+    ):
         super().__init__()
         self.model_name = model_name
-        self.model_repo = model_repo
         self.model_ckpt = model_ckpt
-        self.model_config = model_config
+        self.inference_config = inference_config
         self.model = self.load()
 
     def __call__(self, inputs, **kwargs):
@@ -221,7 +215,8 @@ class BaseDetectionModel(ABC):
 
         # batched inference
         git_root = get_git_root()
-        im_path = git_root / "data" / "samples" / "ney.jpeg"
+        # im_path = git_root / "data" / "samples" / "ney.jpeg"
+        im_path = "/Users/agiats/Projects/soccernet_tracking/data/SoccerNet/tracking-2023/train/SNMOT-060/img1/000001.jpg"
         imgs = [
             str(im_path),  # filename
             im_path,  # Path
@@ -237,7 +232,3 @@ class BaseDetectionModel(ABC):
         for img in imgs:
             results = self(img)
             print(results)
-
-
-if __name__ == "__main__":
-    pass
