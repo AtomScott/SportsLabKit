@@ -148,12 +148,12 @@ class Detections:
 
 class BaseDetectionModel(ABC):
     def __init__(
-        self, model_name: str, model_ckpt: str, inference_config: Dict[str, Any] = {}
+        self, model_name: str, model_ckpt: str, inference_config: Dict[str, Any] = None
     ):
         super().__init__()
         self.model_name = model_name
         self.model_ckpt = model_ckpt
-        self.inference_config = inference_config
+        self.inference_config = inference_config or {}
         self.model = self.load()
 
     def __call__(self, inputs, **kwargs):
@@ -208,10 +208,8 @@ class BaseDetectionModel(ABC):
 
     def test(self):
         import cv2
-        import numpy as np
-        from PIL import Image
 
-        from ..utils.utils import get_git_root
+        from soccertrack.utils.utils import get_git_root
 
         # batched inference
         git_root = get_git_root()

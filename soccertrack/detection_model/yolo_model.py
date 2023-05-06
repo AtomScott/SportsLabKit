@@ -12,7 +12,7 @@ class YOLOModel(BaseDetectionModel):
     """
 
     def __init__(
-        self, model_name: str, model_ckpt: str, inference_config: Dict[str, Any] = {}
+        self, model_name: str, model_ckpt: str, inference_config: Dict[str, Any] = None
     ):
         super().__init__(model_name, model_ckpt, inference_config)
 

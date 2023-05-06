@@ -17,7 +17,9 @@ def inheritors(cls):
     return subclasses
 
 
-def load(model_name: str, model_ckpt: str, inference_config: Dict[str, Any] = {}):
+def load(model_name: str, model_ckpt: str, inference_config: Dict[str, Any] = None):
+    if inference_config is None:
+        inference_config = {}
     for cls in inheritors(BaseDetectionModel):
         if model_name in [cls.__name__.lower(), cls.__name__]:
             return cls(model_name, model_ckpt, inference_config)
