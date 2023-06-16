@@ -1,172 +1,99 @@
 from abc import ABC, abstractmethod
-from copy import copy
-from pathlib import Path
-from typing import Optional
-from urllib.request import urlopen
 
-import cv2
 import numpy as np
-import pandas as pd
-import requests
-import torch
-from PIL import Image
-
-from soccertrack.types import Detection
-
-from ..logger import logger
-from ..utils.draw import draw_bounding_boxes
-import matplotlib.pyplot as plt
+from soccertrack.logger import logger
+from soccertrack.types.detection import Detection
+from soccertrack.types.detections import Detections
+from soccertrack.utils import read_image
 
 
-def read_image(img):
-    """Reads an image from a file, URL, or a numpy array.
+def convert_to_detection(pred):
+    """Convert an output to a single detection object.
+
+    Handles the following input types:
+    - dict with keys: bbox_left, bbox_top, bbox_width, bbox_height, conf, class
+    - list or tuple with 6 items: bbox_left, bbox_top, bbox_width, bbox_height, conf, class
+    - Detection object
+
     Args:
-        img (str, Path, Image.Image, or np.ndarray): The image to read.
+        pred: prediction object to convert
+
     Returns:
-        np.ndarray: The image as a numpy array.
+        Detection object
     """
-    if isinstance(img, str):
-        if img.startswith("http"):
-            img = requests.get(img, stream=True).raw
-            img = Image.open(img)
-        else:
-            img = Path(img)
-    if isinstance(img, Path):
-        img = Image.open(img)
-    if isinstance(img, Image.Image):
-        img = np.array(img)
-    if not isinstance(img, np.ndarray):
-        raise TypeError(f"Unsupported input type: {type(img)}")
-    if len(img.shape) != 3:
-        raise ValueError(f"Unsupported input shape: {img.shape}")
-    if img.shape[2] not in [1, 3]:
-        raise ValueError(f"Unsupported input shape: {img.shape}")
 
-    return img
-
-
-# class Detection:
-#     def __init__(
-#         self,
-#         box: np.ndarray,
-#         score: Optional[float] = None,
-#         class_id: Optional[int] = None,
-#         feature: Optional[np.ndarray] = None,
-#     ):
-#         self.box = box
-#         self.score = score
-#         self.class_id = class_id
-#         self.feature = feature
-
-#     def __repr__(self):
-#         return f"Detection(box={self.box}, score={self.score:.5f}, class_id={self.class_id}, feature={self.feature})"
-
-
-class Detections:
-    def __init__(
-        self, pred, im, file=None, cam=None, times=(0, 0, 0), names=None, shape=None
-    ):
-        """SoccerTrack detections class for inference results."""
-
-        # normalizations
-        self.im = self._process_im(im)  # image as numpy array
-        self.pred = self._process_pred(pred)  # tensors pred[0] = (xywh, conf, cls)
-
-        self.names = names  # class names
-        self.times = times  # profiling times
-
-    def _process_im(self, im):
-        return read_image(im)
-
-    def _process_pred(self, pred):
-        # process predictions
-        if isinstance(pred, dict):
-            if len(pred.keys()) == 0:
-                return np.array([])
-            pred = np.stack(
-                [
-                    pred["bbox_left"],
-                    pred["bbox_top"],
-                    pred["bbox_width"],
-                    pred["bbox_height"],
-                    pred["conf"],
-                    pred["class"],
-                ],
-                axis=1,
-            )
-        return pred
-
-    def show(self, **kwargs):
-        im = self.im
-        boxes = self.pred[:, :4]
-        labels = [f"{int(c)} {conf:.2f}" for conf, c in self.pred[:, 4:]]
-        draw_im = draw_bounding_boxes(im, boxes, labels, **kwargs)
-        return Image.fromarray(draw_im)
-
-    def save(self, labels=True, save_dir="runs/detect/exp", exist_ok=False):
-        save_dir = increment_path(save_dir, exist_ok, mkdir=True)  # increment save_dir
-        self._run(save=True, labels=labels, save_dir=save_dir)  # save results
-
-    def crop(self, save=True, save_dir="runs/detect/exp", exist_ok=False):
-        save_dir = increment_path(save_dir, exist_ok, mkdir=True) if save else None
-        return self._run(crop=True, save=save, save_dir=save_dir)  # crop results
-
-    def render(self, labels=True):
-        self._run(render=True, labels=labels)  # render results
-        return self.ims
-
-    def to_df(self):
-        # return detections as pandas DataFrames, i.e. print(results.to_df())
-        df = pd.DataFrame(
-            self.pred,
-            columns=[
-                "bbox_left",
-                "bbox_top",
-                "bbox_width",
-                "bbox_height",
-                "conf",
-                "class",
-            ],
+    if isinstance(pred, dict):
+        if len(pred.keys()) != 6:
+            raise ValueError("The prediction dictionary should contain exactly 6 items")
+        return Detection(
+            box=np.array([pred["bbox_left"], pred["bbox_top"], pred["bbox_width"], pred["bbox_height"]]),
+            score=pred["conf"],
+            class_id=pred["class"],
         )
-        return df
 
-    def to_list(self):
-        # return a list of Detection objects, i.e. 'for result in results.tolist():'
-        dets = []
-        for *box, conf, class_id in self.pred:
-            det = Detection(box, conf, class_id)
-            dets.append(det)
-        return dets
-
-    def merge(self, other):
-        # merge two Detections objects
-        if isinstance(other, Detections):
-            other = other.pred
-
-        # check if other is empty
-        if len(other) == 0:
-            return self
-        pred = np.concatenate((self.pred, other), axis=0)
-        return Detections(pred, self.im, self.names, self.times)
-
-    def __len__(self):
-        return len(self.pred)
+    elif isinstance(pred, list) or isinstance(pred, tuple) or isinstance(pred, np.ndarray):
+        if len(pred) != 6:
+            raise ValueError("The prediction list should contain exactly 6 items")
+        return Detection(box=np.array(pred[:4]), score=pred[4], class_id=pred[5])
+    elif isinstance(pred, Detection):
+        return pred
+    else:
+        raise TypeError(f"Unsupported prediction type: {type(pred)}")
 
 
 class BaseDetectionModel(ABC):
+    """
+    Base class for detection models. This class implements basic functionality for handling input and output data, and requires subclasses to implement model loading and forward pass functionality.
+
+    Subclasses should override the 'load' and 'forward' methods. The 'load' method should handle loading the model from the specified repository and checkpoint, and 'forward' should define the forward pass of the model.
+
+    The input to the model should be flexible. It accepts numpy.ndarray, torch.Tensor, pathlib Path, string file, PIL Image, or a list of any of these. All inputs will be converted to a list of numpy arrays representing the images.
+
+    The output of the model is expected to be a list of `Detection` objects, where each `Detection` object represents a detected object in an image. If the model's output does not meet this expectation, `_check_and_fix_outputs` method should convert the output into a compatible format.
+
+    Example:
+        class CustomDetectionModel(BaseDetectionModel):
+            def load(self):
+                # Load your model here
+                pass
+
+            def forward(self, x):
+                # Define the forward pass here
+                pass
+
+    Attributes:
+        model_name (str): The name of the model.
+        model_repo (str): The repository where the model is stored.
+        model_ckpt (str): The checkpoint of the model to load.
+        model_config (Optional[dict]): The configuration for the model.
+        input_is_batched (bool): Whether the input is batched or not.
+        model (Any): The loaded model.
+    """
+
     def __init__(self, model_name, model_repo, model_ckpt, model_config=None):
+        """
+        Initializes the base detection model.
+
+        Args:
+            model_name (str): The name of the model.
+            model_repo (str): The repository where the model is stored.
+            model_ckpt (str): The checkpoint of the model to load.
+            model_config (Optional[dict]): The configuration for the model.
+        """
         super().__init__()
         self.model_name = model_name
         self.model_repo = model_repo
         self.model_ckpt = model_ckpt
         self.model_config = model_config
+        self.input_is_batched = False  # initialize the input_is_batched attribute
+
         self.model = self.load()
 
     def __call__(self, inputs, **kwargs):
         inputs = self._check_and_fix_inputs(inputs)
         results = self.forward(inputs, **kwargs)
-        results = self._check_and_fix_outputs(results)
-        detections = self._postprocess(results, inputs)
+        results = self._check_and_fix_outputs(results, inputs)
+        detections = self._postprocess(results)
         return detections
 
     def _check_and_fix_inputs(self, inputs):
@@ -182,24 +109,77 @@ class BaseDetectionModel(ABC):
 
         imgs = []
         for img in inputs:
-            img = read_image(img)
+            img = self.read_image(img)
             imgs.append(img)
-        return inputs
+        return imgs
 
-    def _check_and_fix_outputs(self, outputs):
-        """Check output type and shape."""
+    def read_image(self, img):
+        return read_image(img)
+
+    def _check_and_fix_outputs(self, outputs, inputs):
+        """
+        Check output type and convert to list of `Detections` objects.
+
+        The function expects the raw output from the model to be either a list of `Detection` objects or a list of lists, where each sub-list should contain four elements corresponding to the bounding box of the detected object. See `Detection` and `Detections` class for more details.
+
+        If the output is not in the correct format, a ValueError is raised.
+
+        Args:
+            outputs: The raw output from the model.
+            inputs: The corresponding inputs to the model.
+
+        Returns:
+            A list of `Detections` objects.
+        """
+        # First the length of outputs and inputs should be equal.
+        if len(outputs) != len(inputs):
+            raise ValueError(
+                "Length of outputs does not match length of inputs. "
+                f"Got {len(outputs)} outputs and {len(inputs)} inputs."
+            )
+
+        if isinstance(outputs[0], Detections):
+            return outputs
+
+        # A common mistake is that the model returns a single Detection object instead of a list of Detection objects, especially when the model is inferring a single image.
+        check_1 = not isinstance(outputs, (list, tuple)) or not isinstance(outputs[0], (list, tuple))
+        check_2 = isinstance(outputs[0][0], int) or isinstance(outputs[0][0], float)
+        if check_1 or check_2:
+            raise ValueError("The model's output should be a list of list of Detection objects or a compatible object.")
+
+        # Attempt to convert outputs into a list of Detections objects.
+        list_of_detections = []
+        for preds, image in zip(outputs, inputs):
+            dets = []
+            for pred in preds:
+                if pred == {}:
+                    continue
+                det = convert_to_detection(pred)
+                dets.append(det)
+
+            list_of_detections.append(Detections(dets, image))
+
+        if not list_of_detections:
+            raise ValueError("Empty list of detections. Check your model's output.")
+        # Raise ValueError if lengths of detections and inputs are not equal.
+        if len(list_of_detections) != len(inputs):
+            raise ValueError("Length of detections does not match length of inputs.")
+        return list_of_detections
+
+    def _postprocess(self, outputs):
+        """An empty post-processing method that does nothing. Override in subclasses for additional processing if needed."""
         return outputs
-
-    def _postprocess(self, outputs, inputs):
-        """Postprocess the results."""
-        detections = [Detections(o, i) for o, i in zip(outputs, inputs)]
-        if not self.input_is_batched:
-            return detections[0]
-
-        return detections
 
     @abstractmethod
     def load(self):
+        """
+        Loads the model.
+
+        This method must be overridden by subclasses. The overriding method should load the model from the repository using the checkpoint, and return the loaded model.
+
+        Raises:
+            NotImplementedError: If the method is not overridden.
+        """
         raise NotImplementedError
 
     @abstractmethod
@@ -233,11 +213,11 @@ class BaseDetectionModel(ABC):
 
         results = self(imgs)
         print(results)
-
         for img in imgs:
             results = self(img)
             print(results)
 
 
 if __name__ == "__main__":
-    pass
+    model = BaseDetectionModel("model_name", "model_repo", "model_ckpt")
+    model.test()
