@@ -1,8 +1,9 @@
 from dataclasses import dataclass
 from typing import Optional
+
 import torch
 
-from soccertrack.detection_model.base import BaseDetectionModel, BaseConfig
+from soccertrack.detection_model.base import BaseConfig, BaseDetectionModel
 
 
 @dataclass
@@ -36,7 +37,9 @@ class YOLOv5(BaseDetectionModel):
         if model_ckpt == "":
             model = torch.hub.load(str(model_repo), model_name)
         else:
-            model = torch.hub.load(str(model_repo), "custom", path=str(model_ckpt), source="local")
+            model = torch.hub.load(
+                str(model_repo), "custom", path=str(model_ckpt), source="local"
+            )
 
         if model is None:
             raise RuntimeError("Failed to load model")
@@ -123,7 +126,9 @@ if __name__ == "__main__":
     model_ckpt = git_root / "models" / "yolov5" / "yolov5s.pt"
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--model_repo", type=str, default=yolov5_repo, help="model name")
+    parser.add_argument(
+        "--model_repo", type=str, default=yolov5_repo, help="model name"
+    )
     parser.add_argument("--model_ckpt", type=str, default=model_ckpt, help="model name")
     args = parser.parse_args()
 

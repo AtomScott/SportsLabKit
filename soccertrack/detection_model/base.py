@@ -1,10 +1,10 @@
 from abc import ABC, abstractmethod
-from dataclasses import fields
-import torch
+from dataclasses import dataclass, fields
+
 import numpy as np
+import torch
 from PIL import Image
 
-from dataclasses import dataclass
 from soccertrack.logger import logger
 from soccertrack.types import Detection
 from soccertrack.types.detection import Detection
@@ -52,7 +52,9 @@ def validate_config(config: dict, config_class):
     # Check if there are any unknown keys in the config
     unknown_keys = set(config.keys()) - valid_keys
     if unknown_keys:
-        raise ValueError(f"Unknown keys in configuration: {unknown_keys}. Valid keys are {valid_keys}")
+        raise ValueError(
+            f"Unknown keys in configuration: {unknown_keys}. Valid keys are {valid_keys}"
+        )
 
     # Create a dictionary with the default options of the dataclass
     default_config = {f.name: f.default for f in fields(config_class)}
@@ -65,7 +67,9 @@ def validate_config(config: dict, config_class):
     except TypeError as e:
         # If a TypeError was raised, an argument was missing or had the wrong type
         missing_keys = valid_keys - set(default_config.keys())
-        raise ValueError(f"Missing or incorrect type keys in configuration: {missing_keys}. Error: {e}")
+        raise ValueError(
+            f"Missing or incorrect type keys in configuration: {missing_keys}. Error: {e}"
+        )
 
     logger.debug(f"Configuration: {default_config}")
 
@@ -103,7 +107,11 @@ def convert_to_detection(pred):
             class_id=pred["class"],
         )
 
-    elif isinstance(pred, list) or isinstance(pred, tuple) or isinstance(pred, np.ndarray):
+    elif (
+        isinstance(pred, list)
+        or isinstance(pred, tuple)
+        or isinstance(pred, np.ndarray)
+    ):
         if len(pred) != 6:
             raise ValueError("The prediction list should contain exactly 6 items")
         return Detection(box=np.array(pred[:4]), score=pred[4], class_id=pred[5])
@@ -167,7 +175,9 @@ class BaseDetectionModel(ABC):
         Acceptable input types are numpy.ndarray, torch.Tensor, pathlib Path, string file, PIL Image, or a list of any of these. All inputs will be converted to a list of numpy arrays.
         """
         if isinstance(inputs, (list, tuple, np.ndarray, torch.Tensor)):
-            self.input_is_batched = isinstance(inputs, (list, tuple)) or (hasattr(inputs, "ndim") and inputs.ndim == 4)
+            self.input_is_batched = isinstance(inputs, (list, tuple)) or (
+                hasattr(inputs, "ndim") and inputs.ndim == 4
+            )
             if not self.input_is_batched:
                 inputs = [inputs]
         else:
@@ -208,10 +218,14 @@ class BaseDetectionModel(ABC):
             return outputs
 
         # A common mistake is that the model returns a single Detection object instead of a list of Detection objects, especially when the model is inferring a single image.
-        check_1 = not isinstance(outputs, (list, tuple)) or not isinstance(outputs[0], (list, tuple))
+        check_1 = not isinstance(outputs, (list, tuple)) or not isinstance(
+            outputs[0], (list, tuple)
+        )
         check_2 = isinstance(outputs[0][0], int) or isinstance(outputs[0][0], float)
         if check_1 or check_2:
-            raise ValueError("The model's output should be a list of list of Detection objects or a compatible object.")
+            raise ValueError(
+                "The model's output should be a list of list of Detection objects or a compatible object."
+            )
 
         # Attempt to convert outputs into a list of Detections objects.
         list_of_detections = []
