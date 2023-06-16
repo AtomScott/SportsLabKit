@@ -1,10 +1,40 @@
-from ..logger import logger
-from .base import BaseDetectionModel, Detection
-from .yolov5 import YOLOv5
-from .dummy import DummyDetectionModel
+from soccertrack.detection_model.base import BaseDetectionModel
+from soccertrack.logger import logger
+
+from soccertrack.detection_model.yolov5 import YOLOv5, YOLOv5n, YOLOv5s, YOLOv5m, YOLOv5l, YOLOv5x
+from soccertrack.detection_model.yolov8 import YOLOv8, YOLOv8n, YOLOv8s, YOLOv8m, YOLOv8l, YOLOv8x
+from soccertrack.detection_model.dummy import DummyDetectionModel
+
+__all__ = [
+    "BaseDetectionModel",
+    "load",
+    "show_available_models",
+    "YOLOv5",
+    "YOLOv5n",
+    "YOLOv5s",
+    "YOLOv5m",
+    "YOLOv5l",
+    "YOLOv5x",
+    "YOLOv8",
+    "YOLOv8n",
+    "YOLOv8s",
+    "YOLOv8m",
+    "YOLOv8l",
+    "YOLOv8x",
+    "DummyDetectionModel",
+]
 
 
 def inheritors(cls):
+    """
+    Get all subclasses of a given class.
+
+    Args:
+        cls (type): The class to find subclasses of.
+
+    Returns:
+        set[type]: A set of the subclasses of the input class.
+    """
     subclasses = set()
     work = [cls]
     while work:
@@ -16,10 +46,35 @@ def inheritors(cls):
     return subclasses
 
 
-def load(model_name, model_repo, model_ckpt, model_config=None, **kwargs):
+def show_available_models():
+    """
+    Print the names of all available BaseDetectionModel models.
+
+    The models are subclasses of BaseDetectionModel. The names are printed as a list to the console.
+    """
+    print(sorted([cls.__name__ for cls in inheritors(BaseDetectionModel)]))
+
+
+def load(model_name, model_config={}, inference_config={}):
+    """
+    Load a model by name.
+
+    The function searches subclasses of BaseDetectionModel for a match with the given name. If a match is found, an instance of the model is returned. If no match is found, a warning is logged and the function returns None.
+
+    Args:
+        model_name (str): The name of the model to load.
+        model_config (dict, optional): The model configuration to use when instantiating the model. Defaults to {}.
+        inference_config (dict, optional): The inference configuration to use when instantiating the model. Defaults to {}.
+
+    Returns:
+        BaseDetectionModel: An instance of the requested model, or None if no match was found.
+    """
     for cls in inheritors(BaseDetectionModel):
         if model_name in [cls.__name__.lower(), cls.__name__]:
-            return cls(model_name, model_ckpt, inference_config)
+            return cls(
+                model_config=model_config,
+                inference_config=inference_config,
+            )
     logger.warning(
         f"Model {model_name} not found. Available models: {[cls.__name__ for cls in inheritors(BaseDetectionModel)]} (lowercase is allowed)"
     )

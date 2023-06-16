@@ -1,10 +1,10 @@
-from soccertrack.detection_model.base import BaseDetectionModel
+from .base import BaseDetectionModel, BaseConfig
 from soccertrack.logger import logger
 
 
 class DummyDetectionModel(BaseDetectionModel):
-    def __init__(self, detections, *args, **kwargs):
-        super().__init__(model_name=None, model_repo=None, model_ckpt=None, model_config=None)
+    def __init__(self, detections):
+        super().__init__()
         self.precomputed_detections = detections
         self.image_count = 0
 
@@ -33,3 +33,11 @@ class DummyDetectionModel(BaseDetectionModel):
     def reset_image_count(self):
         self.image_count = 0
         logger.debug("Resetting image count")
+
+    @property
+    def model_config_template(self):
+        return BaseConfig
+
+    @property
+    def inference_config_template(self):
+        return BaseConfig

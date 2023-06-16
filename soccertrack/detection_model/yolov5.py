@@ -1,43 +1,53 @@
+from dataclasses import dataclass
+from typing import Optional
 import torch
 
-from .base import BaseDetectionModel
+from soccertrack.detection_model.base import BaseDetectionModel, BaseConfig
+
+
+@dataclass
+class ModelConfigTemplate(BaseConfig):
+    ckpt: str = ""
+    repo: str = "ultralytics/yolov5"
+    name: str = "yolov5s"
+    conf: float = 0.25
+    iou: float = 0.45
+    agnostic: bool = False
+    multi_label: bool = False
+    classes: Optional[list[str]] = None
+    max_det: int = 1000
+    amp: bool = False
+
+
+@dataclass
+class InferenceConfigTemplate(BaseConfig):
+    augment: bool = False
+    size: int = 640
+    profile: bool = False
 
 
 class YOLOv5(BaseDetectionModel):
-    """YOLOv5 model wrapper.
-
-    YOLOv5 has options that can be set on instantiation and during inference. However, frror compatibility with the rest of the codebase, we only support setting options during instantiation. Therefore, if you want to set options for inference, you must pass the options as a dictionary to the `model_config` argument. For example:
-
-    ```python
-    model = YOLOv5(
-        model_name="yolov5s",
-        model_repo="ultralytics/yolov5",
-        model_ckpt="yolov5s.pt",
-        model_config={"augment": True}
-    )
-    ```
-    """
-
-    def __init__(self, model_name, model_repo, model_ckpt, model_config=dict(), **rkwags):
-        super().__init__(model_name, model_repo, model_ckpt, model_config)
-
-        self.model_config = model_config
-        self.size = model_config.get("size", 640)
-        self.augment = model_config.get("augment", False)
-        self.profile = model_config.get("profile", False)
+    """YOLOv5 model wrapper."""
 
     def load(self):
-        model = torch.hub.load(str(self.model_repo), "custom", path=str(self.model_ckpt), source="local")
+        model_ckpt = self.model_config["ckpt"]
+        model_repo = self.model_config["repo"]
+        model_name = self.model_config["name"]
+        if model_ckpt == "":
+            model = torch.hub.load(str(model_repo), model_name)
+        else:
+            model = torch.hub.load(str(model_repo), "custom", path=str(model_ckpt), source="local")
+
         if model is None:
             raise RuntimeError("Failed to load model")
 
-        model.conf = self.model_config.get("conf", 0.25)
-        model.iou = self.model_config.get("iou", 0.45)
-        model.agnostic = self.model_config.get("agnostic", False)
-        model.multi_label = self.model_config.get("multi_label", False)
-        model.classes = self.model_config.get("classes", None)
-        model.max_det = self.model_config.get("max_det", 1000)
-        model.amp = self.model_config.get("amp", False)
+        model.conf = self.model_config["conf"]
+        model.iou = self.model_config["iou"]
+        model.agnostic = self.model_config["agnostic"]
+        model.multi_label = self.model_config["multi_label"]
+        model.classes = self.model_config["classes"]
+        model.max_det = self.model_config["max_det"]
+        model.amp = self.model_config["amp"]
         return model
 
     def forward(self, x, **kwargs):
@@ -56,10 +66,51 @@ class YOLOv5(BaseDetectionModel):
                 for r in res
             ]
 
-        results = self.model(x, self.size, self.augment, self.profile).xywh
+        size = kwargs.get("size", self.inference_config["size"])
+        augment = kwargs.get("augment", self.inference_config["augment"])
+        profile = kwargs.get("profile", self.inference_config["profile"])
+        results = self.model(x, size, augment, profile).xywh
         results = [to_dict(r) for r in results]
 
         return results
+
+    @property
+    def model_config_template(self):
+        return ModelConfigTemplate
+
+    @property
+    def inference_config_template(self):
+        return InferenceConfigTemplate
+
+
+class YOLOv5n(YOLOv5):
+    def __init__(self, model_config={}, inference_config={}):
+        model_config["name"] = "yolov5n"
+        super().__init__(model_config, inference_config)
+
+
+class YOLOv5s(YOLOv5):
+    def __init__(self, model_config={}, inference_config={}):
+        model_config["name"] = "yolov5s"
+        super().__init__(model_config, inference_config)
+
+
+class YOLOv5m(YOLOv5):
+    def __init__(self, model_config={}, inference_config={}):
+        model_config["name"] = "yolov5m"
+        super().__init__(model_config, inference_config)
+
+
+class YOLOv5l(YOLOv5):
+    def __init__(self, model_config={}, inference_config={}):
+        model_config["name"] = "yolov5l"
+        super().__init__(model_config, inference_config)
+
+
+class YOLOv5x(YOLOv5):
+    def __init__(self, model_config={}, inference_config={}):
+        model_config["name"] = "yolov5x"
+        super().__init__(model_config, inference_config)
 
 
 if __name__ == "__main__":
