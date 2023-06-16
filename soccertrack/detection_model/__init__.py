@@ -1,6 +1,8 @@
-from ..logger import logger
-from .base import BaseDetectionModel, Detection
-from .yolov5 import YOLOv5
+from typing import Any, Dict
+
+from soccertrack.detection_model.base import BaseDetectionModel
+from soccertrack.detection_model.yolo_model import YOLOModel
+from soccertrack.logger import logger
 
 
 def inheritors(cls):
@@ -15,10 +17,12 @@ def inheritors(cls):
     return subclasses
 
 
-def load(model_name, model_repo, model_ckpt, model_config=None, **kwargs):
+def load(model_name: str, model_ckpt: str, inference_config: Dict[str, Any] = None):
+    if inference_config is None:
+        inference_config = {}
     for cls in inheritors(BaseDetectionModel):
         if model_name in [cls.__name__.lower(), cls.__name__]:
-            return cls(model_name, model_repo, model_ckpt, model_config, **kwargs)
+            return cls(model_name, model_ckpt, inference_config)
     logger.warning(
         f"Model {model_name} not found. Available models: {[cls.__name__ for cls in inheritors(BaseDetectionModel)]} (lowercase is allowed)"
     )

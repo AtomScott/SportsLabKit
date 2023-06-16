@@ -1,12 +1,16 @@
-import json
+import argparse
 import importlib
-
+import json
+import re
 from pathlib import Path
 from typing import Optional
+
+from omegaconf import OmegaConf
+
 import soccertrack
 from soccertrack import Camera, detection_model
 from soccertrack.image_model import TorchReIDModel
-from soccertrack.logger import set_log_level
+from soccertrack.logger import inspect, logger, set_log_level
 from soccertrack.metrics import (
     CosineCMM,
     EuclideanCMM,
@@ -14,18 +18,10 @@ from soccertrack.metrics import (
     identity_score,
     mota_score,
 )
-from soccertrack.tracking_model import (
-    KalmanTracker,
-    MultiObjectTracker,
-)
+from soccertrack.tracking_model import KalmanTracker, MultiObjectTracker
 from soccertrack.tracking_model.matching import MotionVisualMatchingFunction
-from soccertrack.utils import get_git_root
 from soccertrack.types import _pathlike
-from soccertrack.logger import logger, set_log_level, inspect
-
-import argparse
-from omegaconf import OmegaConf
-import re
+from soccertrack.utils import get_git_root
 
 
 def is_camel_case(s: str) -> bool:
@@ -90,13 +86,8 @@ def parse_args():
     )
     parser.add_argument(
         "--det_model_name",
-        default="yolov5",
-        help="Name of the object detection model to use (default: yolov5).",
-    )
-    parser.add_argument(
-        "--det_model_repo",
-        default="external/yolov5",
-        help="Path to the object detection model repository (default: external/yolov5).",
+        default="YOLOModel",
+        help="Name of the object detection model to use (default: YOLOModel).",
     )
     parser.add_argument(
         "--det_model_ckpt",
@@ -195,9 +186,8 @@ def run(
     path_to_csv: _pathlike = None,
     path_to_mp4: _pathlike = None,
     det_model_name: str = "yolov5",
-    det_model_repo: _pathlike = "external/yolov5",
     det_model_ckpt: _pathlike = "models/yolov5/yolov5x_last.pt",
-    det_model_conf: dict = {},
+    det_model_conf: dict = None,
     img_model_name: str = "resnet18",
     img_model_ckpt: str = "",
     sot_tracker: str = "KalmanTracker",
@@ -215,7 +205,7 @@ def run(
     print(img_model_name)
 
     # Define the object detection model
-    det_model = detection_model.load(det_model_name, det_model_repo, det_model_ckpt, det_model_conf)
+    det_model = detection_model.load(det_model_name, det_model_ckpt, det_model_conf)
 
     # Define the image embedding model
     if img_model_name is None:
