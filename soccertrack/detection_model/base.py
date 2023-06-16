@@ -5,6 +5,16 @@ from soccertrack.logger import logger
 from soccertrack.types.detection import Detection
 from soccertrack.types.detections import Detections
 from soccertrack.utils import read_image
+from pathlib import Path
+from typing import Any, Dict
+
+import numpy as np
+import pandas as pd
+import requests
+from PIL import Image
+
+from soccertrack.types import Detection
+from soccertrack.utils.draw import draw_bounding_boxes
 
 
 def convert_to_detection(pred):
@@ -82,7 +92,6 @@ class BaseDetectionModel(ABC):
         """
         super().__init__()
         self.model_name = model_name
-        self.model_repo = model_repo
         self.model_ckpt = model_ckpt
         self.model_config = model_config
         self.input_is_batched = False  # initialize the input_is_batched attribute
@@ -194,10 +203,8 @@ class BaseDetectionModel(ABC):
 
     def test(self):
         import cv2
-        import numpy as np
-        from PIL import Image
 
-        from ..utils.utils import get_git_root
+        from soccertrack.utils.utils import get_git_root
 
         # batched inference
         git_root = get_git_root()
