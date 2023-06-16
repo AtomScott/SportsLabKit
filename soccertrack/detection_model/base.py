@@ -1,10 +1,4 @@
 from abc import ABC, abstractmethod
-
-import numpy as np
-from soccertrack.logger import logger
-from soccertrack.types.detection import Detection
-from soccertrack.types.detections import Detections
-from soccertrack.utils import read_image
 from pathlib import Path
 from typing import Any, Dict
 
@@ -13,7 +7,11 @@ import pandas as pd
 import requests
 from PIL import Image
 
+from soccertrack.logger import logger
 from soccertrack.types import Detection
+from soccertrack.types.detection import Detection
+from soccertrack.types.detections import Detections
+from soccertrack.utils import read_image
 from soccertrack.utils.draw import draw_bounding_boxes
 
 
@@ -36,12 +34,23 @@ def convert_to_detection(pred):
         if len(pred.keys()) != 6:
             raise ValueError("The prediction dictionary should contain exactly 6 items")
         return Detection(
-            box=np.array([pred["bbox_left"], pred["bbox_top"], pred["bbox_width"], pred["bbox_height"]]),
+            box=np.array(
+                [
+                    pred["bbox_left"],
+                    pred["bbox_top"],
+                    pred["bbox_width"],
+                    pred["bbox_height"],
+                ]
+            ),
             score=pred["conf"],
             class_id=pred["class"],
         )
 
-    elif isinstance(pred, list) or isinstance(pred, tuple) or isinstance(pred, np.ndarray):
+    elif (
+        isinstance(pred, list)
+        or isinstance(pred, tuple)
+        or isinstance(pred, np.ndarray)
+    ):
         if len(pred) != 6:
             raise ValueError("The prediction list should contain exactly 6 items")
         return Detection(box=np.array(pred[:4]), score=pred[4], class_id=pred[5])
@@ -151,10 +160,14 @@ class BaseDetectionModel(ABC):
             return outputs
 
         # A common mistake is that the model returns a single Detection object instead of a list of Detection objects, especially when the model is inferring a single image.
-        check_1 = not isinstance(outputs, (list, tuple)) or not isinstance(outputs[0], (list, tuple))
+        check_1 = not isinstance(outputs, (list, tuple)) or not isinstance(
+            outputs[0], (list, tuple)
+        )
         check_2 = isinstance(outputs[0][0], int) or isinstance(outputs[0][0], float)
         if check_1 or check_2:
-            raise ValueError("The model's output should be a list of list of Detection objects or a compatible object.")
+            raise ValueError(
+                "The model's output should be a list of list of Detection objects or a compatible object."
+            )
 
         # Attempt to convert outputs into a list of Detections objects.
         list_of_detections = []

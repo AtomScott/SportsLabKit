@@ -1,7 +1,7 @@
 from ..logger import logger
 from .base import BaseDetectionModel, Detection
-from .yolov5 import YOLOv5
 from .dummy import DummyDetectionModel
+from .yolov5 import YOLOv5
 
 
 def inheritors(cls):

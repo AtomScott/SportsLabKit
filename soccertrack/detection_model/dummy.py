@@ -4,7 +4,9 @@ from soccertrack.logger import logger
 
 class DummyDetectionModel(BaseDetectionModel):
     def __init__(self, detections, *args, **kwargs):
-        super().__init__(model_name=None, model_repo=None, model_ckpt=None, model_config=None)
+        super().__init__(
+            model_name=None, model_repo=None, model_ckpt=None, model_config=None
+        )
         self.precomputed_detections = detections
         self.image_count = 0
 
@@ -25,7 +27,12 @@ class DummyDetectionModel(BaseDetectionModel):
             detections = self.precomputed_detections[self.image_count]
             self.image_count += 1
 
-            results = [[[d.box[0], d.box[1], d.box[2], d.box[3], d.score, d.class_id] for d in detections]]
+            results = [
+                [
+                    [d.box[0], d.box[1], d.box[2], d.box[3], d.score, d.class_id]
+                    for d in detections
+                ]
+            ]
             if self.image_count >= len(self.precomputed_detections):
                 self.reset_image_count()
             return results

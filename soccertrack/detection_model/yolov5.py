@@ -18,7 +18,9 @@ class YOLOv5(BaseDetectionModel):
     ```
     """
 
-    def __init__(self, model_name, model_repo, model_ckpt, model_config=dict(), **rkwags):
+    def __init__(
+        self, model_name, model_repo, model_ckpt, model_config=dict(), **rkwags
+    ):
         super().__init__(model_name, model_repo, model_ckpt, model_config)
 
         self.model_config = model_config
@@ -27,7 +29,9 @@ class YOLOv5(BaseDetectionModel):
         self.profile = model_config.get("profile", False)
 
     def load(self):
-        model = torch.hub.load(str(self.model_repo), "custom", path=str(self.model_ckpt), source="local")
+        model = torch.hub.load(
+            str(self.model_repo), "custom", path=str(self.model_ckpt), source="local"
+        )
         if model is None:
             raise RuntimeError("Failed to load model")
 
@@ -72,7 +76,9 @@ if __name__ == "__main__":
     model_ckpt = git_root / "models" / "yolov5" / "yolov5s.pt"
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--model_repo", type=str, default=yolov5_repo, help="model name")
+    parser.add_argument(
+        "--model_repo", type=str, default=yolov5_repo, help="model name"
+    )
     parser.add_argument("--model_ckpt", type=str, default=model_ckpt, help="model name")
     args = parser.parse_args()
 
