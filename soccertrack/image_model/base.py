@@ -142,7 +142,7 @@ class BaseImageModel(ABC):
             img = self.read_image(img)
             imgs.append(img)
 
-        return np.stack(imgs)
+        return imgs
 
     def read_image(self, img):
         return read_image(img)
