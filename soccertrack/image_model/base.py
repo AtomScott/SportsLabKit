@@ -125,7 +125,7 @@ class BaseImageModel(ABC):
         embeddings = self._check_and_fix_outputs(results)
         return embeddings
 
-    def _check_and_fix_inputs(self, inputs):
+    def _check_and_fix_inputs(self, inputs) -> List[np.ndarray]:
         """Check input type and shape.
 
         Acceptable input types are numpy.ndarray, torch.Tensor, pathlib Path, string file, PIL Image, or a list of any of these. All inputs will be converted to a list of numpy arrays.
@@ -141,16 +141,17 @@ class BaseImageModel(ABC):
         for img in inputs:
             img = self.read_image(img)
             imgs.append(img)
-        return imgs
+
+        return np.stack(imgs)
 
     def read_image(self, img):
         return read_image(img)
 
     def _check_and_fix_outputs(self, outputs):
         """
-        Check output type and convert to list of embeddings.
+        Check output type and convert to a 2D numpy array.
 
-        The function expects the raw output from the model to be either an iterable of embeddings.
+        The function expects the raw output from the model to be either an iterable of embeddings of the same length as the input, or a single embedding. If the output is not in the correct format, a ValueError is raised.
 
         If the output is not in the correct format, a ValueError is raised.
 
@@ -170,7 +171,8 @@ class BaseImageModel(ABC):
         if isinstance(outputs[0], (int, float)):
             outputs = [[output] for output in outputs]
 
-        return outputs
+        # convert the output to a 2D numpy array
+        return np.stack(outputs)
 
     @abstractmethod
     def load(self):
@@ -185,12 +187,12 @@ class BaseImageModel(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def forward(self, x):
+    def forward(self, x: np.ndarray):
         """
+        Forward must be overridden by subclasses. The overriding method should define the forward pass of the model. The model will receive a 4-dimensional numpy array representing the images. As for the output, the model is expected to return something that can be converted into a 2-dimensional numpy array.
+
         Args:
-            x (Tensor): input tensor
-        Returns:
-            Tensor: output tensor
+            x (np.ndarray): input image
         """
         raise NotImplementedError
 

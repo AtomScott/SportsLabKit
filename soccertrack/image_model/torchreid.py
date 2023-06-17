@@ -103,7 +103,7 @@ class BaseTorchReIDModel(BaseImageModel):
             )
 
     def forward(self, x):
-        return self.model(x)
+        return self.model(list(x))
 
     @property
     def model_config_template(self):

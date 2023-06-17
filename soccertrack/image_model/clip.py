@@ -38,7 +38,8 @@ class BaseCLIP(BaseImageModel):
             im = self.preprocess(im)
             ims.append(im)
         ims = torch.stack(ims)
-        image_features = self.model.encode_image(ims)
+        with torch.no_grad():
+            image_features = self.model.encode_image(ims)
         return image_features
 
     @property
