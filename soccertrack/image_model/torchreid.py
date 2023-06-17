@@ -1,15 +1,10 @@
-import os
-import sys
-from typing import List, Optional, Sequence, Tuple, Union
+from dataclasses import dataclass, field
 
-import numpy as np
-import torch
-from PIL import Image
-from soccertrack.logger import logger
-from soccertrack.types import Detection
-from soccertrack.utils import download_file_from_google_drive, get_git_root
 from torchreid.utils import FeatureExtractor
-from torchvision import transforms
+
+from soccertrack.image_model.base import BaseConfig, BaseImageModel
+from soccertrack.logger import logger
+from soccertrack.utils import download_file_from_google_drive, get_git_root, HiddenPrints
 
 model_save_dir = get_git_root() / "models" / "torchreid"
 
@@ -30,7 +25,26 @@ model_dict = {
     "resnet50_MSMT17": "https://drive.google.com/file/d/1yiBteqgIZoOeywE8AhGmEQl7FTVwrQmf/view?usp=sharing",
     "osnet_x1_0_MSMT17": "https://drive.google.com/file/d/1IosIFlLiulGIjwW3H8uMRmx3MzPwf86x/view?usp=sharing",
     "osnet_ain_x1_0_MSMT17": "https://drive.google.com/file/d/1SigwBE6mPdqiJMqhuIY4aqC7--5CsMal/view?usp=sharing",
+    "resnet50_MSMT17": "https://drive.google.com/file/d/1ep7RypVDOthCRIAqDnn4_N-UhkkFHJsj/view?usp=sharing",
+    "resnet50_fc512_MSMT17": "https://drive.google.com/file/d/1fDJLcz4O5wxNSUvImIIjoaIF9u1Rwaud/view?usp=sharing",
 }
+
+
+@dataclass
+class ModelConfigTemplate(BaseConfig):
+    name: str = "osnet_x1_0"
+    path: str = ""
+    device: str = "cpu"
+    image_size: tuple[int, int] = (256, 128)
+    pixel_mean: list[float] = field(default_factory=lambda: [0.485, 0.456, 0.406])
+    pixel_std: list[float] = field(default_factory=lambda: [0.229, 0.224, 0.225])
+    pixel_norm: bool = True
+    verbose: bool = False
+
+
+@dataclass
+class InferenceConfigTemplate(BaseConfig):
+    pass
 
 
 def show_torchreid_models():
@@ -40,9 +54,7 @@ def show_torchreid_models():
 
 def download_model(model_name):
     if model_name not in model_dict:
-        raise ValueError(
-            f"Model {model_name} not available. Available models are: {show_torchreid_models()}"
-        )
+        raise ValueError(f"Model {model_name} not available. Available models are: {show_torchreid_models()}")
     url = model_dict[model_name]
     filename = model_name + ".pth"
     file_path = model_save_dir / filename
@@ -50,90 +62,138 @@ def download_model(model_name):
     file_path.parent.mkdir(parents=True, exist_ok=True)
 
     if file_path.exists():
-        logger.info(f"Model {model_name} already exists in {model_save_dir}.")
+        logger.debug(f"Model {model_name} already exists in {model_save_dir}.")
         return file_path
 
     download_file_from_google_drive(url.split("/")[-2], file_path)
-    logger.info(
-        f"Model {model_name} successfully downloaded and saved to {model_save_dir}."
-    )
+    logger.debug(f"Model {model_name} successfully downloaded and saved to {model_save_dir}.")
     return file_path
 
 
-class HiddenPrints:
-    def __enter__(self):
-        self._original_stdout = sys.stdout
-        sys.stdout = open(os.devnull, "w")
+class BaseTorchReIDModel(BaseImageModel):
+    def load(self):
+        model_name = self.model_config["name"]
+        model_path = self.model_config["path"]
+        device = self.model_config["device"]
+        verbose = self.model_config["verbose"]
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        sys.stdout.close()
-        sys.stdout = self._original_stdout
-
-
-class TorchReIDModel(FeatureExtractor):
-    def __init__(
-        self,
-        model_name="",
-        model_path="",
-        image_size=(256, 128),
-        pixel_mean=[0.485, 0.456, 0.406],
-        pixel_std=[0.229, 0.224, 0.225],
-        pixel_norm=True,
-        device="cuda",
-        verbose=True,
-    ):
         if (model_name != "") and (model_path == ""):
             model_path = download_model(model_name)
-            logger.info(model_path)
+            logger.debug(model_path)
         if model_name.endswith("MSMT17"):
             model_name = model_name.replace("_MSMT17", "")
-        if not verbose:
-            with HiddenPrints():
-                super().__init__(
-                    model_name,
-                    model_path,
-                    image_size,
-                    pixel_mean,
-                    pixel_std,
-                    pixel_norm,
-                    device,
-                    verbose,
-                )
-        else:
-            super().__init__(
-                model_name,
-                model_path,
-                image_size,
-                pixel_mean,
-                pixel_std,
-                pixel_norm,
-                device,
-                verbose,
+        if verbose:
+            return FeatureExtractor(
+                model_name=model_name,
+                model_path=model_path,
+                device=device,
+            )
+        with HiddenPrints():
+            return FeatureExtractor(
+                model_name=model_name,
+                model_path=model_path,
+                device=device,
             )
 
-    def embed_detections(
-        self, detections: Sequence[Detection], image: Union[Image.Image, np.ndarray]
-    ) -> np.ndarray:
+    def forward(self, x):
+        return self.model(x)
 
-        transform = transforms.Compose(
-            [
-                transforms.Resize((32, 32)),
-                transforms.ToTensor(),
-            ]
-        )
+    @property
+    def model_config_template(self):
+        return ModelConfigTemplate
 
-        if isinstance(image, np.ndarray):
-            image = Image.fromarray(image)
+    @property
+    def inference_config_template(self):
+        return InferenceConfigTemplate
 
-        box_images = []
-        for detection in detections:
-            x, y, w, h = detection.box
-            box_image = image.crop((x, y, x + w, y + h))
-            box_images.append(transform(box_image))
 
-        x = torch.stack(box_images)
+class ShuffleNet(BaseTorchReIDModel):
+    def __init__(self, model_config={}, inference_config={}):
+        model_config["name"] = "shufflenet"
+        super().__init__(model_config, inference_config)
 
-        with torch.no_grad():
-            z = self(x)
 
-        return z.numpy()
+class MobileNetV2_x1_0(BaseTorchReIDModel):
+    def __init__(self, model_config={}, inference_config={}):
+        model_config["name"] = "mobilenetv2_x1_0"
+        super().__init__(model_config, inference_config)
+
+
+class MobileNetV2_x1_4(BaseTorchReIDModel):
+    def __init__(self, model_config={}, inference_config={}):
+        model_config["name"] = "mobilenetv2_x1_4"
+        super().__init__(model_config, inference_config)
+
+
+class MLFN(BaseTorchReIDModel):
+    def __init__(self, model_config={}, inference_config={}):
+        model_config["name"] = "mlfn"
+        super().__init__(model_config, inference_config)
+
+
+class OSNet_x1_0(BaseTorchReIDModel):
+    def __init__(self, model_config={}, inference_config={}):
+        model_config["name"] = "osnet_x1_0"
+        super().__init__(model_config, inference_config)
+
+
+class OSNet_x0_75(BaseTorchReIDModel):
+    def __init__(self, model_config={}, inference_config={}):
+        model_config["name"] = "osnet_x0_75"
+        super().__init__(model_config, inference_config)
+
+
+class OSNet_x0_5(BaseTorchReIDModel):
+    def __init__(self, model_config={}, inference_config={}):
+        model_config["name"] = "osnet_x0_5"
+        super().__init__(model_config, inference_config)
+
+
+class OSNet_x0_25(BaseTorchReIDModel):
+    def __init__(self, model_config={}, inference_config={}):
+        model_config["name"] = "osnet_x0_25"
+        super().__init__(model_config, inference_config)
+
+
+class OSNet_ibn_x1_0(BaseTorchReIDModel):
+    def __init__(self, model_config={}, inference_config={}):
+        model_config["name"] = "osnet_ibn_x1_0"
+        super().__init__(model_config, inference_config)
+
+
+class OSNet_ain_x1_0(BaseTorchReIDModel):
+    def __init__(self, model_config={}, inference_config={}):
+        model_config["name"] = "osnet_ain_x1_0"
+        super().__init__(model_config, inference_config)
+
+
+class OSNet_ain_x0_75(BaseTorchReIDModel):
+    def __init__(self, model_config={}, inference_config={}):
+        model_config["name"] = "osnet_ain_x0_75"
+        super().__init__(model_config, inference_config)
+
+
+class OSNet_ain_x0_5(BaseTorchReIDModel):
+    def __init__(self, model_config={}, inference_config={}):
+        model_config["name"] = "osnet_ain_x0_5"
+        super().__init__(model_config, inference_config)
+
+
+class OSNet_ain_x0_25(BaseTorchReIDModel):
+    def __init__(self, model_config={}, inference_config={}):
+        model_config["name"] = "osnet_ain_x0_25"
+        super().__init__(model_config, inference_config)
+
+
+class ResNet50(BaseTorchReIDModel):
+    def __init__(self, model_config={}, inference_config={}):
+        model_config["name"] = "resnet50"
+        model_config["path"] = model_dict["resnet50_MSMT17"]
+        super().__init__(model_config, inference_config)
+
+
+class ResNet50_fc512(BaseTorchReIDModel):
+    def __init__(self, model_config={}, inference_config={}):
+        model_config["name"] = "resnet50_fc512"
+        model_config["path"] = model_dict["resnet50_fc512_MSMT17"]
+        super().__init__(model_config, inference_config)
