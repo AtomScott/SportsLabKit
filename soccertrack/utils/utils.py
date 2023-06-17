@@ -14,12 +14,11 @@ from numpy.typing import NDArray
 from omegaconf import OmegaConf
 from PIL import Image
 from vidgear.gears import WriteGear
+import torch
 
 from soccertrack.logger import logger, tqdm
 
-OmegaConf.register_new_resolver(
-    "now", lambda x: datetime.now().strftime(x), replace=True
-)
+OmegaConf.register_new_resolver("now", lambda x: datetime.now().strftime(x), replace=True)
 
 from ast import literal_eval
 from itertools import zip_longest
@@ -30,6 +29,52 @@ import git
 import numpy as np
 import pandas as pd
 from pandas._typing import FilePath, WriteBuffer
+
+
+import numpy as np
+from PIL import Image
+from pathlib import Path
+import requests
+import sys
+
+
+class HiddenPrints:
+    def __enter__(self):
+        self._original_stdout = sys.stdout
+        sys.stdout = open(os.devnull, "w")
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        sys.stdout.close()
+        sys.stdout = self._original_stdout
+
+
+def read_image(img):
+    """Reads an image from a file, URL, a numpy array, or a torch tensor.
+    Args:
+        img (str, Path, Image.Image, np.ndarray, or torch.Tensor): The image to read.
+    Returns:
+        np.ndarray: The image as a numpy array.
+    """
+    if isinstance(img, str):
+        if img.startswith("http"):
+            img = requests.get(img, stream=True).raw
+            img = Image.open(img)
+        else:
+            img = Path(img)
+    if isinstance(img, Path):
+        img = Image.open(img)
+    if isinstance(img, Image.Image):
+        img = np.array(img)
+    if isinstance(img, torch.Tensor):
+        img = img.numpy()
+    if not isinstance(img, np.ndarray):
+        raise TypeError(f"Unsupported input type: {type(img)}")
+    if len(img.shape) != 3:
+        raise ValueError(f"Unsupported input shape: {img.shape}")
+    if img.shape[2] not in [1, 3]:
+        raise ValueError(f"Unsupported input shape: {img.shape}")
+
+    return img
 
 
 def auto_string_parser(value: str) -> Any:
@@ -396,6 +441,34 @@ def save_response_content(response, destination):
         for chunk in response.iter_content(CHUNK_SIZE):
             if chunk:  # filter out keep-alive new chunks
                 f.write(chunk)
+
+
+def increment_path(path: Union[str, Path], exist_ok: bool = False, mkdir: bool = False) -> Path:
+    """Increments a path (appends a suffix) if it already exists.
+
+    Args:
+        path (Union[str, Path]): The path to increment.
+        exist_ok (bool, optional): If set to True, no increment will be done. Defaults to False.
+        mkdir (bool, optional): If set to True, the directory will be created. Defaults to False.
+
+    Returns:
+        Path: The incremented path.
+    """
+    path = Path(path)
+
+    if exist_ok:
+        return path
+
+    suffix = 1
+    new_path = path
+    while new_path.exists():
+        new_path = Path(f"{path}_{suffix}")
+        suffix += 1
+
+    if mkdir:
+        new_path.mkdir(parents=True, exist_ok=True)
+
+    return new_path
 
 
 # Due to memory consumption concerns, the function below has been replaced by the function that uses vidgear above.
