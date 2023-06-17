@@ -14,8 +14,8 @@ from torchvision import models, transforms
 from torchvision.datasets import ImageFolder
 
 from soccertrack.image_model.base import BaseImageModel
-from soccertrack.image_model.torchreid import ShuffleNet
 from soccertrack.image_model.clip import CLIP_RN50
+from soccertrack.image_model.torchreid import ShuffleNet
 from soccertrack.image_model.visualization import plot_tsne
 from soccertrack.logger import logger
 from soccertrack.types.detection import Detection

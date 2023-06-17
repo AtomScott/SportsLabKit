@@ -10,32 +10,31 @@ import cv2
 import cv2 as cv
 import numpy as np
 import requests
+import torch
 from numpy.typing import NDArray
 from omegaconf import OmegaConf
 from PIL import Image
 from vidgear.gears import WriteGear
-import torch
 
 from soccertrack.logger import logger, tqdm
 
-OmegaConf.register_new_resolver("now", lambda x: datetime.now().strftime(x), replace=True)
+OmegaConf.register_new_resolver(
+    "now", lambda x: datetime.now().strftime(x), replace=True
+)
 
+import sys
 from ast import literal_eval
 from itertools import zip_longest
+from pathlib import Path
 from typing import Any, Union
 
 import dateutil.parser
 import git
 import numpy as np
 import pandas as pd
-from pandas._typing import FilePath, WriteBuffer
-
-
-import numpy as np
-from PIL import Image
-from pathlib import Path
 import requests
-import sys
+from pandas._typing import FilePath, WriteBuffer
+from PIL import Image
 
 
 class HiddenPrints:
@@ -443,7 +442,9 @@ def save_response_content(response, destination):
                 f.write(chunk)
 
 
-def increment_path(path: Union[str, Path], exist_ok: bool = False, mkdir: bool = False) -> Path:
+def increment_path(
+    path: Union[str, Path], exist_ok: bool = False, mkdir: bool = False
+) -> Path:
     """Increments a path (appends a suffix) if it already exists.
 
     Args:

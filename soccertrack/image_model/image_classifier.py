@@ -13,8 +13,7 @@ from torchmetrics.functional import accuracy
 from torchvision import models, transforms
 from torchvision.datasets import ImageFolder
 
-from soccertrack.image_model.torchreid import (TorchReIDModel,
-                                               show_torchreid_models)
+from soccertrack.image_model.torchreid import TorchReIDModel, show_torchreid_models
 from soccertrack.image_model.visualization import plot_tsne
 from soccertrack.types.detection import Detection
 
@@ -47,7 +46,9 @@ class ImageClassificationData(pl.LightningDataModule):
         self.num_classes = 2
 
     def setup(self, stage=None):
-        self.trainset = ImageFolder(self.data_dir / "trainset", transform=self.transform)
+        self.trainset = ImageFolder(
+            self.data_dir / "trainset", transform=self.transform
+        )
         self.valset = ImageFolder(self.data_dir / "valset", transform=self.transform)
         self.testset = ImageFolder(self.data_dir / "testset", transform=self.transform)
 
@@ -60,10 +61,14 @@ class ImageClassificationData(pl.LightningDataModule):
         )
 
     def val_dataloader(self):
-        return DataLoader(self.valset, batch_size=self.batch_size, num_workers=self.num_workers)
+        return DataLoader(
+            self.valset, batch_size=self.batch_size, num_workers=self.num_workers
+        )
 
     def test_dataloader(self):
-        return DataLoader(self.testset, batch_size=self.batch_size, num_workers=self.num_workers)
+        return DataLoader(
+            self.testset, batch_size=self.batch_size, num_workers=self.num_workers
+        )
 
 
 class ImageEmbedder(BaseImageModel, pl.LightningModule):
@@ -80,7 +85,9 @@ class ImageEmbedder(BaseImageModel, pl.LightningModule):
         layers = list(backbone.children())[:-1]
 
         # add a layer with `hidden_size` units
-        self.feature_extractor = nn.Sequential(*layers, nn.Flatten(), nn.Linear(num_filters, hidden_size))
+        self.feature_extractor = nn.Sequential(
+            *layers, nn.Flatten(), nn.Linear(num_filters, hidden_size)
+        )
 
         # add a layer with `num_classes` units
         self.classifier = nn.Linear(hidden_size, num_classes)
@@ -105,7 +112,9 @@ class ImageEmbedder(BaseImageModel, pl.LightningModule):
         x = self.classifier(x)
         return F.log_softmax(x, dim=1)
 
-    def embed_detections(self, detections: Sequence[Detection], image: Union[Image.Image, np.ndarray]) -> np.ndarray:
+    def embed_detections(
+        self, detections: Sequence[Detection], image: Union[Image.Image, np.ndarray]
+    ) -> np.ndarray:
         if isinstance(image, np.ndarray):
             image = Image.fromarray(image)
 
@@ -116,7 +125,9 @@ class ImageEmbedder(BaseImageModel, pl.LightningModule):
             elif isinstance(detection, Detection):
                 x, y, w, h = detection.box
             else:
-                raise ValueError(f"Expected detection to be of type dict or Detection, got {type(detection)=}")
+                raise ValueError(
+                    f"Expected detection to be of type dict or Detection, got {type(detection)=}"
+                )
             box_image = image.crop((x, y, x + w, y + h))
             box_images.append(self.transform(box_image))
 

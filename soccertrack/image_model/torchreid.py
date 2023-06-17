@@ -1,6 +1,5 @@
 from dataclasses import dataclass, field
 
-
 try:
     from torchreid.utils import FeatureExtractor
 except ImportError:
@@ -11,7 +10,11 @@ except ImportError:
 
 from soccertrack.image_model.base import BaseConfig, BaseImageModel
 from soccertrack.logger import logger
-from soccertrack.utils import download_file_from_google_drive, get_git_root, HiddenPrints
+from soccertrack.utils import (
+    HiddenPrints,
+    download_file_from_google_drive,
+    get_git_root,
+)
 
 model_save_dir = get_git_root() / "models" / "torchreid"
 
@@ -61,7 +64,9 @@ def show_torchreid_models():
 
 def download_model(model_name):
     if model_name not in model_dict:
-        raise ValueError(f"Model {model_name} not available. Available models are: {show_torchreid_models()}")
+        raise ValueError(
+            f"Model {model_name} not available. Available models are: {show_torchreid_models()}"
+        )
     url = model_dict[model_name]
     filename = model_name + ".pth"
     file_path = model_save_dir / filename
@@ -73,7 +78,9 @@ def download_model(model_name):
         return file_path
 
     download_file_from_google_drive(url.split("/")[-2], file_path)
-    logger.debug(f"Model {model_name} successfully downloaded and saved to {model_save_dir}.")
+    logger.debug(
+        f"Model {model_name} successfully downloaded and saved to {model_save_dir}."
+    )
     return file_path
 
 

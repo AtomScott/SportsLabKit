@@ -6,9 +6,11 @@ except ImportError:
         "pip install git+https://github.com/openai/CLIP.git"
     )
 
+from dataclasses import dataclass, field
+
 import torch
 from PIL import Image
-from dataclasses import dataclass, field
+
 from soccertrack.image_model.base import BaseConfig, BaseImageModel
 
 
