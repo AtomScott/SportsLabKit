@@ -1,6 +1,13 @@
 from dataclasses import dataclass, field
 
-from torchreid.utils import FeatureExtractor
+
+try:
+    from torchreid.utils import FeatureExtractor
+except ImportError:
+    print(
+        "The torchreid module is not installed. Please install it using the following command:\n"
+        "pip install git+https://github.com/KaiyangZhou/deep-person-reid.git"
+    )
 
 from soccertrack.image_model.base import BaseConfig, BaseImageModel
 from soccertrack.logger import logger
