@@ -32,7 +32,7 @@
 
         notebooks/03_core_components/camera.ipynb
         notebooks/03_core_components/detection_model.ipynb
-        notebooks/03_core_components/feature_extractor.ipynb
+        notebooks/03_core_components/image_model.ipynb
         notebooks/03_core_components/association_model.ipynb
         notebooks/03_core_components/tracking_model.ipynb
 
