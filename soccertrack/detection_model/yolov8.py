@@ -31,6 +31,7 @@ class ModelConfigTemplate(BaseConfig):
 class InferenceConfigTemplate(BaseConfig):
     augment: bool = False
     imgsz: int = 640
+    verbose: bool = False
 
 
 class YOLOv8(BaseDetectionModel):
