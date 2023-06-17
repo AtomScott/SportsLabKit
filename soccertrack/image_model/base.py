@@ -58,7 +58,9 @@ def validate_config(config: dict, config_class):
     # Check if there are any unknown keys in the config
     unknown_keys = set(config.keys()) - valid_keys
     if unknown_keys:
-        raise ValueError(f"Unknown keys in configuration: {unknown_keys}. Valid keys are {valid_keys}")
+        raise ValueError(
+            f"Unknown keys in configuration: {unknown_keys}. Valid keys are {valid_keys}"
+        )
 
     # Create a dictionary with the default options of the dataclass
     default_config = asdict(config_class())
@@ -71,7 +73,9 @@ def validate_config(config: dict, config_class):
     except TypeError as e:
         # If a TypeError was raised, an argument was missing or had the wrong type
         missing_keys = valid_keys - set(default_config.keys())
-        raise ValueError(f"Missing or incorrect type keys in configuration: {missing_keys}. Error: {e}")
+        raise ValueError(
+            f"Missing or incorrect type keys in configuration: {missing_keys}. Error: {e}"
+        )
 
     logger.debug(f"Configuration: {default_config}")
 
@@ -131,7 +135,9 @@ class BaseImageModel(ABC):
         Acceptable input types are numpy.ndarray, torch.Tensor, pathlib Path, string file, PIL Image, or a list of any of these. All inputs will be converted to a list of numpy arrays.
         """
         if isinstance(inputs, (list, tuple, np.ndarray, torch.Tensor)):
-            self.input_is_batched = isinstance(inputs, (list, tuple)) or (hasattr(inputs, "ndim") and inputs.ndim == 4)
+            self.input_is_batched = isinstance(inputs, (list, tuple)) or (
+                hasattr(inputs, "ndim") and inputs.ndim == 4
+            )
             if not self.input_is_batched:
                 inputs = [inputs]
         else:
@@ -224,7 +230,9 @@ class BaseImageModel(ABC):
     def validate_inference_config(self, config: dict):
         return validate_config(config, self.inference_config_template)
 
-    def embed_detections(self, detections: Sequence[Detection], image: Union[Image.Image, np.ndarray]) -> np.ndarray:
+    def embed_detections(
+        self, detections: Sequence[Detection], image: Union[Image.Image, np.ndarray]
+    ) -> np.ndarray:
         if isinstance(detections, Detections):
             detections = detections.to_list()
 
