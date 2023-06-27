@@ -8,7 +8,7 @@ from vidgear.gears.stabilizer import Stabilizer
 
 from soccertrack import Camera
 from soccertrack.logger import logger, tqdm
-from soccertrack.types import _pathlike
+from soccertrack.types.types import _pathlike
 from soccertrack.utils import make_video
 
 

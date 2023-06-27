@@ -22,13 +22,14 @@ from numpy.typing import ArrayLike, NDArray
 
 from soccertrack.camera.videoreader import VideoReader
 from soccertrack.utils import logger, make_video, tqdm
+from soccertrack.types.types import _pathlike
 
 
 class Camera(VideoReader):
     def __init__(
         self,
-        video_path: str,
-        threaded: bool = True,
+        video_path: _pathlike,
+        threaded: bool = False,
         queue_size: int = 10,
         keypoint_xml: Optional[str] = None,
         x_range: Optional[Sequence[float]] = (0, 105),
@@ -46,7 +47,7 @@ class Camera(VideoReader):
 
         Args:
             video_path (str): path to video file.
-            threaded (bool, optional): whether to use a threaded video reader. Defaults to True.
+            threaded (bool, optional): whether to use a threaded video reader. Defaults to False.
             queue_size (int, optional): size of queue for threaded video reader. Defaults to 10.
             keypoint_xml (str): path to file containing a mapping from pitch coordinates to video.
             x_range (Sequence[float]): pitch range to consider in x direction.
@@ -65,6 +66,8 @@ class Camera(VideoReader):
             h (int): height of video.
 
         """
+        if threaded:
+            logger.warning(f"Threaded video reader is buggy. Use at your own risk.")
         super().__init__(video_path, threaded, queue_size)
         self.label = label
 
