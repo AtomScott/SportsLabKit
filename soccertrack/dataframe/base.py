@@ -72,7 +72,9 @@ class SoccerTrackMixin(object):
             apply_func = lambda x: x
         for index, group in self.groupby(level=("TeamID", "PlayerID"), axis=1):
             if drop:
-                yield index, apply_func(group.droplevel(level=("TeamID", "PlayerID"), axis=1))
+                yield index, apply_func(
+                    group.droplevel(level=("TeamID", "PlayerID"), axis=1)
+                )
             else:
                 yield index, apply_func(group)
 

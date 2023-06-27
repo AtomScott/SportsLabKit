@@ -21,8 +21,8 @@ import numpy as np
 from numpy.typing import ArrayLike, NDArray
 
 from soccertrack.camera.videoreader import VideoReader
-from soccertrack.utils import logger, make_video, tqdm
 from soccertrack.types.types import _pathlike
+from soccertrack.utils import logger, make_video, tqdm
 
 
 class Camera(VideoReader):

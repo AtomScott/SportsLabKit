@@ -10,6 +10,7 @@ import scipy
 from scipy.optimize import linear_sum_assignment
 from scipy.spatial.distance import cdist
 
+from soccertrack import Tracklet
 from soccertrack.checks import (
     _check_cost_matrix,
     _check_detections,
@@ -17,7 +18,6 @@ from soccertrack.checks import (
     _check_trackers,
 )
 from soccertrack.metrics import BaseCostMatrixMetric, CosineCMM, IoUCMM
-from soccertrack import Tracklet
 from soccertrack.types.detection import Detection
 
 EPS = 1e-7
@@ -59,9 +59,13 @@ def linear_sum_assignment_with_inf(
         # n = min(cost_matrix.shape)
         # positive = n * (M - m + np.abs(M) + np.abs(m) + 1)
         if max_inf:
-            place_holder = np.finfo(cost_matrix.dtype).max  # (M + (n - 1) * (M - m)) + positive
+            place_holder = np.finfo(
+                cost_matrix.dtype
+            ).max  # (M + (n - 1) * (M - m)) + positive
         if min_inf:
-            place_holder = np.finfo(cost_matrix.dtype).min  # (m + (n - 1) * (m - M)) - positive
+            place_holder = np.finfo(
+                cost_matrix.dtype
+            ).min  # (m + (n - 1) * (m - M)) - positive
         cost_matrix[np.isinf(cost_matrix)] = place_holder
 
     row_ind, col_ind = linear_sum_assignment(cost_matrix)
@@ -82,7 +86,10 @@ class BaseMatchingFunction(ABC):
     """
 
     def __call__(
-        self, trackers: Sequence[Tracklet], detections: Sequence[Detection], return_cost_matrix: bool = False
+        self,
+        trackers: Sequence[Tracklet],
+        detections: Sequence[Detection],
+        return_cost_matrix: bool = False,
     ) -> np.ndarray:
         """Calculate the matching cost between trackers and detections.
 
@@ -107,7 +114,9 @@ class BaseMatchingFunction(ABC):
         return matches
 
     @abstractmethod
-    def compute_cost_matrix(self, trackers: Sequence[Tracklet], detections: Sequence[Detection]) -> np.ndarray:
+    def compute_cost_matrix(
+        self, trackers: Sequence[Tracklet], detections: Sequence[Detection]
+    ) -> np.ndarray:
         """Calculate the matching cost between trackers and detections.
 
         Args:

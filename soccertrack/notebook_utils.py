@@ -7,10 +7,13 @@ import numpy as np
 from IPython.display import HTML
 from IPython.display import display as ipy_display
 from matplotlib.animation import FuncAnimation
+
 from soccertrack.types.detection import Detection
 
 
-def display_tracking_animation(detections, ground_truth_positions, predictions=None, width=360, height=240):
+def display_tracking_animation(
+    detections, ground_truth_positions, predictions=None, width=360, height=240
+):
     def update(
         frame,
         detections,
@@ -37,14 +40,18 @@ def display_tracking_animation(detections, ground_truth_positions, predictions=N
         # Plot detections as hollow green boxes
         for detection in detections[frame]:
             x, y, w, h = detection.box
-            detection_box = patches.Rectangle((x, y), w, h, linewidth=1, edgecolor="green", facecolor="none")
+            detection_box = patches.Rectangle(
+                (x, y), w, h, linewidth=1, edgecolor="green", facecolor="none"
+            )
             ax.add_patch(detection_box)
 
         # Plot predictions as hollow red boxes
         if predictions is not None:
             for prediction in predictions[frame]:
                 x, y, w, h = prediction
-                prediction_box = patches.Rectangle((x, y), w, h, linewidth=1, edgecolor="red", facecolor="none")
+                prediction_box = patches.Rectangle(
+                    (x, y), w, h, linewidth=1, edgecolor="red", facecolor="none"
+                )
                 ax.add_patch(prediction_box)
 
     if isinstance(detections[0], Detection):
@@ -152,7 +159,9 @@ def simulate_moving_objects(
             vy = random.randint(-5, 0)
 
         # Simulate the moving object
-        detections, ground_truth_positions = simulate_moving_object(num_frames, x, y, vx, vy, box_size, class_id=obj)
+        detections, ground_truth_positions = simulate_moving_object(
+            num_frames, x, y, vx, vy, box_size, class_id=obj
+        )
 
         for frame in range(num_frames):
             # Get current frame detections and ground truth_positions

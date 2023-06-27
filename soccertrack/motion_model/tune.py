@@ -1,7 +1,8 @@
-import optuna
 import numpy as np
+import optuna
+
 from soccertrack import Tracklet
-from soccertrack.metrics import iou_score, convert_to_x1y1x2y2
+from soccertrack.metrics import convert_to_x1y1x2y2, iou_score
 
 
 def tune_motion_model(
@@ -18,15 +19,21 @@ def tune_motion_model(
         params = {}
         for param_name, search_space in hparam_search_space.items():
             if search_space["type"] == "categorical":
-                params[param_name] = trial.suggest_categorical(param_name, search_space["values"])
+                params[param_name] = trial.suggest_categorical(
+                    param_name, search_space["values"]
+                )
             elif search_space["type"] == "float":
-                params[param_name] = trial.suggest_float(param_name, search_space["low"], search_space["high"])
+                params[param_name] = trial.suggest_float(
+                    param_name, search_space["low"], search_space["high"]
+                )
             elif search_space["type"] == "logfloat":
                 params[param_name] = trial.suggest_float(
                     param_name, search_space["low"], search_space["high"], log=True
                 )
             elif search_space["type"] == "int":
-                params[param_name] = trial.suggest_int(param_name, search_space["low"], search_space["high"])
+                params[param_name] = trial.suggest_int(
+                    param_name, search_space["low"], search_space["high"]
+                )
 
         motion_model = motion_model_class(**params)
         tracklet = Tracklet()

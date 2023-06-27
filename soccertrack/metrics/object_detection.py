@@ -72,7 +72,9 @@ def _getIntersectionArea(boxA: list[int], boxB: list[int]) -> int:
     return intersection_area
 
 
-def _getUnionAreas(boxA: list[int], boxB: list[int], interArea: Optional[float] = None) -> float:
+def _getUnionAreas(
+    boxA: list[int], boxB: list[int], interArea: Optional[float] = None
+) -> float:
     area_A = _getArea(boxA)
     area_B = _getArea(boxB)
     if interArea is None:
@@ -134,7 +136,11 @@ def iou_score(bbox_det: list[int], bbox_gt: list[int]) -> float:
     inter_area_y = max(min(y2_det, y2_gt) - max(y1_det, y1_gt), 0)
     intersection = inter_area_x * inter_area_y
 
-    union = (x2_det - x1_det) * (y2_det - y1_det) + (x2_gt - x1_gt) * (y2_gt - y1_gt) - intersection
+    union = (
+        (x2_det - x1_det) * (y2_det - y1_det)
+        + (x2_gt - x1_gt) * (y2_gt - y1_gt)
+        - intersection
+    )
     iou = intersection / union
 
     return iou
@@ -159,7 +165,9 @@ def iou_scores(
         bbox_dets = [_convert_xywh_to_x1y1x2y2(bbox_det) for bbox_det in bbox_dets]
         bbox_gts = [_convert_xywh_to_x1y1x2y2(bbox_gt) for bbox_gt in bbox_gts]
 
-    scores = [iou_score(bbox_det, bbox_gt) for bbox_det, bbox_gt in zip(bbox_dets, bbox_gts)]
+    scores = [
+        iou_score(bbox_det, bbox_gt) for bbox_det, bbox_gt in zip(bbox_dets, bbox_gts)
+    ]
     if average:
         return sum(scores) / len(scores)
     return scores
@@ -232,7 +240,9 @@ def convert_bboxes(
             comparison = "\n".join(
                 [
                     f"{label:<10} {expected:<10} {actual}"
-                    for label, expected, actual in zip(labels, expected_types, actual_types)
+                    for label, expected, actual in zip(
+                        labels, expected_types, actual_types
+                    )
                 ]
             )
             msg = f"Expected types and actual types don't match:\n\nLabel      Expected   Actual\n{comparison}\n\nOriginal error message: {str(e)}"
@@ -242,22 +252,40 @@ def convert_bboxes(
     return bboxes
 
 
-def validate_bboxes(bboxes: list[float, float, float, float, float, str, str], is_gt=False) -> None:
+def validate_bboxes(
+    bboxes: list[float, float, float, float, float, str, str], is_gt=False
+) -> None:
     for bbox in bboxes:
         assert (
             len(bbox) == 7
         ), f"bbox must have 7 elements (xmin, ymin, width, height, confidence, class_id, image_name), but {len(bbox)} elements found."
 
-        assert isinstance(bbox[0], (int, float)), f"xmin must be int or float, but {type(bbox[0])} found."
-        assert isinstance(bbox[1], (int, float)), f"ymin must be int or float, but {type(bbox[1])} found."
-        assert isinstance(bbox[2], (int, float)), f"width must be int or float, but {type(bbox[2])} found."
-        assert isinstance(bbox[3], (int, float)), f"height must be int or float, but {type(bbox[3])} found."
+        assert isinstance(
+            bbox[0], (int, float)
+        ), f"xmin must be int or float, but {type(bbox[0])} found."
+        assert isinstance(
+            bbox[1], (int, float)
+        ), f"ymin must be int or float, but {type(bbox[1])} found."
+        assert isinstance(
+            bbox[2], (int, float)
+        ), f"width must be int or float, but {type(bbox[2])} found."
+        assert isinstance(
+            bbox[3], (int, float)
+        ), f"height must be int or float, but {type(bbox[3])} found."
         if is_gt:
-            assert bbox[4] == 1, f"confidence must be 1 for ground truth bbox, but {bbox[4]} found."
+            assert (
+                bbox[4] == 1
+            ), f"confidence must be 1 for ground truth bbox, but {bbox[4]} found."
         else:
-            assert isinstance(bbox[4], (int, float)), f"confidence must be int or float, but {type(bbox[4])} found."
-        assert isinstance(bbox[5], (str)), f"class_id must be str, but {type(bbox[5])} found."
-        assert isinstance(bbox[6], (str)), f"image_name must be str, but {type(bbox[6])} found."
+            assert isinstance(
+                bbox[4], (int, float)
+            ), f"confidence must be int or float, but {type(bbox[4])} found."
+        assert isinstance(
+            bbox[5], (str)
+        ), f"class_id must be str, but {type(bbox[5])} found."
+        assert isinstance(
+            bbox[6], (str)
+        ), f"image_name must be str, but {type(bbox[6])} found."
 
 
 def ap_score(
@@ -343,7 +371,9 @@ def ap_score(
         gts[image_name] = gts.get(image_name, []) + [bbox_gt]
 
     # Sort detections by decreasing confidence
-    bboxes_det_per_class = sorted(bboxes_det_per_class, key=lambda x: x[CONFIDENCE_INDEX], reverse=True)
+    bboxes_det_per_class = sorted(
+        bboxes_det_per_class, key=lambda x: x[CONFIDENCE_INDEX], reverse=True
+    )
 
     # create dictionary with amount of gts for each image
     det = {key: np.zeros(len(gt)) for key, gt in gts.items()}
@@ -477,7 +507,9 @@ def map_score(
     classes = sorted(class_list)
     for class_id in classes:
         bboxes_det_per_class = [
-            detection_per_class for detection_per_class in bboxes_det if detection_per_class[CLASS_ID_INDEX] == class_id
+            detection_per_class
+            for detection_per_class in bboxes_det
+            if detection_per_class[CLASS_ID_INDEX] == class_id
         ]
         bboxes_gt_per_class = [
             groundTruth_per_class

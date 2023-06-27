@@ -1,6 +1,5 @@
-from typing import Any, Dict
 from dataclasses import dataclass
-from typing import Optional
+from typing import Any, Dict, Optional
 
 import numpy as np
 
@@ -12,7 +11,7 @@ except ImportError:
         "pip install ultralytics"
     )
 
-from soccertrack.detection_model.base import BaseDetectionModel, BaseConfig
+from soccertrack.detection_model.base import BaseConfig, BaseDetectionModel
 
 
 @dataclass
@@ -68,7 +67,9 @@ class YOLOv8(BaseDetectionModel):
             xywh = result.boxes.xywh.detach().cpu().numpy()
             conf = result.boxes.conf.detach().cpu().numpy()
             cls = result.boxes.cls.detach().cpu().numpy()
-            res = np.concatenate([xywh, conf.reshape(-1, 1), cls.reshape(-1, 1)], axis=1)
+            res = np.concatenate(
+                [xywh, conf.reshape(-1, 1), cls.reshape(-1, 1)], axis=1
+            )
             preds.append(to_dict(res))
 
         return preds

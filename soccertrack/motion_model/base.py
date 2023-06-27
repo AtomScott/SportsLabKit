@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Optional, Sequence, Tuple, Type, Union
 
 import numpy as np
+
 from soccertrack import Tracklet
 from soccertrack.logger import logger
 
@@ -91,9 +92,13 @@ class MotionModel(ABC):
         """
         for obs_type in self.required_observation_types:
             if obs_type not in tracklet._observations:
-                raise KeyError(f"{self.name} requires observation type `{obs_type}` but it is not registered.")
+                raise KeyError(
+                    f"{self.name} requires observation type `{obs_type}` but it is not registered."
+                )
             if len(tracklet._observations[obs_type]) == 0:
-                raise KeyError(f"{self.name} requires observation type `{obs_type}` but it is empty.")
+                raise KeyError(
+                    f"{self.name} requires observation type `{obs_type}` but it is empty."
+                )
 
     def _check_required_states(self, tracklet: Tracklet) -> None:
         """Check if the required states are registered in the SingleObjectTracker instance.

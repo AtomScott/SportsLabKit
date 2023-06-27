@@ -1,6 +1,7 @@
-from typing import Any, Dict, Type, Union, Tuple
+from typing import Any, Dict, Tuple, Type, Union
 
 import numpy as np
+
 from soccertrack.motion_model.base import MotionModel
 
 
@@ -42,7 +43,11 @@ class ExponentialMovingAverage(MotionModel):
         if EMA_t is None:
             # compute EMA_t from all boxes
             for box in boxes:
-                EMA_t = box if EMA_t is None else self.gamma * EMA_t + (1 - self.gamma) * box
+                EMA_t = (
+                    box
+                    if EMA_t is None
+                    else self.gamma * EMA_t + (1 - self.gamma) * box
+                )
         else:
             box = boxes[-1:].squeeze()
             EMA_t = self.gamma * EMA_t + (1 - self.gamma) * box
