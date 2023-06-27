@@ -9,7 +9,7 @@ try:
 except ImportError:
     print(
         "The ultralytics module is not installed. Please install it using the following command:\n"
-        "pip install ultralytics-yolov8"
+        "pip install ultralytics"
     )
 
 from soccertrack.detection_model.base import BaseDetectionModel, BaseConfig
