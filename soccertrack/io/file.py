@@ -567,6 +567,7 @@ def load_bbox(filename: _pathlike) -> BBoxDataFrame:
     df_format = infer_bbox_format(filename)
     df = BBoxDataFrame(get_bbox_loader(df_format)(filename))
     df.rename_axis(["TeamID", "PlayerID", "Attributes"], axis=1, inplace=True)
+    df.index.rename("frame", inplace=True)
     return df
 
 
