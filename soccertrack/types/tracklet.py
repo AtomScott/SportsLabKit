@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import uuid
 from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Type, Union
 
@@ -9,7 +10,6 @@ import pandas as pd
 from soccertrack.dataframe.bboxdataframe import BBoxDataFrame
 from soccertrack.logger import logger
 from soccertrack.types.detection import Detection
-import hashlib
 
 
 def id_to_color(id_string: str) -> str:
@@ -69,7 +69,9 @@ class Tracklet:
         if name in self._observations:
             return self.get_observation(name)
         else:
-            raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{name}'")
+            raise AttributeError(
+                f"'{self.__class__.__name__}' object has no attribute '{name}'"
+            )
 
     def __repr__(self) -> str:
         return f"Tracklet(id={self.id}, current_box={self.box})"
@@ -92,11 +94,15 @@ class Tracklet:
         for name in names:
             self.register_observation_type(name)
 
-    def update_observations(self, observations: Dict[str, Any], global_step: Optional[int] = None) -> None:
+    def update_observations(
+        self, observations: Dict[str, Any], global_step: Optional[int] = None
+    ) -> None:
         for name, value in observations.items():
             self.update_observation(name, value)
 
-    def update_observation(self, name: str, value: Any, global_step: Optional[int] = None) -> None:
+    def update_observation(
+        self, name: str, value: Any, global_step: Optional[int] = None
+    ) -> None:
         if name in self._observations:
             self._observations[name].append(value)
         else:
@@ -182,7 +188,9 @@ class Tracklet:
         else:
             raise ValueError(f"State type '{name}' not registered")
 
-    def update_states(self, states: Dict[str, Any], global_step: Optional[int] = None) -> None:
+    def update_states(
+        self, states: Dict[str, Any], global_step: Optional[int] = None
+    ) -> None:
         """Update multiple states with new values.
 
         Args:
@@ -251,9 +259,13 @@ class Tracklet:
             return pd.DataFrame()
 
         if self.global_step >= self.steps_alive:
-            frame_range = range(self.global_step + 1 - self.steps_alive, self.global_step + 1)
+            frame_range = range(
+                self.global_step + 1 - self.steps_alive, self.global_step + 1
+            )
         else:
-            raise ValueError(f"Global step {self.global_step} is less than steps alive {self.steps_alive}")
+            raise ValueError(
+                f"Global step {self.global_step} is less than steps alive {self.steps_alive}"
+            )
 
         data_dict = {"frame": list(frame_range), "id": [self.id for _ in frame_range]}
         for observation in self._observations:
@@ -264,9 +276,9 @@ class Tracklet:
 
         df = pd.DataFrame(data_dict)
 
-        df = pd.DataFrame(df["box"].to_list(), columns=["bb_left", "bb_top", "bb_width", "bb_height"]).join(
-            df.drop(columns=["box"])
-        )
+        df = pd.DataFrame(
+            df["box"].to_list(), columns=["bb_left", "bb_top", "bb_width", "bb_height"]
+        ).join(df.drop(columns=["box"]))
 
         df.rename(columns={"global_step": "frame", "score": "conf"}, inplace=True)
 
@@ -338,7 +350,10 @@ class Tracklet:
         title = f"Tracklet(id={self.id}, steps_alive={self.steps_alive}, staleness={self.staleness}, is_active={self.is_active()})"
         max_name_length = max([len(name) for name in self._observations.keys()])
         max_values_length = max(
-            [len(", ".join([str(val) for val in obs[-num_recent_obs:]])) for obs in self._observations.values()]
+            [
+                len(", ".join([str(val) for val in obs[-num_recent_obs:]]))
+                for obs in self._observations.values()
+            ]
         )
 
         box_width = max(len(title) + 4, max_name_length + max_values_length + 7)
@@ -350,7 +365,10 @@ class Tracklet:
         for name, obs in self._observations.items():
             recent_values = obs[-num_recent_obs:] if obs else []
             values_str = ", ".join(
-                [f"{WHITE}{str(val)[:60]}{ENDC}" if len(str(val)) > 60 else str(val) for val in recent_values]
+                [
+                    f"{WHITE}{str(val)[:60]}{ENDC}" if len(str(val)) > 60 else str(val)
+                    for val in recent_values
+                ]
             )
             message += f"{id_color}║ {ENDC}"
             message += f"{WHITE} {name}: [{values_str}]{' ' * (box_width - len(name) - len(values_str) - 6)}{ENDC}"
