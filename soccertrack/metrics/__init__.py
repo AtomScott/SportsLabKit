@@ -13,6 +13,7 @@ from soccertrack.metrics.object_detection import (
     iou_score,
     map_score,
     map_score_range,
+    convert_to_x1y1x2y2
 )
 
 __all__ = [
@@ -28,4 +29,5 @@ __all__ = [
     "IoUCMM",
     "EuclideanCMM",
     "CosineCMM",
+    "convert_to_x1y1x2y2"
 ]
