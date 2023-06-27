@@ -6,15 +6,16 @@ from typing import Sequence
 
 import numpy as np
 
-from soccertrack.types import Detection, Tracker
+from soccertrack.types.detection import Detection
+from soccertrack.types.tracklet import Tracklet
 
 
-def _check_trackers(trackers: Sequence[Tracker]) -> None:
+def _check_trackers(trackers: Sequence[Tracklet]) -> None:
     if not isinstance(trackers, Sequence):
         raise TypeError(
             f"trackers should be a sequence, but is {type(trackers).__name__}"
         )
-    if not all(isinstance(t, Tracker) for t in trackers):
+    if not all(isinstance(t, Tracklet) for t in trackers):
         raise TypeError(
             f"trackers should be a sequence of SingleObjectTracker, but "
             f"contains {type(trackers[0]).__name__}."
@@ -56,7 +57,7 @@ def _check_cost_matrix(cost_matrix: np.ndarray, trackers, detections) -> None:
 
 def _check_matches(
     matches: np.ndarray,
-    trackers: Sequence[Tracker],
+    trackers: Sequence[Tracklet],
     detections: Sequence[Detection],
 ) -> None:
     if not isinstance(matches, np.ndarray):
