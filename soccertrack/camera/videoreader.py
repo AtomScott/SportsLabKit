@@ -63,6 +63,7 @@ class VideoReader:
         frames = None
         if isinstance(index, int):  # single frame
             ret, frames = self.read(index)
+            frames = cv2.cvtColor(frames, cv2.COLOR_BGR2RGB)
         elif isinstance(index, slice):  # slice of frames
             frames = np.stack([self[ii] for ii in range(*index.indices(len(self)))])
         elif isinstance(index, range):  # range of frames
@@ -130,7 +131,7 @@ class VideoReader:
         """Read next frame or frame specified by `frame_number`."""
         if not self.stopped and self.threaded:
             sleep(10**-6)  # wait for frame to be read?
-            frame = self.q.get(0.01)
+            frame = self.q.get(0.1)
             return True, frame
 
         is_current_frame = frame_number == self.current_frame_pos
@@ -167,7 +168,13 @@ class VideoReader:
 
     @property
     def frame_channels(self):
-        return int(self._vc.get(cv2.CAP_PROP_CHANNELS))
+        n_channels = int(self._vc.get(cv2.CAP_PROP_CHANNEL))
+        if n_channels == 0:
+            # if channel is 0, backend is not supported
+            self._reset()
+            n_channels = self.read(0)[1].shape[-1]
+
+        return n_channels
 
     @property
     def fourcc(self):
@@ -180,3 +187,16 @@ class VideoReader:
     @property
     def current_frame_pos(self):
         return int(self._vc.get(cv2.CAP_PROP_POS_FRAMES))
+
+    @property
+    def frame_shape(self):
+        return (self.frame_height, self.frame_width, self.frame_channels)
+
+    @property
+    def shape(self):
+        return (
+            self.number_of_frames,
+            self.frame_height,
+            self.frame_width,
+            self.frame_channels,
+        )
