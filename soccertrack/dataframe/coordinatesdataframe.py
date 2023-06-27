@@ -14,7 +14,7 @@ from numpy.typing import ArrayLike, NDArray
 
 from soccertrack.dataframe.base import SoccerTrackMixin
 from soccertrack.logger import logger
-from soccertrack.types import _pathlike
+from soccertrack.types.types import _pathlike
 
 
 def merge_dicts(*dicts):
