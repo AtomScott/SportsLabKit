@@ -36,7 +36,7 @@ class YOLOv5(BaseDetectionModel):
         if model_ckpt == "":
             model = torch.hub.load(str(model_repo), model_name)
         else:
-            model = torch.hub.load(str(model_repo), "custom", path=str(model_ckpt), source="local")
+            model = torch.hub.load(str(model_repo), "custom", path=str(model_ckpt))
 
         if model is None:
             raise RuntimeError("Failed to load model")
