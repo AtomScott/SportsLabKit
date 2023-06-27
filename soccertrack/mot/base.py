@@ -1,19 +1,33 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Any, Callable, Dict, Iterable, List, Optional, Sequence, Tuple, Type, Union
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Iterable,
+    List,
+    Optional,
+    Sequence,
+    Tuple,
+    Type,
+    Union,
+)
 
 import numpy as np
 import optuna
+import pandas as pd
+
 from soccertrack import Tracklet
 from soccertrack.dataframe.bboxdataframe import BBoxDataFrame
 from soccertrack.logger import logger
 from soccertrack.metrics.object_detection import iou_scores
-import pandas as pd
 
 
 class MultiObjectTracker(ABC):
-    def __init__(self, window_size=1, step_size=None, pre_init_args={}, post_init_args={}):
+    def __init__(
+        self, window_size=1, step_size=None, pre_init_args={}, post_init_args={}
+    ):
         self.window_size = window_size
         self.step_size = step_size or window_size
 
@@ -36,7 +50,9 @@ class MultiObjectTracker(ABC):
         return tracklet
 
     @abstractmethod
-    def update(self, current_frame: Any, trackelts: List[Tracklet]) -> Tuple[List[Tracklet], List[Dict[str, Any]]]:
+    def update(
+        self, current_frame: Any, trackelts: List[Tracklet]
+    ) -> Tuple[List[Tracklet], List[Dict[str, Any]]]:
         pass
 
     def process_sequence_item(self, sequence: Any):
@@ -46,7 +62,9 @@ class MultiObjectTracker(ABC):
         if is_batched:
             raise NotImplementedError("Batched tracking is not yet supported")
 
-        assigned_tracklets, new_tracklets, unassigned_tracklets = self.update(sequence, tracklets)
+        assigned_tracklets, new_tracklets, unassigned_tracklets = self.update(
+            sequence, tracklets
+        )
         logger.debug(
             f"assigned_tracklets: {len(assigned_tracklets)}, new_tracklets: {len(new_tracklets)}, unassigned_tracklets: {len(unassigned_tracklets)}"
         )
@@ -57,7 +75,9 @@ class MultiObjectTracker(ABC):
 
     def track(self, sequence: Union[Iterable[Any], np.ndarray]) -> Tracklet:
         if not isinstance(sequence, (Iterable, np.ndarray)):
-            raise ValueError("Input 'sequence' must be an iterable or numpy array of frames/batches")
+            raise ValueError(
+                "Input 'sequence' must be an iterable or numpy array of frames/batches"
+            )
 
         self.pre_track()
         for i in range(0, len(sequence) - self.window_size + 1, self.step_size):
@@ -86,7 +106,9 @@ class MultiObjectTracker(ABC):
 
     def _check_required_observations(self, target: Dict[str, Any]):
         missing_types = [
-            required_type for required_type in self.required_observation_types if required_type not in target
+            required_type
+            for required_type in self.required_observation_types
+            if required_type not in target
         ]
 
         if missing_types:
@@ -105,7 +127,9 @@ class MultiObjectTracker(ABC):
             raise ValueError("The `update` method must return a dictionary.")
 
         missing_types = [
-            required_type for required_type in self.required_observation_types if required_type not in state
+            required_type
+            for required_type in self.required_observation_types
+            if required_type not in state
         ]
 
         if missing_types:
@@ -159,7 +183,9 @@ class MultiObjectTracker(ABC):
                 params[attribute] = {}
                 for param_name, param_values in param_space.items():
                     if param_values["type"] == "categorical":
-                        params[attribute][param_name] = trial.suggest_categorical(param_name, param_values["values"])
+                        params[attribute][param_name] = trial.suggest_categorical(
+                            param_name, param_values["values"]
+                        )
                     elif param_values["type"] == "float":
                         params[attribute][param_name] = trial.suggest_float(
                             param_name, param_values["low"], param_values["high"]
@@ -176,7 +202,9 @@ class MultiObjectTracker(ABC):
                             param_name, param_values["low"], param_values["high"]
                         )
                     else:
-                        raise ValueError(f"Unknown parameter type: {param_values['type']}")
+                        raise ValueError(
+                            f"Unknown parameter type: {param_values['type']}"
+                        )
 
             # Apply the hyperparameters to the attributes of `self`
             for attribute, param_values in params.items():
@@ -202,13 +230,22 @@ class MultiObjectTracker(ABC):
         # check that the ground truth positions are in the correct format
         print(ground_truth_positions.shape)
         if isinstance(ground_truth_positions, BBoxDataFrame):
-            ground_truth_positions = np.expand_dims(ground_truth_positions.values, axis=1)[:, :, :4]
+            ground_truth_positions = np.expand_dims(
+                ground_truth_positions.values, axis=1
+            )[:, :, :4]
 
         # Create a dictionary for all hyperparameters
-        hparams = {"self": self.hparam_search_space} if hasattr(self, "hparam_search_space") else {}
+        hparams = (
+            {"self": self.hparam_search_space}
+            if hasattr(self, "hparam_search_space")
+            else {}
+        )
         for attribute in vars(self):
             value = getattr(self, attribute)
-            if hasattr(value, "hparam_search_space") and attribute not in hparam_search_space:
+            if (
+                hasattr(value, "hparam_search_space")
+                and attribute not in hparam_search_space
+            ):
                 hparams[attribute] = {}
                 search_space = value.hparam_search_space
                 for param_name, param_space in search_space.items():

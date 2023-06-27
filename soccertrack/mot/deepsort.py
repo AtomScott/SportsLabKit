@@ -1,10 +1,10 @@
 import soccertrack as st
-from soccertrack.types import Tracklet
-from soccertrack.mot.base import MultiObjectTracker
-from soccertrack.matching import MotionVisualMatchingFunction
-from soccertrack.motion_model import KalmanFilterMotionModel
-from soccertrack.metrics import EuclideanCMM, CosineCMM
 from soccertrack.logger import logger
+from soccertrack.matching import MotionVisualMatchingFunction
+from soccertrack.metrics import CosineCMM, EuclideanCMM
+from soccertrack.mot.base import MultiObjectTracker
+from soccertrack.motion_model import KalmanFilterMotionModel
+from soccertrack.types import Tracklet
 
 
 class DeepSORTTracker(MultiObjectTracker):
@@ -59,7 +59,9 @@ class DeepSORTTracker(MultiObjectTracker):
         self.image_model = image_model
 
         if motion_model is None:
-            motion_model = KalmanFilterMotionModel(dt=1 / 30, process_noise=0.1, measurement_noise=0.1)
+            motion_model = KalmanFilterMotionModel(
+                dt=1 / 30, process_noise=0.1, measurement_noise=0.1
+            )
         self.motion_model = motion_model
 
         self.matching_fn = MotionVisualMatchingFunction(
