@@ -13,6 +13,7 @@ class BYTETracker(MultiObjectTracker):
     def __init__(
         self,
         detection_model=None,
+        image_model=None,
         motion_model=None,
         first_matching_fn=MotionVisualMatchingFunction(
             motion_metric=IoUCMM(),
@@ -33,6 +34,7 @@ class BYTETracker(MultiObjectTracker):
             pre_init_args={
                 "detection_model": detection_model,
                 "motion_model": motion_model,
+                "image_model": image_model,
                 "first_matching_fn": first_matching_fn,
                 "second_matching_fn": second_matching_fn,
                 "conf": conf,
@@ -44,6 +46,7 @@ class BYTETracker(MultiObjectTracker):
         self,
         detection_model,
         motion_model,
+        image_model,
         first_matching_fn,
         second_matching_fn,
         conf,
@@ -57,6 +60,11 @@ class BYTETracker(MultiObjectTracker):
         if motion_model is None:
             motion_model = KalmanFilterMotionModel(dt=1 / 30, process_noise=0.1, measurement_noise=0.1)
         self.motion_model = motion_model
+
+        if image_model is None:
+            # use osnet as default
+            image_model = st.image_model.load("osnet_x1_0")
+        self.image_model = image_model
 
         self.first_matching_fn = first_matching_fn
         self.second_matching_fn = second_matching_fn
@@ -80,6 +88,10 @@ class BYTETracker(MultiObjectTracker):
 
         # extract features from the detections
         detections = detections[0].to_list()
+        if len(detections) > 0:
+            embeds = self.image_model.embed_detections(detections, current_frame)
+            for i, det in enumerate(detections):
+                det.feature = embeds[i]
 
         # separate the detections into high and low confidence
         high_confidence_detections = []
