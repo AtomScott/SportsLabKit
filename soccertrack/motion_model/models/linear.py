@@ -11,6 +11,10 @@ class SingleTargetLinear(nn.Module):
         self.obs_steps = obs_steps
 
     def forward(self, x):
+        if x.shape[1] == 1:
+            # If only one observation, just return it
+            return x[:, -1]
+
         # Estimate the velocity
         v = x[:, -self.obs_steps :].diff(dim=1).mean(dim=1)  # (batch_size, 2)
         y_pred = x[:, -1] + v  # (batch_size, 2)

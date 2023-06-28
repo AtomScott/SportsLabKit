@@ -19,10 +19,13 @@ class SingleTargetLSTM(nn.Module):
         self.fc2 = nn.Linear(hidden_dim // 4, 2)
 
     def forward(self, x, return_states=False, h0=None, c0=None):
+        device = x.device
         if h0 is None:
             h0 = torch.zeros(self.n_layers, x.shape[0], self.lstm.hidden_size)
+            h0 = h0.to(device)
         if c0 is None:
             c0 = torch.zeros(self.n_layers, x.shape[0], self.lstm.hidden_size)
+            c0 = c0.to(device)
 
         lstm_out, (h_n, c_n) = self.lstm(x, (h0, c0))
 
@@ -67,9 +70,7 @@ class MultiTargetLSTM(nn.Module):
         self.n_layers = n_layers
         self.dropout = dropout
 
-        self.lstm = nn.LSTM(
-            input_dim, hidden_dim, n_layers, dropout=dropout, batch_first=True
-        )
+        self.lstm = nn.LSTM(input_dim, hidden_dim, n_layers, dropout=dropout, batch_first=True)
         self.fc0 = nn.Linear(hidden_dim, hidden_dim // 2)
         self.fc1 = nn.Linear(hidden_dim // 2, hidden_dim // 4)
         self.fc2 = nn.Linear(hidden_dim // 4, input_dim)

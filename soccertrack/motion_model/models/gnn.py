@@ -123,7 +123,6 @@ class GCNEncoder(nn.Module):
 
     def get_graph_index(self, num_nodes, batch_size):
         if self.graph_index_cache.get((num_nodes, batch_size)) is None:
-
             edge_index = self.get_edge_index(num_nodes)
             batch_list = []
             for _ in range(batch_size):
