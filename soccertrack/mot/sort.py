@@ -1,10 +1,10 @@
 import soccertrack as st
-from soccertrack.types import Tracklet
-from soccertrack.mot.base import MultiObjectTracker
-from soccertrack.matching import SimpleMatchingFunction
-from soccertrack.motion_model import KalmanFilterMotionModel
-from soccertrack.metrics import IoUCMM
 from soccertrack.logger import logger
+from soccertrack.matching import SimpleMatchingFunction
+from soccertrack.metrics import IoUCMM
+from soccertrack.mot.base import MultiObjectTracker
+from soccertrack.motion_model import KalmanFilterMotionModel
+from soccertrack.types import Tracklet
 
 
 class SORTTracker(MultiObjectTracker):
@@ -42,7 +42,9 @@ class SORTTracker(MultiObjectTracker):
         self.detection_model = detection_model
 
         if motion_model is None:
-            motion_model = KalmanFilterMotionModel(dt=1 / 30, process_noise=0.1, measurement_noise=0.1)
+            motion_model = KalmanFilterMotionModel(
+                dt=1 / 30, process_noise=0.1, measurement_noise=0.1
+            )
         self.motion_model = motion_model
 
         self.matching_fn = SimpleMatchingFunction(
@@ -82,7 +84,9 @@ class SORTTracker(MultiObjectTracker):
         # assigned tracklets: update
         for match in matches:
             track_idx, det_idx = match[0], match[1]
-            logger.debug(f"track_idx: {track_idx}, det_idx: {det_idx}, cost: {cost_matrix[track_idx, det_idx]}")
+            logger.debug(
+                f"track_idx: {track_idx}, det_idx: {det_idx}, cost: {cost_matrix[track_idx, det_idx]}"
+            )
             tracklet = tracklets[track_idx]
 
             new_state = {
