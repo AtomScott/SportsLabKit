@@ -1,5 +1,6 @@
 from .base import BaseDetectionModel, BaseConfig
 from soccertrack.logger import logger
+from soccertrack.types.detections import Detections
 
 
 class DummyDetectionModel(BaseDetectionModel):
@@ -24,8 +25,8 @@ class DummyDetectionModel(BaseDetectionModel):
         else:
             detections = self.precomputed_detections[self.image_count]
             self.image_count += 1
-
-            results = [[[d.box[0], d.box[1], d.box[2], d.box[3], d.score, d.class_id] for d in detections]]
+            results = [detections]
+            # results = [[[d.box[0], d.box[1], d.box[2], d.box[3], d.score, d.class_id] for d in detections]]
             if self.image_count >= len(self.precomputed_detections):
                 self.reset_image_count()
             return results
@@ -41,3 +42,26 @@ class DummyDetectionModel(BaseDetectionModel):
     @property
     def inference_config_template(self):
         return BaseConfig
+
+    @staticmethod
+    def from_bbdf(bbdf):
+        # No model to load for the dummy detection model
+        precomputed_detections = []
+        cols = ["bb_left", "bb_top", "bb_width", "bb_height", "conf", "class"]
+        for frame_idx, frame_df in bbdf.iter_frames():
+            long_df = frame_df.to_long_df()
+            long_df["class"] = 0
+            d = (
+                long_df[cols]
+                .rename(
+                    columns={
+                        "bb_left": "bbox_left",
+                        "bb_top": "bbox_top",
+                        "bb_width": "bbox_width",
+                        "bb_height": "bbox_height",
+                    }
+                )
+                .to_dict(orient="records")
+            )
+            precomputed_detections.append(d)
+        return DummyDetectionModel(precomputed_detections)
