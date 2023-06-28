@@ -1,7 +1,7 @@
 import torch
+from einops import rearrange
 from torch import nn
 from torch.nn import functional as F
-from einops import rearrange
 
 
 class SingleTargetLSTM(nn.Module):
@@ -70,7 +70,9 @@ class MultiTargetLSTM(nn.Module):
         self.n_layers = n_layers
         self.dropout = dropout
 
-        self.lstm = nn.LSTM(input_dim, hidden_dim, n_layers, dropout=dropout, batch_first=True)
+        self.lstm = nn.LSTM(
+            input_dim, hidden_dim, n_layers, dropout=dropout, batch_first=True
+        )
         self.fc0 = nn.Linear(hidden_dim, hidden_dim // 2)
         self.fc1 = nn.Linear(hidden_dim // 2, hidden_dim // 4)
         self.fc2 = nn.Linear(hidden_dim // 4, input_dim)
