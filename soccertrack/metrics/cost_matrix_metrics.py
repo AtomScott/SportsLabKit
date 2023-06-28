@@ -69,6 +69,21 @@ class EuclideanCMM(BaseCostMatrixMetric):
         return cdist(centers1, centers2) / self.normalizer  # keep values in [0, 1]
 
 
+# FIXME: 技術負債を返済しましょう
+class EuclideanCMM2D(BaseCostMatrixMetric):
+    def __init__(self, im_shape: tuple[float, float] = (68, 105)):
+        self.normalizer = np.sqrt(im_shape[0] ** 2 + im_shape[1] ** 2)
+
+    def compute_metric(self, trackers: Sequence[Tracklet], detections: Sequence[Detection]) -> np.ndarray:
+        t = trackers[0]
+        d = detections[0]
+        centers1 = np.array(
+            [(t.get_state("pitch_coordinates")[0], t.get_state("pitch_coordinates")[1]) for t in trackers]
+        )
+        centers2 = np.array([(d.pitch_coordinates[0], d.pitch_coordinates[1]) for d in detections])
+        return cdist(centers1, centers2) / self.normalizer  # keep values in [0, 1]
+
+
 class CosineCMM(BaseCostMatrixMetric):
     """Compute the Cosine Cost Matrix Metric between trackers and
     detections."""

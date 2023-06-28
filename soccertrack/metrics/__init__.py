@@ -2,6 +2,7 @@ from soccertrack.metrics.cost_matrix_metrics import (
     BaseCostMatrixMetric,
     CosineCMM,
     EuclideanCMM,
+    EuclideanCMM2D,
     IoUCMM,
 )
 from soccertrack.metrics.hota import hota_score
@@ -13,7 +14,7 @@ from soccertrack.metrics.object_detection import (
     iou_score,
     map_score,
     map_score_range,
-    convert_to_x1y1x2y2
+    convert_to_x1y1x2y2,
 )
 
 __all__ = [
@@ -28,6 +29,7 @@ __all__ = [
     "BaseCostMatrixMetric",
     "IoUCMM",
     "EuclideanCMM",
+    "EuclideanCMM2D",
     "CosineCMM",
-    "convert_to_x1y1x2y2"
+    "convert_to_x1y1x2y2",
 ]
