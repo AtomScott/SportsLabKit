@@ -1,13 +1,14 @@
 import re
 from argparse import ArgumentParser
-from pathlib import Path
-import numpy as np
-import torch
-import pytorch_lightning as pl
-from torch.utils.data import DataLoader, Dataset, default_collate
-from torchvision.transforms import ToTensor, Compose
-from einops import rearrange
 from functools import partial
+from pathlib import Path
+
+import numpy as np
+import pytorch_lightning as pl
+import torch
+from einops import rearrange
+from torch.utils.data import DataLoader, Dataset, default_collate
+from torchvision.transforms import Compose, ToTensor
 
 
 def single_agent_collate_fn(batch):
@@ -27,7 +28,6 @@ def single_agent_collate_fn(batch):
 
 
 def multi_agent_collate_fn(batch, max_num_agents, dummy_value=-1000):
-
     # pad by dummy values
     x_len = batch[0][0].shape[0]
     y_len = batch[0][1].shape[0]
