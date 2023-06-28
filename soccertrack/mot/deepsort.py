@@ -3,7 +3,7 @@ from soccertrack.types import Tracklet
 from soccertrack.mot.base import MultiObjectTracker
 from soccertrack.matching import MotionVisualMatchingFunction
 from soccertrack.motion_model import KalmanFilterMotionModel
-from soccertrack.metrics import EuclideanCMM, CosineCMM
+from soccertrack.metrics import IoUCMM, CosineCMM
 from soccertrack.logger import logger
 
 
@@ -15,7 +15,7 @@ class DeepSORTTracker(MultiObjectTracker):
         detection_model=None,
         image_model=None,
         motion_model=None,
-        motion_metric=EuclideanCMM(),
+        motion_metric=IoUCMM(),
         motion_metric_beta=0.9,
         motion_metric_gate=0.2,
         visual_metric=CosineCMM(),
