@@ -117,7 +117,10 @@ class TeamTracker(MultiObjectTracker):
                 tracklet.update_state("pitch_coordinates", y)
             else:
                 obs_len = self.motion_model.model.input_channels // 2
-                x = torch.cat([x] + [x[:, 0, :].unsqueeze(1)] * (obs_len - x.shape[1]), dim=1)
+                if x.shape[1] < obs_len:
+                    x = torch.cat([x] + [x[:, 0, :].unsqueeze(1)] * (obs_len - x.shape[1]), dim=1)
+                else:
+                    x = x[:, -obs_len:]
                 X.append(x)
         if self.multi_target_motion_model and len(X) > 0:
             X = torch.stack(X, dim=2)
