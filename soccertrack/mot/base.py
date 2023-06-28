@@ -118,6 +118,8 @@ class MultiObjectTracker(ABC):
         tracklet = Tracklet()
         for required_type in self.required_observation_types:
             tracklet.register_observation_type(required_type)
+        for required_type in self.required_state_types:
+            tracklet.register_state_type(required_type)
 
         self._check_required_observations(state)
         self.update_tracklet(tracklet, state)
@@ -146,7 +148,7 @@ class MultiObjectTracker(ABC):
     def tune_hparams(
         self,
         frames,
-        ground_truth_positions,
+        bbdf_gt,
         n_trials=100,
         hparam_search_space=None,
         metric=iou_scores,
