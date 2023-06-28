@@ -1,6 +1,7 @@
-from .base import BaseDetectionModel, BaseConfig
 from soccertrack.logger import logger
 from soccertrack.types.detections import Detections
+
+from .base import BaseConfig, BaseDetectionModel
 
 
 class DummyDetectionModel(BaseDetectionModel):
