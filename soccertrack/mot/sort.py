@@ -118,12 +118,6 @@ class SORTTracker(MultiObjectTracker):
                     tracklet.update_state("staleness", staleness + 1)
                     assigned_tracklets.append(tracklet)
 
-        # print("assigned_tracklets")
-        # for tracklet in assigned_tracklets:
-        #     print(tracklet.id, tracklet.get_observation("box"))
-        # print("new_tracklets")
-        # for tracklet in new_tracklets:
-        #     print(tracklet.id, tracklet.get_observation("box"))
         return assigned_tracklets, new_tracklets, unassigned_tracklets
 
     @property
