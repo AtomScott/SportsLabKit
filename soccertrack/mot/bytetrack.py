@@ -3,7 +3,7 @@ from soccertrack.types import Tracklet
 from soccertrack.mot.base import MultiObjectTracker
 from soccertrack.matching import SimpleMatchingFunction, MotionVisualMatchingFunction
 from soccertrack.motion_model import KalmanFilterMotionModel
-from soccertrack.metrics import IoUCMM
+from soccertrack.metrics import IoUCMM, CosineCMM
 from soccertrack.logger import logger
 
 
@@ -18,7 +18,7 @@ class BYTETracker(MultiObjectTracker):
             motion_metric=IoUCMM(),
             motion_metric_beta=0.5,
             motion_metric_gate=0.9,
-            visual_metric=IoUCMM(),
+            visual_metric=CosineCMM(),
             visual_metric_beta=0.5,
             visual_metric_gate=0.5,
         ),
@@ -193,7 +193,7 @@ class BYTETracker(MultiObjectTracker):
                     tracklet.update_state("staleness", staleness + 1)
                     assigned_tracklets.append(tracklet)
 
-        logger.debug(f'1st matches: {len(matches_first)}, 2nd matches: {len(matches_second)}')
+        logger.debug(f"1st matches: {len(matches_first)}, 2nd matches: {len(matches_second)}")
         return assigned_tracklets, new_tracklets, unassigned_tracklets_second
 
     @property
