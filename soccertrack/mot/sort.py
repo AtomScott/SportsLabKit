@@ -16,6 +16,7 @@ class SORTTracker(MultiObjectTracker):
         motion_model=None,
         metric=IoUCMM(),
         metric_gate=1.0,
+        t_lost=1,
     ):
         super().__init__(
             pre_init_args={
@@ -23,7 +24,8 @@ class SORTTracker(MultiObjectTracker):
                 "motion_model": motion_model,
                 "metric": metric,
                 "metric_gate": metric_gate,
-            },
+                "t_lost": t_lost,
+            }
         )
 
     def pre_initialize(
@@ -32,6 +34,7 @@ class SORTTracker(MultiObjectTracker):
         motion_model,
         metric,
         metric_gate,
+        t_lost,
     ):
         if detection_model is None:
             # use yolov8 as default
@@ -46,6 +49,7 @@ class SORTTracker(MultiObjectTracker):
             metric=metric,
             gate=metric_gate,
         )
+        self.t_lost = t_lost
 
     def update(self, current_frame, tracklets):
         # detect objects using the detection model
@@ -102,10 +106,17 @@ class SORTTracker(MultiObjectTracker):
                 new_tracklet = self.create_tracklet(new_state)
                 new_tracklets.append(new_tracklet)
 
-        # unassigned tracklets: delete
+        # unassigned tracklets: delete if staleness > t_lost
         for i, tracklet in enumerate(tracklets):
             if i not in [match[0] for match in matches]:
-                unassigned_tracklets.append(tracklet)
+                staleness = tracklet.get_state("staleness")
+                if staleness is None:
+                    staleness = 0
+                if staleness > self.t_lost:
+                    unassigned_tracklets.append(tracklet)
+                else:
+                    tracklet.update_state("staleness", staleness + 1)
+                    assigned_tracklets.append(tracklet)
 
         # print("assigned_tracklets")
         # for tracklet in assigned_tracklets:
@@ -121,4 +132,6 @@ class SORTTracker(MultiObjectTracker):
 
     @property
     def required_state_types(self):
-        return self.motion_model.required_state_types
+        motion_model_required_state_types = self.motion_model.required_state_types
+        required_state_types = motion_model_required_state_types + ["staleness"]
+        return required_state_types
