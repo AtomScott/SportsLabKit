@@ -1,13 +1,14 @@
 import cv2
-import torch
 import numpy as np
+import torch
+
 import soccertrack as st
-from soccertrack.types import Tracklet
-from soccertrack.mot.base import MultiObjectTracker
-from soccertrack.matching import SimpleMatchingFunction, MotionVisualMatchingFunction
-from soccertrack.motion_model import KalmanFilterMotionModel
-from soccertrack.metrics import IoUCMM, CosineCMM, EuclideanCMM2D
 from soccertrack.logger import logger
+from soccertrack.matching import MotionVisualMatchingFunction, SimpleMatchingFunction
+from soccertrack.metrics import CosineCMM, EuclideanCMM2D, IoUCMM
+from soccertrack.mot.base import MultiObjectTracker
+from soccertrack.motion_model import KalmanFilterMotionModel
+from soccertrack.types import Tracklet
 
 
 class TeamTracker(MultiObjectTracker):
@@ -67,7 +68,9 @@ class TeamTracker(MultiObjectTracker):
         self.detection_model = detection_model
 
         if motion_model is None:
-            motion_model = KalmanFilterMotionModel(dt=1 / 30, process_noise=0.1, measurement_noise=0.1)
+            motion_model = KalmanFilterMotionModel(
+                dt=1 / 30, process_noise=0.1, measurement_noise=0.1
+            )
         self.motion_model = motion_model
         self.motion_model.eval()
 
@@ -95,7 +98,9 @@ class TeamTracker(MultiObjectTracker):
             # calculate the bottom center of the box
             box = det.box
             bcx, bcy = box[0] + box[2] / 2, box[1] + box[3]
-            pitch_coordinates = cv2.perspectiveTransform(np.array([[[bcx, bcy]]], dtype="float32"), H)[0][0]
+            pitch_coordinates = cv2.perspectiveTransform(
+                np.array([[[bcx, bcy]]], dtype="float32"), H
+            )[0][0]
             det.pitch_coordinates = pitch_coordinates
 
         # update the motion model with the new detections
@@ -106,7 +111,10 @@ class TeamTracker(MultiObjectTracker):
             # calculate the 2d pitch coordinates from the tracklet data
             boxes = np.array(tracklet.get_observations("box"))
             bcxs, bcys = boxes[:, 0] + boxes[:, 2] / 2, boxes[:, 1] + boxes[:, 3]
-            x = cv2.perspectiveTransform(np.stack([bcxs, bcys], axis=1).reshape(1, -1, 2).astype("float32"), self.H)[0]
+            x = cv2.perspectiveTransform(
+                np.stack([bcxs, bcys], axis=1).reshape(1, -1, 2).astype("float32"),
+                self.H,
+            )[0]
             x = np.expand_dims(x, axis=0)
             x = torch.from_numpy(x)
 
@@ -117,7 +125,9 @@ class TeamTracker(MultiObjectTracker):
                 tracklet.update_state("pitch_coordinates", y)
             else:
                 obs_len = self.motion_model.model.input_channels // 2
-                x = torch.cat([x] + [x[:, 0, :].unsqueeze(1)] * (obs_len - x.shape[1]), dim=1)
+                x = torch.cat(
+                    [x] + [x[:, 0, :].unsqueeze(1)] * (obs_len - x.shape[1]), dim=1
+                )
                 X.append(x)
         if self.multi_target_motion_model and len(X) > 0:
             X = torch.stack(X, dim=2)
@@ -139,7 +149,9 @@ class TeamTracker(MultiObjectTracker):
                 high_confidence_detections.append(detection)
             else:
                 low_confidence_detections.append(detection)
-        logger.debug(f"d_high: {len(high_confidence_detections)}, d_low: {len(low_confidence_detections)}")
+        logger.debug(
+            f"d_high: {len(high_confidence_detections)}, d_low: {len(low_confidence_detections)}"
+        )
 
         ##############################
         # First association
@@ -149,12 +161,16 @@ class TeamTracker(MultiObjectTracker):
         unassigned_tracklets = []
 
         # [First] Associatie between all tracklets and high confidence detections
-        matches_first, cost_matrix_first = self.first_matching_fn(tracklets, high_confidence_detections, True)
+        matches_first, cost_matrix_first = self.first_matching_fn(
+            tracklets, high_confidence_detections, True
+        )
 
         # [First] assigned tracklets: update
         for match in matches_first:
             track_idx, det_idx = match[0], match[1]
-            logger.debug(f"track_idx: {track_idx}, det_idx: {det_idx}, cost: {cost_matrix_first[track_idx, det_idx]}")
+            logger.debug(
+                f"track_idx: {track_idx}, det_idx: {det_idx}, cost: {cost_matrix_first[track_idx, det_idx]}"
+            )
             det = high_confidence_detections[det_idx]
             tracklet = tracklets[track_idx]
 
@@ -198,7 +214,9 @@ class TeamTracker(MultiObjectTracker):
         # [Second] assigned tracklets: update
         for match in matches_second:
             track_idx, det_idx = match[0], match[1]
-            logger.debug(f"track_idx: {track_idx}, det_idx: {det_idx}, cost: {cost_matrix_second[track_idx, det_idx]}")
+            logger.debug(
+                f"track_idx: {track_idx}, det_idx: {det_idx}, cost: {cost_matrix_second[track_idx, det_idx]}"
+            )
 
             det = low_confidence_detections[det_idx]
             tracklet = unassigned_tracklets[track_idx]
@@ -230,7 +248,9 @@ class TeamTracker(MultiObjectTracker):
                     tracklet.update_state("staleness", staleness + 1)
                     assigned_tracklets.append(tracklet)
 
-        logger.debug(f"1st matches: {len(matches_first)}, 2nd matches: {len(matches_second)}")
+        logger.debug(
+            f"1st matches: {len(matches_first)}, 2nd matches: {len(matches_second)}"
+        )
         return assigned_tracklets, new_tracklets, unassigned_tracklets_second
 
     @property
