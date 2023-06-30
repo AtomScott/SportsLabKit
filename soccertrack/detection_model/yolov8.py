@@ -64,6 +64,8 @@ class YOLOv8(BaseDetectionModel):
 
         inference_config = self.inference_config
         inference_config.update(kwargs)
+
+        x = [_x[..., ::-1] for _x in x]
         results = self.model(x, **inference_config, task="detect")
         preds = []
         for result in results:
