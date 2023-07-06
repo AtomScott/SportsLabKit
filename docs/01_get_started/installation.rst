@@ -4,9 +4,9 @@ Installation
 
 --------------
 
-****************
-Install with pip
-****************
+**************************
+Install with pip (outdate)
+**************************
 
 Install any supported version of PyTorch if you want from `PyTorch Installation Page <https://pytorch.org/get-started/locally/#start-locally>`_.
 Now you can install using `pip <https://pypi.org/project/SoccerTrack/>`_ using the following command:
@@ -36,4 +36,23 @@ We recommed using poetry to handle dependencies. So you can also install poetry 
 
 
 .. warning::
-    The software is currently in development so it will break and change frequently! Star or watch the repo to get notified of updates. Anything before version 1.0.0 is not considered stable and may break at any time (sorry!).
+    Installation via pip is currently updated and will not work. Please use the conda installation method.
+
+******************
+Install with conda
+******************
+
+At the moment, creating a conda environment is not supported. However, you can install the dependencies using conda and then install the package by cloning and using pip.
+I use this method whenever I want to install the package on a new machine.
+
+.. code-block:: bash
+
+    git clone https://github.com/AtomScott/TeamTrack.git
+    conda create -y --name soccertrack python=3.10
+    conda activate soccertrack
+
+    python -m pip install -e .
+    python -m pip install torch torchvision pytorch-lightning
+    python -m pip install git+https://github.com/KaiyangZhou/deep-person-reid.git
+    python -m pip install ultralytics
+    python -m pip install git+https://github.com/openai/CLIP.git
