@@ -30,6 +30,9 @@ build:
     # post_install:
     #   - poetry install
 
+conda:
+  environment: docs/docs_environment.yaml
+
 # Build documentation in the docs/ directory with Sphinx
 sphinx:
    configuration: docs/conf.py
