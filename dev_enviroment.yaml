@@ -23,9 +23,10 @@ dependencies:
     - jsonargparse[signatures]==4.20.0
     - ultralytics
     - seedir
+    - py-cpuinfo
     - black
     - ffmpeg-python==0.2.0
-    - lightning==1.9.3
+    - pytorch_lightning
     - einops==0.6.0
     - protobuf==3.20.0
     - ipython==8.5.0
