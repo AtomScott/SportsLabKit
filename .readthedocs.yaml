@@ -12,7 +12,7 @@ conda:
 build:
   os: ubuntu-22.04
   tools:
-    python: "3.11"
+    python: "mambaforge-4.10"
   jobs:
     # https://github.com/readthedocs/readthedocs.org/issues/4912#issuecomment-1143587902
     post_install:
