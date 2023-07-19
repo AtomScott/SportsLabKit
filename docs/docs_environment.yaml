@@ -1,4 +1,4 @@
-name: docs_env
+name: soccertrack_docs
 channels:
   - defaults
   - conda-forge
