@@ -18,6 +18,7 @@ dependencies:
   - torchvision
   - pip
   - pip:
+    - "--editable=."
     - vidgear[core]==0.3.0
     - jsonargparse[signatures]==4.20.0
     - ultralytics
