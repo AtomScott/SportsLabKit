@@ -10,6 +10,7 @@ import scipy
 from scipy.optimize import linear_sum_assignment
 from scipy.spatial.distance import cdist
 
+from soccertrack import Tracklet
 from soccertrack.checks import (
     _check_cost_matrix,
     _check_detections,
@@ -17,20 +18,16 @@ from soccertrack.checks import (
     _check_trackers,
 )
 from soccertrack.metrics import BaseCostMatrixMetric, CosineCMM, IoUCMM
-from soccertrack import Tracklet
 from soccertrack.types.detection import Detection
 
 EPS = 1e-7
 from typing import List
-from soccertrack import Tracklet
-from soccertrack.types.detection import Detection
 
-
-from typing import List
-from soccertrack import Tracklet
-from soccertrack.types.detection import Detection
-from soccertrack.logger import logger
 import networkx as nx
+
+from soccertrack import Tracklet
+from soccertrack.logger import logger
+from soccertrack.types.detection import Detection
 
 
 class BaseBatchMatchingFunction:
@@ -40,7 +37,9 @@ class BaseBatchMatchingFunction:
     and returns a list of matches.
     """
 
-    def __call__(self, trackers: List[Tracklet], list_of_detections: List[List[Detection]]) -> List[List[int]]:
+    def __call__(
+        self, trackers: List[Tracklet], list_of_detections: List[List[Detection]]
+    ) -> List[List[int]]:
         """Calculate the matching cost between trackers and detections and performs matching.
 
         Args:
@@ -56,7 +55,9 @@ class BaseBatchMatchingFunction:
         n_trackers = len(trackers)
         n_frames = len(list_of_detections)
         n_detections_average = np.mean([len(dets) for dets in list_of_detections])
-        logger.debug(f"(n_trackers, n_detections(ave), n_frames)=({n_trackers}, {n_detections_average}, {n_frames})")
+        logger.debug(
+            f"(n_trackers, n_detections(ave), n_frames)=({n_trackers}, {n_detections_average}, {n_frames})"
+        )
         G = self._convert_cost_matrix_to_graph(cost_matricies)
 
         flow_path = nx.min_cost_flow(G)

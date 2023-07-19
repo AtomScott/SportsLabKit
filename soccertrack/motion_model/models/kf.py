@@ -1,11 +1,9 @@
-from typing import Any, Dict, Type, Union
+from typing import Any, Dict, Tuple, Type, Union
 
 import numpy as np
-from soccertrack.motion_model.base import MotionModel
-
-
 from filterpy.kalman import predict, update
-from typing import Dict, Tuple
+
+from soccertrack.motion_model.base import MotionModel
 
 
 class KalmanFilterMotionModel(MotionModel):
@@ -32,7 +30,9 @@ class KalmanFilterMotionModel(MotionModel):
         self.confidence_scaler = confidence_scaler
         # self._initialize_kalman_filter()
 
-    def get_initial_kalman_filter_states(self, box: np.ndarray) -> Dict[str, np.ndarray]:
+    def get_initial_kalman_filter_states(
+        self, box: np.ndarray
+    ) -> Dict[str, np.ndarray]:
         return {
             "x": np.array([box[0], box[1], box[2], box[3], 0, 0, 0, 0]),
             "P": np.eye(8),
@@ -66,7 +66,9 @@ class KalmanFilterMotionModel(MotionModel):
             ]
         )
 
-    def _initialize_measurement_noise_covariance(self, confidence: float = 1) -> np.ndarray:
+    def _initialize_measurement_noise_covariance(
+        self, confidence: float = 1
+    ) -> np.ndarray:
         # Scale measurement noise based on confidence
         # confidence has a negative correlation with measurement noise
         scale_factor = 1 / (confidence * self.confidence_scaler)

@@ -4,12 +4,13 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 import numpy as np
+import pandas as pd
 from PIL import Image
-from soccertrack.utils import read_image, increment_path
+
 from soccertrack.logger import logger
 from soccertrack.types.detection import Detection
+from soccertrack.utils import increment_path, read_image
 from soccertrack.utils.draw import draw_bounding_boxes
-import pandas as pd
 
 
 class Detections:
@@ -34,7 +35,9 @@ class Detections:
         # process predictions
         if isinstance(pred, dict):
             if len(pred.keys()) != 6:
-                raise ValueError("The prediction dictionary should contain exactly 6 items")
+                raise ValueError(
+                    "The prediction dictionary should contain exactly 6 items"
+                )
             return np.stack(
                 [
                     pred["bbox_left"],
@@ -63,7 +66,9 @@ class Detections:
             )
         elif isinstance(pred, np.ndarray):
             if pred.shape != (6,):
-                raise ValueError(f"pred should have the shape (6, ), but got {pred.shape}")
+                raise ValueError(
+                    f"pred should have the shape (6, ), but got {pred.shape}"
+                )
             return pred
         else:
             raise TypeError(f"Unsupported prediction type: {type(pred)}")
@@ -91,7 +96,10 @@ class Detections:
                 f.write(",".join(map(str, box)) + "\n")
 
     def crop(
-        self, save: bool = True, save_dir: Union[str, Path] = "runs/detect/exp", exist_ok: bool = False
+        self,
+        save: bool = True,
+        save_dir: Union[str, Path] = "runs/detect/exp",
+        exist_ok: bool = False,
     ) -> List[Image.Image]:
         save_dir = increment_path(save_dir, exist_ok, mkdir=True) if save else None
         images = []

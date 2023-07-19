@@ -41,7 +41,6 @@ class MultiObjectTracker:
         tracker_kwargs: dict[str, Any] = {},
         matching_fn: Any | None = None,
     ) -> None:
-
         self.detection_model = detection_model
         self.image_model = image_model
         self.matching_fn: Any = matching_fn
@@ -72,7 +71,6 @@ class MultiObjectTracker:
 
         dets = []
         for frame in (pbar := tqdm(cam.iter_frames())):
-
             # detect objects using the detection model
             detections = self.detection_model(frame).to_list()
 

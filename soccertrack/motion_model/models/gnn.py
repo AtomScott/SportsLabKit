@@ -1,14 +1,11 @@
 import torch
-from torch import nn
-from torch.nn import functional as F
-from einops import rearrange
-
-import torch
-from torch import nn
 import torch_geometric.nn as pyg_nn
-from torch_geometric.nn import GENConv, aggr, GENConv, DeepGCNLayer
+from einops import rearrange
+from torch import nn
 from torch.nn import LayerNorm, Linear, ReLU
-from torch_geometric.data import Data, Batch
+from torch.nn import functional as F
+from torch_geometric.data import Batch, Data
+from torch_geometric.nn import DeepGCNLayer, GENConv, aggr
 
 
 def get_norm_layer(norm_method, dim):

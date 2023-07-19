@@ -1,12 +1,17 @@
-import json
+import argparse
 import importlib
-
+import json
+import re
 from pathlib import Path
 from typing import Optional
+
+from omegaconf import OmegaConf
+
 import soccertrack
 from soccertrack import Camera, detection_model
 from soccertrack.image_model import TorchReIDModel
-from soccertrack.logger import set_log_level
+from soccertrack.logger import inspect, logger, set_log_level
+from soccertrack.matcher.matching import MotionVisualMatchingFunction
 from soccertrack.metrics import (
     CosineCMM,
     EuclideanCMM,
@@ -14,22 +19,18 @@ from soccertrack.metrics import (
     identity_score,
     mota_score,
 )
-from soccertrack.tracking_model import (
-    KalmanTracker,
-    MultiObjectTracker,
-)
-from soccertrack.matcher.matching import MotionVisualMatchingFunction
-from soccertrack.utils import get_git_root
+from soccertrack.tracking_model import KalmanTracker, MultiObjectTracker
 from soccertrack.types.types import _pathlike
-from soccertrack.logger import logger, set_log_level, inspect
-
-import argparse
-from omegaconf import OmegaConf
-import re
+from soccertrack.utils import get_git_root
 
 
 def is_camel_case(s: str) -> bool:
-    return s != s.lower() and s != s.upper() and "_" not in s and bool(re.match(r"[A-Za-z0-9]+", s))
+    return (
+        s != s.lower()
+        and s != s.upper()
+        and "_" not in s
+        and bool(re.match(r"[A-Za-z0-9]+", s))
+    )
 
 
 def create_instance(class_name: str, *args, **kwargs):
@@ -210,14 +211,18 @@ def run(
     print(img_model_name)
 
     # Define the object detection model
-    det_model = detection_model.load(det_model_name, det_model_repo, det_model_ckpt, det_model_conf)
+    det_model = detection_model.load(
+        det_model_name, det_model_repo, det_model_ckpt, det_model_conf
+    )
 
     # Define the image embedding model
     if img_model_name is None:
         # If no image model is provided, we will not use image embeddings (ex. SORT)
         image_model = None
     else:
-        image_model = TorchReIDModel(model_name=img_model_name, model_path=img_model_ckpt, device=device)
+        image_model = TorchReIDModel(
+            model_name=img_model_name, model_path=img_model_ckpt, device=device
+        )
 
     # Define the KalmanTracker
     """for spec = {'order_pos': 1, 'dim_pos': 2, 'order_size': 0, 'dim_size': 1}
@@ -279,7 +284,9 @@ def run(
         pred.to_csv(save_path / "predictions.csv")
 
     if save_video:
-        pred.visualize_frames(cam.video_path, save_path / "video.mp4", **save_video_kwargs)
+        pred.visualize_frames(
+            cam.video_path, save_path / "video.mp4", **save_video_kwargs
+        )
 
 
 if __name__ == "__main__":

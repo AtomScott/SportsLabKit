@@ -1,23 +1,21 @@
 from __future__ import annotations
-import networkx as nx
-from collections import defaultdict
 
 from abc import ABC, abstractmethod
+from collections import defaultdict, namedtuple
 from typing import Any, Callable, Optional, Sequence, Tuple
 
+import networkx as nx
 import numpy as np
 import scipy
 from scipy.optimize import linear_sum_assignment
 from scipy.spatial.distance import cdist
 
-from soccertrack.metrics import BaseCostMatrixMetric, CosineCMM, IoUCMM
 from soccertrack import Tracklet
-from soccertrack.types.detection import Detection
+from soccertrack.logger import logger
 from soccertrack.matching.base import BaseMatchingFunction
 from soccertrack.matching.base_batch import BaseBatchMatchingFunction
-from soccertrack.logger import logger
-
-from collections import namedtuple
+from soccertrack.metrics import BaseCostMatrixMetric, CosineCMM, IoUCMM
+from soccertrack.types.detection import Detection
 
 # Define the named tuple outside of the function.
 Node = namedtuple("Node", ["frame", "detection", "is_dummy"])
@@ -46,7 +44,9 @@ class SimpleMatchingFunction(BaseMatchingFunction):
         self.metric = metric
         self.gate = gate
 
-    def compute_cost_matrix(self, trackers: Sequence[Tracklet], detections: Sequence[Detection]) -> np.ndarray:
+    def compute_cost_matrix(
+        self, trackers: Sequence[Tracklet], detections: Sequence[Detection]
+    ) -> np.ndarray:
         """Calculate the matching cost between trackers and detections.
 
         Args:
@@ -65,8 +65,10 @@ class SimpleMatchingFunction(BaseMatchingFunction):
         return cost_matrix
 
 
-import numpy as np
 from typing import List
+
+import numpy as np
+
 from soccertrack import Tracklet
 from soccertrack.types.detection import Detection
 
@@ -98,7 +100,9 @@ class SimpleBatchMatchingFunction(BaseBatchMatchingFunction):
                 cost_matrix = np.zeros((len(trackers), num_detections))
                 for i, tracker in enumerate(trackers):
                     for j, detection in enumerate(detections):
-                        cost_matrix[i, j] = np.linalg.norm(np.array(tracker.box) - np.array(detection.box))
+                        cost_matrix[i, j] = np.linalg.norm(
+                            np.array(tracker.box) - np.array(detection.box)
+                        )
             else:  # Other frames
                 prev_detections = list_of_detections[k - 1]
                 cost_matrix = np.zeros((len(prev_detections), num_detections))
@@ -106,7 +110,9 @@ class SimpleBatchMatchingFunction(BaseBatchMatchingFunction):
                     for i in range(
                         min(len(prev_detections), j + 1)
                     ):  # j-1 could be negative, so we make sure it's at least 0
-                        cost_matrix[i, j] = np.linalg.norm(np.array(prev_detections[i].box) - np.array(detection.box))
+                        cost_matrix[i, j] = np.linalg.norm(
+                            np.array(prev_detections[i].box) - np.array(detection.box)
+                        )
 
             cost_matrices.append(cost_matrix)
 
@@ -114,7 +120,9 @@ class SimpleBatchMatchingFunction(BaseBatchMatchingFunction):
 
     def _convert_cost_matrix_to_graph(
         self, cost_matrices: List[np.ndarray], no_detection_cost: float = 1e5
-    ) -> Tuple[List[int], List[int], List[int], List[int], List[int], Dict[int, Node], int, int]:
+    ) -> Tuple[
+        List[int], List[int], List[int], List[int], List[int], Dict[int, Node], int, int
+    ]:
         """
         Converts cost matrix to graph representation for optimization.
 
@@ -143,21 +151,35 @@ class SimpleBatchMatchingFunction(BaseBatchMatchingFunction):
 
         curr_node = 1
         for frame in range(num_frames):
-            num_detections_curr_frame = cost_matrices[frame].shape[1] + 1  # +1 for dummy node
+            num_detections_curr_frame = (
+                cost_matrices[frame].shape[1] + 1
+            )  # +1 for dummy node
             num_detections_prev_frame = len(frame_to_nodes[frame - 1])
 
             for detection_curr in range(num_detections_curr_frame):
                 is_dummy_node = detection_curr + 1 == num_detections_curr_frame
 
                 if frame == 0:  # For the first frame, source_node -> node
-                    cost = no_detection_cost if is_dummy_node else cost_matrices[0][0][detection_curr]
-                    G.add_node(curr_node, demand=0, frame=frame, detection=detection_curr, is_dummy=is_dummy_node)
+                    cost = (
+                        no_detection_cost
+                        if is_dummy_node
+                        else cost_matrices[0][0][detection_curr]
+                    )
+                    G.add_node(
+                        curr_node,
+                        demand=0,
+                        frame=frame,
+                        detection=detection_curr,
+                        is_dummy=is_dummy_node,
+                    )
                     G.add_edge(source_node, curr_node, capacity=1, weight=cost)
                     if curr_node not in frame_to_nodes[frame]:
                         frame_to_nodes[frame].append(curr_node)
                 else:
                     for detection_prev in range(num_detections_prev_frame):
-                        is_dummy_node_prev = (detection_prev + 1) == num_detections_prev_frame
+                        is_dummy_node_prev = (
+                            detection_prev + 1
+                        ) == num_detections_prev_frame
 
                         no_detection = (
                             is_dummy_node
@@ -168,12 +190,20 @@ class SimpleBatchMatchingFunction(BaseBatchMatchingFunction):
                         # if not no_detection:
                         # print(cost_matrices[frame][detection_prev], detection_prev)
                         cost = (
-                            no_detection_cost if no_detection else cost_matrices[frame][detection_prev][detection_curr]
+                            no_detection_cost
+                            if no_detection
+                            else cost_matrices[frame][detection_prev][detection_curr]
                         )
 
                         prev_node = frame_to_nodes[frame - 1][detection_prev]
                         # curr_node = detection_curr + frame * num_detections_curr_frame
-                        G.add_node(curr_node, demand=0, frame=frame, detection=detection_curr, is_dummy=is_dummy_node)
+                        G.add_node(
+                            curr_node,
+                            demand=0,
+                            frame=frame,
+                            detection=detection_curr,
+                            is_dummy=is_dummy_node,
+                        )
                         G.add_edge(prev_node, curr_node, capacity=1, weight=cost)
                         if curr_node not in frame_to_nodes[frame]:
                             frame_to_nodes[frame].append(curr_node)

@@ -8,17 +8,17 @@ import scipy
 from scipy.optimize import linear_sum_assignment
 from scipy.spatial.distance import cdist
 
+from soccertrack import Tracklet
 from soccertrack.checks import (
     _check_cost_matrix,
     _check_detections,
     _check_matches,
     _check_trackers,
 )
-from soccertrack.metrics import BaseCostMatrixMetric, CosineCMM, IoUCMM
-from soccertrack import Tracklet
-from soccertrack.types.detection import Detection
 from soccertrack.matching.base import BaseMatchingFunction
 from soccertrack.matching.base_batch import BaseBatchMatchingFunction
+from soccertrack.metrics import BaseCostMatrixMetric, CosineCMM, IoUCMM
+from soccertrack.types.detection import Detection
 
 
 class MotionVisualMatchingFunction(BaseMatchingFunction):
@@ -70,7 +70,9 @@ class MotionVisualMatchingFunction(BaseMatchingFunction):
         self.visual_metric_beta = visual_metric_beta
         self.visual_metric_gate = visual_metric_gate
 
-    def compute_cost_matrix(self, trackers: Sequence[Tracklet], detections: Sequence[Detection]) -> np.ndarray:
+    def compute_cost_matrix(
+        self, trackers: Sequence[Tracklet], detections: Sequence[Detection]
+    ) -> np.ndarray:
         if len(trackers) == 0 or len(detections) == 0:
             return np.array([])
 

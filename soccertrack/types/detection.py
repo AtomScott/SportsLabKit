@@ -1,7 +1,9 @@
 from __future__ import annotations
 
-import numpy as np
 from typing import Any, Dict, List, Optional, Tuple, Union
+
+import numpy as np
+
 from soccertrack.types.types import Box, Vector
 
 
@@ -83,7 +85,11 @@ class Detection:
         self._feature = value
 
     def __repr__(self):
-        feature_str = str(self._feature) if self._feature is None else f"array of shape {self._feature.shape}"
+        feature_str = (
+            str(self._feature)
+            if self._feature is None
+            else f"array of shape {self._feature.shape}"
+        )
         return f"Detection(box={self._box}, score={self._score:.5f}, class_id={self._class_id}, feature={feature_str})"
 
     def __eq__(self, other):

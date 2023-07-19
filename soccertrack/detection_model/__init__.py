@@ -1,9 +1,22 @@
 from soccertrack.detection_model.base import BaseDetectionModel
-from soccertrack.logger import logger
-
-from soccertrack.detection_model.yolov5 import YOLOv5, YOLOv5n, YOLOv5s, YOLOv5m, YOLOv5l, YOLOv5x
-from soccertrack.detection_model.yolov8 import YOLOv8, YOLOv8n, YOLOv8s, YOLOv8m, YOLOv8l, YOLOv8x
 from soccertrack.detection_model.dummy import DummyDetectionModel
+from soccertrack.detection_model.yolov5 import (
+    YOLOv5,
+    YOLOv5l,
+    YOLOv5m,
+    YOLOv5n,
+    YOLOv5s,
+    YOLOv5x,
+)
+from soccertrack.detection_model.yolov8 import (
+    YOLOv8,
+    YOLOv8l,
+    YOLOv8m,
+    YOLOv8n,
+    YOLOv8s,
+    YOLOv8x,
+)
+from soccertrack.logger import logger
 
 __all__ = [
     "BaseDetectionModel",

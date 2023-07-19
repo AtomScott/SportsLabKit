@@ -123,24 +123,34 @@ class BBoxDataFrame(SoccerTrackMixin, pd.DataFrame):
 
         for (team_id, player_id), player_df in frame_df.iter_players():
             if player_df.isnull().any(axis=None):
-                logger.debug(f"NaN value found at frame {frame_idx}, team {team_id}, player {player_id}. Skipping...")
+                logger.debug(
+                    f"NaN value found at frame {frame_idx}, team {team_id}, player {player_id}. Skipping..."
+                )
                 continue
 
-            logger.debug(f"Visualizing frame {frame_idx}, team {team_id}, player {player_id}")
+            logger.debug(
+                f"Visualizing frame {frame_idx}, team {team_id}, player {player_id}"
+            )
             if frame_idx not in player_df.index:
                 logger.debug(f"Frame {frame_idx} not found in player_df")
                 continue
 
-            attributes = player_df.loc[frame_idx, ["bb_left", "bb_top", "bb_width", "bb_height"]]
+            attributes = player_df.loc[
+                frame_idx, ["bb_left", "bb_top", "bb_width", "bb_height"]
+            ]
 
-            x1, y1, w, h = player_df.loc[frame_idx, ["bb_left", "bb_top", "bb_width", "bb_height"]].values.astype(int)
+            x1, y1, w, h = player_df.loc[
+                frame_idx, ["bb_left", "bb_top", "bb_width", "bb_height"]
+            ].values.astype(int)
             x2, y2 = x1 + w, y1 + h
 
             label = f"{team_id}_{player_id}"
             player_id_int = sum([int(x) for x in str(hash(player_id))[1:]])
             color = _COLOR_NAMES[hash(player_id_int) % len(_COLOR_NAMES)]
 
-            logger.debug(f"x1: {x1}, y1: {y1}, x2: {x2}, y2: {y2}, label: {label}, color: {color}")
+            logger.debug(
+                f"x1: {x1}, y1: {y1}, x2: {x2}, y2: {y2}, label: {label}, color: {color}"
+            )
             frame = add_bbox_to_frame(frame, x1, y1, x2, y2, label, color)
 
         if draw_frame_id:
@@ -214,7 +224,9 @@ class BBoxDataFrame(SoccerTrackMixin, pd.DataFrame):
 
         team_mappings = df["TeamID"].map(mapping["TeamID"])
         player_mappings = df["PlayerID"].map(mapping["PlayerID"])
-        df["class"] = player_mappings.combine_first(team_mappings).fillna(na_class).astype(int)
+        df["class"] = (
+            player_mappings.combine_first(team_mappings).fillna(na_class).astype(int)
+        )
 
         df["x"] = df["bb_left"] + df["bb_width"] / 2
         df["y"] = df["bb_top"] + df["bb_height"] / 2
@@ -266,7 +278,9 @@ class BBoxDataFrame(SoccerTrackMixin, pd.DataFrame):
         df.reset_index(inplace=True)
 
         # Create the 'id' column
-        df["id"] = df.apply(lambda row: id_map(row["TeamID"], row["PlayerID"], sport), axis=1)
+        df["id"] = df.apply(
+            lambda row: id_map(row["TeamID"], row["PlayerID"], sport), axis=1
+        )
 
         # Select the desired columns
         df = df[["frame", "id", "bb_left", "bb_top", "bb_width", "bb_height", "conf"]]
@@ -330,11 +344,15 @@ class BBoxDataFrame(SoccerTrackMixin, pd.DataFrame):
                     missing_bbox += 1
 
             if missing_bbox > 0:
-                logger.debug(f"Missing {missing_bbox} bounding boxes for {feature_name}")
+                logger.debug(
+                    f"Missing {missing_bbox} bounding boxes for {feature_name}"
+                )
             segment[feature_name] = [key_frames_dict]
         return segment
 
-    def to_labelbox_data(self: BBoxDataFrame, data_row: object, schema_lookup: dict) -> list:
+    def to_labelbox_data(
+        self: BBoxDataFrame, data_row: object, schema_lookup: dict
+    ) -> list:
         """Convert a dataframe to the Labelbox format.
 
         Args:
@@ -386,11 +404,18 @@ class BBoxDataFrame(SoccerTrackMixin, pd.DataFrame):
         team_mappings = long_df["TeamID"].map(mapping["TeamID"])
         player_mappings = long_df["PlayerID"].map(mapping["PlayerID"])
         long_df["class"] = player_mappings.combine_first(team_mappings).fillna(na_class)
-        long_df["image_name"] = long_df["frame"].astype(int)  # TODO: This won't work for object detection
-        long_df["object_id"] = long_df["PlayerID"].astype(str) + "_" + long_df["TeamID"].astype(str)
+        long_df["image_name"] = long_df["frame"].astype(
+            int
+        )  # TODO: This won't work for object detection
+        long_df["object_id"] = (
+            long_df["PlayerID"].astype(str) + "_" + long_df["TeamID"].astype(str)
+        )
 
         # create a unique object id for each object in ascending order
-        assigned_ids = {p_id_t_id: object_id for object_id, p_id_t_id in enumerate(long_df["object_id"].unique())}
+        assigned_ids = {
+            p_id_t_id: object_id
+            for object_id, p_id_t_id in enumerate(long_df["object_id"].unique())
+        }
         long_df["object_id"] = long_df["object_id"].map(assigned_ids).astype(int)
 
         cols = [
@@ -431,13 +456,21 @@ class BBoxDataFrame(SoccerTrackMixin, pd.DataFrame):
 
         for list_of_bboxes in list_of_list_of_bboxes:
             try:
-                frame_idxs.append(list_of_bboxes[:, IMAGE_NAME_INDEX].astype("int64")[0])
+                frame_idxs.append(
+                    list_of_bboxes[:, IMAGE_NAME_INDEX].astype("int64")[0]
+                )
             except IndexError:
                 frame_idxs.append(None)
 
-        ids = [list_of_bboxes[:, OBJECT_ID_INDEX].astype("int64") for list_of_bboxes in list_of_list_of_bboxes]
+        ids = [
+            list_of_bboxes[:, OBJECT_ID_INDEX].astype("int64")
+            for list_of_bboxes in list_of_list_of_bboxes
+        ]
 
-        dets = [list_of_bboxes[:, [X_INDEX, Y_INDEX, W_INDEX, H_INDEX]].astype("int64") for list_of_bboxes in list_of_list_of_bboxes]
+        dets = [
+            list_of_bboxes[:, [X_INDEX, Y_INDEX, W_INDEX, H_INDEX]].astype("int64")
+            for list_of_bboxes in list_of_list_of_bboxes
+        ]
 
         start_frame = self.index.min()
         end_frame = self.index.max()
@@ -507,7 +540,9 @@ class BBoxDataFrame(SoccerTrackMixin, pd.DataFrame):
 
         df.pivot(index="frame", columns=["TeamID", "PlayerID"], values=attributes)
         df = df.pivot(index="frame", columns=["TeamID", "PlayerID"], values=attributes)
-        multi_index = pd.MultiIndex.from_tuples(df.columns.swaplevel(0, 1).swaplevel(1, 2))
+        multi_index = pd.MultiIndex.from_tuples(
+            df.columns.swaplevel(0, 1).swaplevel(1, 2)
+        )
         df.columns = pd.MultiIndex.from_tuples(multi_index)
         df.rename_axis(["TeamID", "PlayerID", "Attributes"], axis=1, inplace=True)
         df.sort_index(axis=1, inplace=True)
@@ -575,7 +610,9 @@ def add_bbox_to_frame(
         fontscale = 0.5
         thickness = 1
 
-        (label_width, label_height), _ = cv2.getTextSize(label, fontface, fontscale, thickness)
+        (label_width, label_height), _ = cv2.getTextSize(
+            label, fontface, fontscale, thickness
+        )
         rectangle_height, rectangle_width = 1 + label_height, 1 + label_width
 
         rectangle_bottom = top
@@ -637,7 +674,9 @@ def add_frame_id_to_frame(image: np.ndarray, frame_id: int) -> np.ndarray:
     label = f"frame: {frame_id}"
 
     # draw frame id on the top left corner
-    (label_width, label_height), _ = cv2.getTextSize(label, fontface, fontscale, thickness)
+    (label_width, label_height), _ = cv2.getTextSize(
+        label, fontface, fontscale, thickness
+    )
 
     label_left = 10
     label_bottom = label_height + 10

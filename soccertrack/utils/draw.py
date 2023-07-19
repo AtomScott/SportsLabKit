@@ -35,7 +35,6 @@ def draw_bounding_boxes(
     font: Optional[str] = None,
     font_size: Optional[int] = None,
 ) -> np.ndarray:
-
     """
     Draws bounding boxes on given image.
     The values of the input image should be uint8 between 0 and 255.

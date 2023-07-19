@@ -32,7 +32,6 @@ def cost(X, Y, func):
 
 
 def cdist(detections, tracks, funcs, reduction="mean"):
-
     costs = []
     for func in funcs:
         C = np.zeros((len(detections), len(tracks)))
