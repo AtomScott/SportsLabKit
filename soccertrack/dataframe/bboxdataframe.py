@@ -14,6 +14,7 @@ from soccertrack.utils import make_video
 from ..logger import logger
 from ..utils import MovieIterator, get_fps
 from .base import SoccerTrackMixin
+from .coordinatesdataframe import CoordinatesDataFrame
 
 # https://clrs.cc/
 _COLOR_NAME_TO_RGB = dict(
@@ -245,13 +246,12 @@ class BBoxDataFrame(SoccerTrackMixin, pd.DataFrame):
 
         # Reset the index
         df.reset_index(inplace=True)
-        
+
         # grab all unique TeamIDs
         team_ids = df.TeamID.unique()
         # grab all unique PlayerIDs for each TeamID
         player_ids = {team_id: df[df.TeamID == team_id].PlayerID.unique() for team_id in team_ids}
 
-        
         # create a mapping from TeamID and PlayerID to a unique integer id
         id_map = {}
         num_ids = 0
@@ -260,8 +260,8 @@ class BBoxDataFrame(SoccerTrackMixin, pd.DataFrame):
             for player_id in player_ids[team_id]:
                 id_map[team_id][player_id] = num_ids
                 num_ids += 1
-        logger.debug(f'Using the following id_map: {id_map}')
-        
+        logger.debug(f"Using the following id_map: {id_map}")
+
         # Create the 'id' column
         df["id"] = df.apply(lambda row: id_map[row["TeamID"]][row["PlayerID"]], axis=1)
 
@@ -271,7 +271,7 @@ class BBoxDataFrame(SoccerTrackMixin, pd.DataFrame):
         # add the x, y, z columns (all -1)
         df = df.assign(x=-1, y=-1, z=-1)
         df = df.sort_values(by=["frame", "id"])
-        
+
         # check that each frame contains only unique ids
         dupes = df[df.duplicated(subset=["frame", "id"])]
         if not dupes.empty:
@@ -407,6 +407,53 @@ class BBoxDataFrame(SoccerTrackMixin, pd.DataFrame):
             "object_id",
         ]
         return long_df[cols].values
+
+    def to_codf(self: BBoxDataFrame, H: np.ndarray, method: str = "bottom_middle") -> CoordinatesDataFrame:
+        """
+        Converts bounding box dataframe to a new coordinate dataframe using a given homography matrix.
+
+        This function takes a dataframe of bounding boxes and applies a perspective transformation
+        to a specified point within each bounding box (e.g., center, bottom middle, top middle) into
+        a new coordinate frame (e.g., a pitch coordinate frame). The result is returned as a
+        CoordinatesDataFrame.
+
+        Args:
+            self (BBoxDataFrame): A dataframe containing bounding box coordinates.
+            H (np.ndarray): A 3x3 homography matrix used for the perspective transformation.
+            method (str): Method to determine the point within the bounding box to transform.
+                        Options include 'center', 'bottom_middle', 'top_middle'.
+
+        Returns:
+            CoordinatesDataFrame: A dataframe containing the transformed coordinates.
+
+        Example:
+            H = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
+            bbox_data = BBoxDataFrame(...)
+            codf = bbox_data.to_codf(H, method='bottom_middle')
+        """
+        assert H.shape == (3, 3), "H must be a 3x3 matrix"
+
+        long_df = self.to_long_df()
+
+        if method == "center":
+            long_df["x"] = long_df["bb_left"] + long_df["bb_width"] / 2
+            long_df["y"] = long_df["bb_top"] + long_df["bb_height"] / 2
+        elif method == "bottom_middle":
+            long_df["x"] = long_df["bb_left"] + long_df["bb_width"] / 2
+            long_df["y"] = long_df["bb_top"] + long_df["bb_height"]
+        elif method == "top_middle":
+            long_df["x"] = long_df["bb_left"] + long_df["bb_width"] / 2
+            long_df["y"] = long_df["bb_top"]
+        else:
+            raise ValueError("Invalid method. Options are 'center', 'bottom_middle', 'top_middle'.")
+
+        pts = long_df[["x", "y"]].values
+        pitch_pts = cv2.perspectiveTransform(np.asarray([pts], dtype=np.float32), H)
+        long_df["x"] = pitch_pts[0, :, 0]
+        long_df["y"] = pitch_pts[0, :, 1]
+
+        codf = CoordinatesDataFrame(long_df[["x", "y"]].unstack(level=["TeamID", "PlayerID"]).reorder_levels([1, 2, 0], axis=1).sort_index(axis=1))
+        return codf
 
     def preprocess_for_mot_eval(self):
         """Preprocess a dataframe for evaluation using the MOT metrics.
