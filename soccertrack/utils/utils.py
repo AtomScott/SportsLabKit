@@ -15,12 +15,10 @@ from numpy.typing import NDArray
 from omegaconf import OmegaConf
 from PIL import Image
 from vidgear.gears import WriteGear
-
+import json
 from soccertrack.logger import logger, tqdm
 
-OmegaConf.register_new_resolver(
-    "now", lambda x: datetime.now().strftime(x), replace=True
-)
+OmegaConf.register_new_resolver("now", lambda x: datetime.now().strftime(x), replace=True)
 
 import sys
 from ast import literal_eval
@@ -442,9 +440,7 @@ def save_response_content(response, destination):
                 f.write(chunk)
 
 
-def increment_path(
-    path: Union[str, Path], exist_ok: bool = False, mkdir: bool = False
-) -> Path:
+def increment_path(path: Union[str, Path], exist_ok: bool = False, mkdir: bool = False) -> Path:
     """Increments a path (appends a suffix) if it already exists.
 
     Args:
@@ -470,6 +466,34 @@ def increment_path(
         new_path.mkdir(parents=True, exist_ok=True)
 
     return new_path
+
+
+def load_keypoints(keypoint_json):
+    """
+    Loads source and target keypoints from a JSON file.
+
+    Args:
+        keypoint_json (str): Path to JSON file containing keypoints.
+
+    Returns:
+        source_keypoints (np.ndarray): Source keypoints.
+        target_keypoints (np.ndarray): Target keypoints.
+    """
+    with open(keypoint_json, "r") as f:
+        data = json.load(f)
+
+    source_keypoints = []
+    target_keypoints = []
+
+    for key, value in data.items():
+        source_kp = value
+        target_kp = literal_eval(key)
+        source_keypoints.append(source_kp)
+        target_keypoints.append(target_kp)
+
+    source_keypoints = np.array(source_keypoints)
+    target_keypoints = np.array(target_keypoints)
+    return source_keypoints, target_keypoints
 
 
 # Due to memory consumption concerns, the function below has been replaced by the function that uses vidgear above.
