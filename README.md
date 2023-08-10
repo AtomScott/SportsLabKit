@@ -1,4 +1,4 @@
-# SoccerTrack
+# SportsLabKit
 
 ![](https://raw.githubusercontent.com/AtomScott/SoccerTrack/gh-pages/img/title-banner.png)
 
@@ -13,61 +13,24 @@
 
 ## **News**
 
-* **(2023/02/08)** We have finished fixing the datasets and have also uploaded extra footage with complete annotations! The dataset can be downloaded from [Kaggle](https://www.kaggle.com/datasets/atomscott/soccertrack).
-
-* **(2022/11/03)** After receving reports of erroneous  data, we have fixed and reuploaded a majority of SoccerTrack. We are also adding videos with visualized bounding boxes so that you can be sure that the data is good. The visualizations can be found in the viz_results directory under Top-view/Wide-view (see [Kaggle](https://www.kaggle.com/datasets/atomscott/soccertrack)). We have created a spreadsheet to keep everyone updated on our progress.
-[Spreadsheet Link](https://docs.google.com/spreadsheets/d/1V4TF84nIZWtYBrT6oNhAc3tp01QCBn41aadp96vfWww/edit#gid=208157415)
+* **(2023/08/10)** [Announcing SportLabKit!](https://atomscott.me/blog-posts-table-includes-wip/announcing-sportslabkit) We are currently working on a dataset for basketball and handball which will be released in the near future. Stay tuned!
 
 ---
-A Dataset and Tracking Algorithm for Soccer with Fish-eye and Drone Videos.
 
+Introducing SportsLabKit – your go-to toolkit for unlocking the game's secrets! Tailored for everyone from coaches to hobbyists, it's all about transforming sports videos into insights you can act on.
 
-* [Project page](https://atomscott.github.io/SoccerTrack/)
-* [Paper](https://openaccess.thecvf.com/content/CVPR2022W/CVSports/papers/Scott_SoccerTrack_A_Dataset_and_Tracking_Algorithm_for_Soccer_With_Fish-Eye_CVPRW_2022_paper.pdf)
-* [Tracking Algorithm](https://github.com/AtomScott/SoccerTrack) (Work In Progress)
-* [Documentation](https://soccertrack.readthedocs.io/) (Work In Progress)
+Starting strong with soccer, we're on our way to slam-dunking basketball and handball too. Want to turn a game's footage into numbers for analysis? We've got you covered.
 
+What's Inside?
 
-## Dataset Details
+Tracking: Spot-on tracking for soccer today, with basketball and handball on the horizon.
+Simplicity: Videos to numbers? Done. No fuss, no hassle.
+Growth: Event detection and pose estimation are coming. We're just getting started.
+Join us in the SportsLabKit journey, and let's take sports analysis to the next level!
 
- | -/-             | **Wide-View Camera**     | **Top-View Camera**       | **GNSS**                             |
- | --------------- | ------------------------ | ------------------------- | ------------------------------------ |
- | Device          | Z CAM E2-F8              | DJI Mavic 3               | STATSPORTS APEX 10 Hz                |
- | Resolution      | 8K (7,680 × 4,320 pixel) | 4K (3,840 × 2,160 pixesl) | Abs. err. in 20-m run: 0.22 ± 0.20 m |
- | FPS             | 30                       | 30                        | 10                                   |
- | Player tracking | ✅                        | ✅                         | ✅                                    |
- | Ball tracking   | ✅                        | ✅                         | -                                    |
- | Bounding box    | ✅                        | ✅                         | -                                    |
- | Location data   | ✅                        | ✅                         | ✅                                    |
- | Player ID       | ✅                        | ✅                         | ✅                                    |
+## Documentation
 
-All data in SoccerTrack was obtained from 11-vs-11 soccer games between college-aged athletes. Measurements were conducted after we received the approval of Tsukuba university’s ethics committee, and all participants provided signed informed permission. After recording several soccer matches, the videos were semi-automatically annotated based on the GNSS coordinates of each player.
-
-Below are low resolution samples from the soccertrack dataset we plan to release. The actual dataset will contains (drone) and 8K (fisheye) footage!
-
-### Drone Video
-
-<video style='max-width:640px' controls>
-  <source src="https://user-images.githubusercontent.com/22371492/178085041-a8a2de85-bcd3-4c81-8b81-5ca93dbd4336.mp4" type="video/mp4">
-</video>
-
-https://user-images.githubusercontent.com/22371492/178085041-a8a2de85-bcd3-4c81-8b81-5ca93dbd4336.mp4
-
-### Fisheye Video
-<video style='max-width:640px' controls>
-  <source src="https://user-images.githubusercontent.com/22371492/178085027-5d25781d-e3ed-4791-ad14-141b58187dcf.mp4" type="video/mp4">
-</video>
-
-https://user-images.githubusercontent.com/22371492/178085027-5d25781d-e3ed-4791-ad14-141b58187dcf.mp4
-
-
-> **Note** The resolution for the fisheye camera may change after calibration.
-
-## Dataset Download
-
-All the data can be downloaded from [Kaggle](https://www.kaggle.com/datasets/atomscott/soccertrack)!
-
-For more details on how to use the dataset, please see the section "[Dataset Preparation](https://soccertrack.readthedocs.io/en/latest/01_get_started/dataset_preparation.html)".
+See the [documentation](https://sportslabkit.readthedocs.io/).
 
 ## Install
 
@@ -76,7 +39,7 @@ For more details on how to use the dataset, please see the section "[Dataset Pre
 The software can be installed using `pip`.
 
 ```bash
-pip install soccertrack
+pip install SportsLabKit
 ```
 
 You will neeed to install the following dependencies:
@@ -102,12 +65,12 @@ poetry run pip install git+https://github.com/KaiyangZhou/deep-person-reid.git
 
 See the [Contributing Guide](https://soccertrack.readthedocs.io/en/latest/contributing.html) for more information.
 
-## Papers
+## Related Papers
 
 <table>
 <td width=30% style='padding: 20px;'>
 <a href="https://openaccess.thecvf.com/content/CVPR2022W/CVSports/papers/Scott_SoccerTrack_A_Dataset_and_Tracking_Algorithm_for_Soccer_With_Fish-Eye_CVPRW_2022_paper.pdf">
-<img src='https://raw.githubusercontent.com/AtomScott/SoccerTrack/feature/major_refactor/docs/_static/paper_preview.jpg'/>
+<img src='https://raw.githubusercontent.com/AtomScott/SoccerTrack/c13b88c2700610bd9c886976a92dd81afa7a7a98/docs/_static/paper_preview.jpg'/>
 </a>
 </td>
 <td width=70%>
@@ -135,6 +98,7 @@ See the [Contributing Guide](https://soccertrack.readthedocs.io/en/latest/contri
 </td>
 </table>
 
+See papers that cite SoccerTrack on [Google Scholar](https://scholar.google.com/scholar?oi=bibs&hl=en&cites=13090652901875753929).
 ## Citation
 
 ```
@@ -147,10 +111,27 @@ See the [Contributing Guide](https://soccertrack.readthedocs.io/en/latest/contri
 }
 ```
 
-## Acknowledgements
+## Contributors ✨
 
-Part of the tracking module has been adapted from [motpy](https://github.com/wmuron/motpy). We would like to thank the authors for their work.
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+
+<!-- markdownlint-restore -->
+<!-- prettier-ignore-end -->
+
+<!-- ALL-CONTRIBUTORS-LIST:END -->
+
+This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
+
 
 ## Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=atomscott/soccertrack&type=Date)](https://star-history.com/#atomscott/soccertrack&Date)
+<a href="https://star-history.com/#atomscott/soccertrack&Date">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=atomscott/soccertrack&type=Date&theme=dark" />
+    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=atomscott/soccertrack&type=Date" />
+    <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=atomscott/soccertrack&type=Date" />
+  </picture>
+</a>
+
