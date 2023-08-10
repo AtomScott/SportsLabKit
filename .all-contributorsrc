@@ -15,6 +15,15 @@
       "contributions": [
         "tutorial"
       ]
+    },
+    {
+      "login": "AtomScott",
+      "name": "Atom Scott",
+      "avatar_url": "https://avatars.githubusercontent.com/u/22371492?v=4",
+      "profile": "https://atomscott.me/",
+      "contributions": [
+        "maintenance"
+      ]
     }
   ],
   "contributorsPerLine": 7,
