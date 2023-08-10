@@ -15,7 +15,25 @@
       "contributions": [
         "tutorial"
       ]
-    }
+    },
+    {
+      "login": "AtomScott",
+      "name": "Atom Scott",
+      "avatar_url": "https://avatars.githubusercontent.com/u/22371492?v=4",
+      "profile": "https://atomscott.me/",
+      "contributions": [
+        "maintenance"
+      ]
+    },
+    {
+      "login": "IkumaUchida",
+      "name": "Ikuma Uchida",
+      "avatar_url": "https://avatars.githubusercontent.com/u/48281753?v=4",
+      "profile": "https://github.com/IkumaUchida",
+      "contributions": [
+        "tutorial"
+      ]
+    },
   ],
   "contributorsPerLine": 7,
   "skipCi": true,
