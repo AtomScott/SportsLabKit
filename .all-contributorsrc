@@ -24,7 +24,16 @@
       "contributions": [
         "maintenance"
       ]
-    }
+    },
+    {
+      "login": "IkumaUchida",
+      "name": "Ikuma Uchida",
+      "avatar_url": "https://avatars.githubusercontent.com/u/48281753?v=4",
+      "profile": "https://github.com/IkumaUchida",
+      "contributions": [
+        "tutorial"
+      ]
+    },
   ],
   "contributorsPerLine": 7,
   "skipCi": true,
