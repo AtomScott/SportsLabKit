@@ -18,7 +18,7 @@ from sportslabkit.image_model.base import BaseConfig, BaseImageModel
 class ModelConfigTemplate(BaseConfig):
     name: str = "ViT-B/32"
     device: str = "cpu"
-
+    image_size: int = (224, 224)
 
 @dataclass
 class InferenceConfigTemplate(BaseConfig):
@@ -37,6 +37,7 @@ class BaseCLIP(BaseImageModel):
         ims = []
         for _x in x:
             im = Image.fromarray(_x)
+            im = im.resize(self.model_config["image_size"])
             im = self.preprocess(im)
             ims.append(im)
         ims = torch.stack(ims)

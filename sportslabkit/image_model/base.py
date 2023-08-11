@@ -165,6 +165,10 @@ class BaseImageModel(ABC):
         if isinstance(outputs[0], (int, float)):
             outputs = [[output] for output in outputs]
 
+        # Check if the array is torch.Tensor or numpy.ndarray
+        if isinstance(outputs[0], torch.Tensor):
+            outputs = [output.detach().cpu().numpy() for output in outputs]
+
         # convert the output to a 2D numpy array
         return np.stack(outputs)
 

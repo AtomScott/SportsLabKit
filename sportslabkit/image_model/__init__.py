@@ -55,7 +55,7 @@ def show_available_models():
 
     The models are subclasses of BaseDetectionModel. The names are printed as a list to the console.
     """
-    print(sorted([cls.__name__ for cls in inheritors(BaseImageModel)]))
+    return sorted([cls.__name__ for cls in inheritors(BaseImageModel)])
 
 
 def load(model_name, model_config={}, inference_config={}):
