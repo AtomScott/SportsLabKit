@@ -37,7 +37,6 @@ extensions = [
     "m2r2",
     "nbsphinx",
     "autoapi.extension",
-    'sphinxcontrib.gtagjs',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -306,10 +305,6 @@ texinfo_documents = [
 # How to display URL addresses: 'footnote', 'no', or 'inline'.
 # texinfo_show_urls = 'footnote'
 
-# -- Options for gtag -----------------------------------------------------
-gtagjs_ids = [
-    'G-GXSVPS0MXS',
-]
 # -- Options for autodoc -------------------------------------------------------
 autoclass_content = "both"
 
