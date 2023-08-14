@@ -40,7 +40,7 @@
         :hidden:
         :maxdepth: 2
 
-        autoapi/soccertrack/index
+        autoapi/sportslabkit/index
 
 ..  toctree::
         :maxdepth: 1
