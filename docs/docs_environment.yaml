@@ -13,3 +13,4 @@ dependencies:
     - sphinx-autodoc-typehints==1.18.3
     - nbsphinx==0.8.9
     - m2r2==0.3.2
+    - sphinxcontrib-gtagjs==0.2.1
