@@ -21,8 +21,6 @@
         notebooks/02_user_guide/dataset_preparation.ipynb
         notebooks/02_user_guide/convert_bbdf_to_codf.ipynb
         notebooks/02_user_guide/detection_with_yolov5.ipynb
-        notebooks/02_user_guide/appearance_feature_extraction_with_resnet18.ipynb
-        notebooks/02_user_guide/appearance_feature_extraction_with_torchreid.ipynb
         notebooks/02_user_guide/tracking_with_deepsort.ipynb
         notebooks/02_user_guide/tracking_evaluation.ipynb
 
