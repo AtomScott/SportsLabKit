@@ -44,7 +44,7 @@ templates_path = ["_templates"]
 
 # -- Options for autoapi -------------------------------------------------------
 
-autoapi_dirs = ["../SportsLabKit"]
+autoapi_dirs = ["../sportslabkit"]
 autoapi_type = "python"
 
 autoapi_template_dir = "_templates/autoapi"
