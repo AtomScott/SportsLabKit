@@ -1,4 +1,4 @@
-name: soccertrack_docs
+name: sportslabkit_docs
 channels:
   - defaults
   - conda-forge

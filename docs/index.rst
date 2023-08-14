@@ -11,7 +11,7 @@
         :glob:
 
         01_get_started/installation.rst
-        notebooks/01_get_started/introduction_to_soccertrack.ipynb
+        notebooks/01_get_started/introduction_to_sportslabkit.ipynb
 
 ..  toctree::
         :maxdepth: 2

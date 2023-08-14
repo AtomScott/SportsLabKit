@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# SoccerTrack documentation build configuration file, created by
+# SportsLabKit documentation build configuration file, created by
 # sphinx-quickstart.
 #
 # This file is execfile()d with the current directory set to its containing dir.
@@ -44,7 +44,7 @@ templates_path = ["_templates"]
 
 # -- Options for autoapi -------------------------------------------------------
 
-autoapi_dirs = ["../soccertrack"]
+autoapi_dirs = ["../SportsLabKit"]
 autoapi_type = "python"
 
 autoapi_template_dir = "_templates/autoapi"
@@ -76,7 +76,7 @@ source_suffix = [".md", ".rst"]
 master_doc = "index"
 
 # General information about the project.
-project = "SoccerTrack"
+project = "SportsLabKit"
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -141,7 +141,7 @@ html_theme_options = {
     # "icon_links": [
     #     {
     #         "name": "Github",
-    #         "url": "https://github.com/AtomScott/SoccerTrack",
+    #         "url": "https://github.com/AtomScott/SportsLabKit",
     #         "icon": "fab fa-github-square",
     #     },
     #     {
@@ -228,7 +228,7 @@ html_sidebars = {
 # html_file_suffix = None
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = "soccertrackdoc"
+htmlhelp_basename = "SportsLabKitdoc"
 
 
 # -- Options for LaTeX output --------------------------------------------------
@@ -245,7 +245,7 @@ latex_elements = {
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-    ("index", "soccertrack.tex", "SoccerTrack Documentation", "Atom Scott", "manual"),
+    ("index", "SportsLabKit.tex", "SportsLabKit Documentation", "Atom Scott", "manual"),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -273,7 +273,7 @@ latex_documents = [
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [("index", "soccertrack", "SoccerTrack Documentation", ["Atom Scott"], 1)]
+man_pages = [("index", "SportsLabKit", "SportsLabKit Documentation", ["Atom Scott"], 1)]
 
 # If true, show URL addresses after external links.
 # man_show_urls = False
@@ -287,10 +287,10 @@ man_pages = [("index", "soccertrack", "SoccerTrack Documentation", ["Atom Scott"
 texinfo_documents = [
     (
         "index",
-        "soccertrack",
-        "SoccerTrack Documentation",
+        "SportsLabKit",
+        "SportsLabKit Documentation",
         "Atom Scott",
-        "SoccerTrack",
+        "SportsLabKit",
         "A short description of the project.",
         "Miscellaneous",
     ),
