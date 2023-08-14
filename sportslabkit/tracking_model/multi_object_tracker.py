@@ -177,7 +177,7 @@ class MultiObjectTracker:
         logger.debug("deleted %s/%s trackers" % (count_before - count_after, count_before))
 
     def tune(self):
-        
+        pass
 
 import optuna
 import numpy as np
