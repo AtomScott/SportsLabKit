@@ -44,7 +44,7 @@ templates_path = ["_templates"]
 
 # -- Options for autoapi -------------------------------------------------------
 
-autoapi_dirs = ["../sportslabkit"]
+autoapi_dirs = ["../SportsLabKit"]
 autoapi_type = "python"
 
 autoapi_template_dir = "_templates/autoapi"
@@ -228,7 +228,7 @@ html_sidebars = {
 # html_file_suffix = None
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = "SportsLabKitdoc"
+htmlhelp_basename = "sportslabkitdoc"
 
 
 # -- Options for LaTeX output --------------------------------------------------
@@ -245,7 +245,7 @@ latex_elements = {
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-    ("index", "SportsLabKit.tex", "SportsLabKit Documentation", "Atom Scott", "manual"),
+    ("index", "sportslabkit.tex", "SportsLabKit Documentation", "Atom Scott", "manual"),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -273,7 +273,7 @@ latex_documents = [
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [("index", "SportsLabKit", "SportsLabKit Documentation", ["Atom Scott"], 1)]
+man_pages = [("index", "sportslabkit", "SportsLabKit Documentation", ["Atom Scott"], 1)]
 
 # If true, show URL addresses after external links.
 # man_show_urls = False
@@ -287,7 +287,7 @@ man_pages = [("index", "SportsLabKit", "SportsLabKit Documentation", ["Atom Scot
 texinfo_documents = [
     (
         "index",
-        "SportsLabKit",
+        "sportslabkit",
         "SportsLabKit Documentation",
         "Atom Scott",
         "SportsLabKit",
