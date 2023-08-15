@@ -231,7 +231,12 @@ class BaseImageModel(ABC):
 
         box_images = []
         for detection in detections:
-            x, y, w, h = list(map(int, detection.box))
+            if isinstance(detection, Detection):
+                x, y, w, h = list(map(int, detection.box))
+            elif isinstance(detection, dict):
+                x, y, w, h = list(map(int, detection["box"]))
+            else:
+                raise ValueError(f"Unknown detection type: {type(detection)}")
             box_image = image[y : y + h, x : x + w]
             box_images.append(box_image)
 

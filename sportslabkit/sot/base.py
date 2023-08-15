@@ -41,6 +41,7 @@ class SingleObjectTracker(ABC):
         self.check_required_types(states)
         for required_type in self.required_keys:
             self.tracklet.update_observation(required_type, states[required_type])
+        self.tracklet.increment_counter()
 
     @abstractmethod
     def update(self, current_frame: Any) -> Dict[str, Any]:
@@ -64,6 +65,7 @@ class SingleObjectTracker(ABC):
 
         self.pre_track()
         for i in range(0, len(sequence) - self.window_size + 1, self.step_size):
+            logger.debug(f"Processing frames {i} to {i + self.window_size}")
             self.process_sequence_item(sequence[i : i + self.window_size])
         self.post_track()
         return self.tracklet
@@ -81,6 +83,8 @@ class SingleObjectTracker(ABC):
         # Initialize the single object tracker
         logger.debug("Initializing tracker...")
         self.tracklet = Tracklet()
+        for required_type in self.required_keys:
+            self.tracklet.register_observation_type(required_type)
         self.frame_count = 0
         self.update_tracklet_observations(self.init_target)
 
@@ -178,7 +182,6 @@ class SingleObjectTracker(ABC):
             hparam_search_space = {}
 
         # check that the ground truth positions are in the correct format
-        print(ground_truth_positions.shape)
         if isinstance(ground_truth_positions, BBoxDataFrame):
             ground_truth_positions = np.expand_dims(ground_truth_positions.values, axis=1)[:, :, :4]
 

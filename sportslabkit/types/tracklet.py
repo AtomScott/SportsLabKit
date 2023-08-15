@@ -268,6 +268,8 @@ class Tracklet:
         df.rename(columns={"global_step": "frame", "score": "conf"}, inplace=True)
 
         df.set_index(["frame"], inplace=True)
+        if 'conf' not in df.columns:
+            df['conf'] = 1.0
 
         box_df = df[["bb_left", "bb_top", "bb_width", "bb_height", "conf"]]
         team_id = 0

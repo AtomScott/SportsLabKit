@@ -54,7 +54,7 @@ class MeanShiftTracker(SingleObjectTracker):
         x, y, w, h = self.roi
         self.state = {"box": (x, y, w, h)}
         # self.update_tracklet_observations(self.state)
-        return self.state
+        return [self.state]
 
     @property
     def hparam_search_space(self):
