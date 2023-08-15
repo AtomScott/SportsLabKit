@@ -1,13 +1,9 @@
 # SportsLabKit
 
-![](https://raw.githubusercontent.com/AtomScott/SoccerTrack/gh-pages/img/title-banner.png)
-[![Documentation Status](https://readthedocs.org/projects/soccertrack/badge/?version=latest)](https://soccertrack.readthedocs.io/en/latest/?badge=latest) 
+[![Documentation Status](https://readthedocs.org/projects/sportslabkit/badge/?version=latest)](https://soccertrack.readthedocs.io/en/latest/?badge=latest) 
 [![Kaggle](https://kaggle.com/static/images/open-in-kaggle.svg)](https://www.kaggle.com/datasets/atomscott/soccertrack)
 [![PWC](https://img.shields.io/badge/%7C-Papers%20with%20Code-lightblue)](https://paperswithcode.com/dataset/soccertrack-dataset)
 [![dm](https://img.shields.io/pypi/dm/soccertrack)](https://pypi.org/project/soccertrack/)
-
-[![DeepSource](https://deepsource.io/gh/AtomScott/SoccerTrack.svg/?label=active+issues&show_trend=true&token=TIxJg8BLzszYnWeVDMHr6pMU)](https://deepsource.io/gh/AtomScott/SoccerTrack/?ref=repository-badge)
-[![DeepSource](https://deepsource.io/gh/AtomScott/SoccerTrack.svg/?label=resolved+issues&show_trend=true&token=TIxJg8BLzszYnWeVDMHr6pMU)](https://deepsource.io/gh/AtomScott/SoccerTrack/?ref=repository-badge)
 
 
 ## **News**
@@ -16,15 +12,18 @@
 
 ---
 
+## Welcome!
+
 Introducing SportsLabKit – your go-to toolkit for unlocking the game's secrets! Tailored for everyone from coaches to hobbyists, it's all about transforming sports videos into insights you can act on.
 
 Starting strong with soccer, we're on our way to slam-dunking basketball and handball too. Want to turn a game's footage into numbers for analysis? We've got you covered.
 
-What's Inside?
+## What's Inside?
 
-Tracking: Spot-on tracking for soccer today, with basketball and handball on the horizon.
-Simplicity: Videos to numbers? Done. No fuss, no hassle.
-Growth: Event detection and pose estimation are coming. We're just getting started.
+* Tracking: Spot-on tracking for soccer today, with basketball and handball on the horizon.
+* Simplicity: Videos to numbers? Done. No fuss, no hassle.
+* Growth: Event detection and pose estimation are coming. We're just getting started.
+
 Join us in the SportsLabKit journey, and let's take sports analysis to the next level!
 
 ## Documentation
