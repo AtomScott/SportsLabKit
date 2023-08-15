@@ -33,7 +33,8 @@
         notebooks/03_core_components/detection_model.ipynb
         notebooks/03_core_components/image_model.ipynb
         notebooks/03_core_components/motion_model.ipynb
-        notebooks/03_core_components/tracking_model.ipynb
+        notebooks/03_core_components/single_object_tracker.ipynb
+        notebooks/03_core_components/multi_object_tracker.ipynb
 
 ..  toctree::
         :caption: API Reference
