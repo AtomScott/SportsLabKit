@@ -29,7 +29,7 @@ def tune_motion_model(
             elif search_space["type"] == "int":
                 params[param_name] = trial.suggest_int(param_name, search_space["low"], search_space["high"])
 
-        motion_model = motion_model_class(**params)
+        motion_model = motion_model_class(model_config=params)
         tracklet = Tracklet()
         tracklet.register_observation_types(["box", "score"])
         ious = []
