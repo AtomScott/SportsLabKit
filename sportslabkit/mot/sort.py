@@ -1,9 +1,7 @@
-import sportslabkit as slk
 from sportslabkit.logger import logger
 from sportslabkit.matching import SimpleMatchingFunction
 from sportslabkit.metrics import IoUCMM
 from sportslabkit.mot.base import MultiObjectTracker
-from sportslabkit.motion_model import KalmanFilter
 
 
 class SORTTracker(MultiObjectTracker):
@@ -21,6 +19,7 @@ class SORTTracker(MultiObjectTracker):
         metric=IoUCMM(),
         metric_gate=1.0,
         t_lost=1,
+        t_confirm=5,
     ):
         super().__init__(
             pre_init_args={
@@ -29,6 +28,7 @@ class SORTTracker(MultiObjectTracker):
                 "metric": metric,
                 "metric_gate": metric_gate,
                 "t_lost": t_lost,
+                "t_confirm": t_confirm,
             }
         )
 
@@ -39,6 +39,7 @@ class SORTTracker(MultiObjectTracker):
         metric,
         metric_gate,
         t_lost,
+        t_confirm,
     ):
         self.detection_model = detection_model
         self.motion_model = motion_model
@@ -48,12 +49,10 @@ class SORTTracker(MultiObjectTracker):
             gate=metric_gate,
         )
         self.t_lost = t_lost
+        self.t_confim = t_confirm
 
     def update(self, current_frame, tracklets):
         # detect objects using the detection model
-        from time import time
-
-        time()
         detections = self.detection_model(current_frame)
         # update the motion model with the new detections
         # self.update_tracklets_with_motion_model_predictions
@@ -119,6 +118,18 @@ class SORTTracker(MultiObjectTracker):
                     assigned_tracklets.append(tracklet)
 
         return assigned_tracklets, new_tracklets, unassigned_tracklets
+
+    def post_track(self):
+        # remove tracklets that a shorter than t_confirm
+        confirmed_tracklets = []
+        unconfirmed_tracklets = []
+        for tracklet in self.tracklets:
+            if tracklet.length < self.t_confim:
+                unconfirmed_tracklets.append(tracklet)
+            else:
+                confirmed_tracklets.append(tracklet)
+        self.tracklets = confirmed_tracklets
+        self.dead_tracklets += unconfirmed_tracklets
 
     @property
     def required_observation_types(self):
