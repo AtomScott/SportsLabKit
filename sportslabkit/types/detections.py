@@ -77,7 +77,6 @@ class Detections:
             preds = np.zeros((0, 6))
         return preds
 
-
     def show(self, **kwargs) -> Image.Image:
         im = self.im
         boxes = self.preds[:, :4]
@@ -94,9 +93,7 @@ class Detections:
             for box in self.preds[:, :4]:
                 f.write(",".join(map(str, box)) + "\n")
 
-    def crop(
-        self, save: bool = True, save_dir: Union[str, Path] = "runs/detect/exp", exist_ok: bool = False
-    ) -> List[Image.Image]:
+    def crop(self, save: bool = True, save_dir: Union[str, Path] = "runs/detect/exp", exist_ok: bool = False) -> List[Image.Image]:
         save_dir = increment_path(save_dir, exist_ok, mkdir=True) if save else None
         images = []
         for box in self.preds[:, :4]:
@@ -128,7 +125,7 @@ class Detections:
 
         # check if empty
         if len(self.preds) == 0:
-            logger.warning("No results to show.")
+            logger.debug("No results to show.")
             return []
 
         dets = []
