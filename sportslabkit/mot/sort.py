@@ -1,19 +1,23 @@
-import sportslabkit as st
-from sportslabkit.types import Tracklet
-from sportslabkit.mot.base import MultiObjectTracker
-from sportslabkit.matching import SimpleMatchingFunction
-from sportslabkit.motion_model import KalmanFilterMotionModel
-from sportslabkit.metrics import IoUCMM
+import sportslabkit as slk
 from sportslabkit.logger import logger
+from sportslabkit.matching import SimpleMatchingFunction
+from sportslabkit.metrics import IoUCMM
+from sportslabkit.mot.base import MultiObjectTracker
+from sportslabkit.motion_model import KalmanFilter
 
 
 class SORTTracker(MultiObjectTracker):
     """SORT tracker from https://arxiv.org/pdf/1602.00763.pdf"""
 
+    hparam_search_space = {
+        "metric_gate": {"type": "float", "low": 1e-6, "high": 1e2},
+        "t_lost": {"type": "int", "low": 1e-6, "high": 1e2},
+    }
+
     def __init__(
         self,
-        detection_model=None,
-        motion_model=None,
+        detection_model,
+        motion_model,
         metric=IoUCMM(),
         metric_gate=1.0,
         t_lost=1,
@@ -36,13 +40,7 @@ class SORTTracker(MultiObjectTracker):
         metric_gate,
         t_lost,
     ):
-        if detection_model is None:
-            # use yolov8 as default
-            detection_model = st.detection_model.load("yolov8x")
         self.detection_model = detection_model
-
-        if motion_model is None:
-            motion_model = KalmanFilterMotionModel(dt=1 / 30, process_noise=0.1, measurement_noise=0.1)
         self.motion_model = motion_model
 
         self.matching_fn = SimpleMatchingFunction(
@@ -55,7 +53,7 @@ class SORTTracker(MultiObjectTracker):
         # detect objects using the detection model
         from time import time
 
-        start = time()
+        time()
         detections = self.detection_model(current_frame)
         # update the motion model with the new detections
         # self.update_tracklets_with_motion_model_predictions

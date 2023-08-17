@@ -1,20 +1,13 @@
 from sportslabkit.detection_model.base import BaseDetectionModel
+from sportslabkit.detection_model.dummy import DummyDetectionModel
+from sportslabkit.detection_model.yolov8 import YOLOv8, YOLOv8l, YOLOv8m, YOLOv8n, YOLOv8s, YOLOv8x
 from sportslabkit.logger import logger
 
-from sportslabkit.detection_model.yolov5 import YOLOv5, YOLOv5n, YOLOv5s, YOLOv5m, YOLOv5l, YOLOv5x
-from sportslabkit.detection_model.yolov8 import YOLOv8, YOLOv8n, YOLOv8s, YOLOv8m, YOLOv8l, YOLOv8x
-from sportslabkit.detection_model.dummy import DummyDetectionModel
 
 __all__ = [
     "BaseDetectionModel",
     "load",
     "show_available_models",
-    "YOLOv5",
-    "YOLOv5n",
-    "YOLOv5s",
-    "YOLOv5m",
-    "YOLOv5l",
-    "YOLOv5x",
     "YOLOv8",
     "YOLOv8n",
     "YOLOv8s",
@@ -55,7 +48,7 @@ def show_available_models():
     print(sorted([cls.__name__ for cls in inheritors(BaseDetectionModel)]))
 
 
-def load(model_name, model_config={}, inference_config={}):
+def load(model_name, **model_config):
     """
     Load a model by name.
 
@@ -63,18 +56,14 @@ def load(model_name, model_config={}, inference_config={}):
 
     Args:
         model_name (str): The name of the model to load.
-        model_config (dict, optional): The model configuration to use when instantiating the model. Defaults to {}.
-        inference_config (dict, optional): The inference configuration to use when instantiating the model. Defaults to {}.
+        model_config (dict, optional): The model configuration to use when instantiating the model.
 
     Returns:
         BaseDetectionModel: An instance of the requested model, or None if no match was found.
     """
     for cls in inheritors(BaseDetectionModel):
         if model_name in [cls.__name__.lower(), cls.__name__]:
-            return cls(
-                model_config=model_config,
-                inference_config=inference_config,
-            )
+            return cls(**model_config)
     logger.warning(
         f"Model {model_name} not found. Available models: {[cls.__name__ for cls in inheritors(BaseDetectionModel)]} (lowercase is allowed)"
     )
@@ -83,3 +72,4 @@ def load(model_name, model_config={}, inference_config={}):
 if __name__ == "__main__":
     for cls in inheritors(BaseDetectionModel):
         print(cls.__name__)
+

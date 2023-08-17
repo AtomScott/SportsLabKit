@@ -72,7 +72,11 @@ class Detections:
         _processed_preds = []
         for pred in preds:
             _processed_preds.append(self._process_pred(pred))
-        return np.array(_processed_preds)
+        preds = np.array(_processed_preds)
+        if not preds.size:
+            preds = np.zeros((0, 6))
+        return preds
+
 
     def show(self, **kwargs) -> Image.Image:
         im = self.im
@@ -104,8 +108,10 @@ class Detections:
 
     def to_df(self):
         # return detections as pandas DataFrames, i.e. print(results.to_df())
+
+        preds = self.preds
         df = pd.DataFrame(
-            self.preds,
+            preds,
             columns=[
                 "bbox_left",
                 "bbox_top",

@@ -1,8 +1,7 @@
-from typing import Any, Dict
-from dataclasses import dataclass
 from typing import Optional
 
 import numpy as np
+
 
 try:
     from ultralytics import YOLO
@@ -12,28 +11,7 @@ except ImportError:
         "pip install ultralytics"
     )
 
-from sportslabkit.detection_model.base import BaseDetectionModel, BaseConfig
-
-
-@dataclass
-class ModelConfigTemplate(BaseConfig):
-    ckpt: str = ""
-    conf: float = 0.25
-    iou: float = 0.45
-    agnostic: bool = False
-    multi_label: bool = False
-    classes: Optional[list[str]] = None
-    max_det: int = 1000
-    amp: bool = False
-
-
-@dataclass
-class InferenceConfigTemplate(BaseConfig):
-    augment: bool = False
-    imgsz: int = 640
-    verbose: bool = False
-    conf: float = 0.25
-    iou: float = 0.45
+from sportslabkit.detection_model.base import BaseDetectionModel
 
 
 class YOLOv8(BaseDetectionModel):
@@ -41,10 +19,38 @@ class YOLOv8(BaseDetectionModel):
     Receives the arguments controlling inference as 'inference_config' when initialized.
     """
 
-    def load(self):
-        model_ckpt = self.model_config["ckpt"]
-        model = YOLO(model_ckpt)
-        return model
+    def __init__(self,
+        model: str = "",
+        agnostic_nms: bool = False,
+        multi_label: bool = False,
+        classes: Optional[list[str]] = None,
+        max_det: int = 1000,
+        amp: bool = False,
+        imgsz: int = 640,
+        conf: float = 0.25,
+        iou: float = 0.45,
+        device: str = "cpu",
+        verbose: bool = False,
+    ):
+        """
+        Initializes the base detection model.
+
+        Args:
+            model_config (Optional[dict]): The configuration for the model. This is optional and can be used to pass additional parameters to the model.
+        """
+        super().__init__()
+        self.mode = model
+        self.agnostic_nms = agnostic_nms
+        self.classes = classes
+        self.max_det = max_det
+        self.amp = amp
+        self.imgsz = imgsz
+        self.conf = conf
+        self.iou = iou
+        self.device = device
+        self.verbose = verbose
+
+        self.model = YOLO(model=model)
 
     def forward(self, x, **kwargs):
         def to_dict(res):
@@ -62,11 +68,18 @@ class YOLOv8(BaseDetectionModel):
                 for r in res
             ]
 
-        inference_config = self.inference_config
-        inference_config.update(kwargs)
-
         x = [_x[..., ::-1] for _x in x]
-        results = self.model(x, **inference_config, task="detect")
+        results = self.model(x,
+            agnostic_nms=kwargs.get("agnostic_nms", self.agnostic_nms),
+            classes=kwargs.get("classes", self.classes),
+            max_det=kwargs.get("max_det", self.max_det),
+            imgsz=kwargs.get("imgsz", self.imgsz),
+            conf=kwargs.get("conf", self.conf),
+            iou=kwargs.get("iou", self.iou),
+            device=kwargs.get("device", self.device),
+            verbose=kwargs.get("verbose", self.verbose),
+            task="detect",
+        )
         preds = []
         for result in results:
             xywh = result.boxes.xywh.detach().cpu().numpy()
@@ -77,40 +90,31 @@ class YOLOv8(BaseDetectionModel):
 
         return preds
 
-    @property
-    def model_config_template(self):
-        return ModelConfigTemplate
-
-    @property
-    def inference_config_template(self):
-        return InferenceConfigTemplate
-
-
 class YOLOv8n(YOLOv8):
-    def __init__(self, model_config={}, inference_config={}):
+    def __init__(self, model_config={}):
         model_config["ckpt"] = model_config.get("ckpt", "yolov8n")
-        super().__init__(model_config, inference_config)
+        super().__init__(model_config)
 
 
 class YOLOv8s(YOLOv8):
-    def __init__(self, model_config={}, inference_config={}):
+    def __init__(self, model_config={}):
         model_config["ckpt"] = model_config.get("ckpt", "yolov8s")
-        super().__init__(model_config, inference_config)
+        super().__init__(model_config)
 
 
 class YOLOv8m(YOLOv8):
-    def __init__(self, model_config={}, inference_config={}):
+    def __init__(self, model_config={}):
         model_config["ckpt"] = model_config.get("ckpt", "yolov8m")
-        super().__init__(model_config, inference_config)
+        super().__init__(model_config)
 
 
 class YOLOv8l(YOLOv8):
-    def __init__(self, model_config={}, inference_config={}):
+    def __init__(self, model_config={}):
         model_config["ckpt"] = model_config.get("ckpt", "yolov8l")
-        super().__init__(model_config, inference_config)
+        super().__init__(model_config)
 
 
 class YOLOv8x(YOLOv8):
-    def __init__(self, model_config={}, inference_config={}):
+    def __init__(self, model_config={}):
         model_config["ckpt"] = model_config.get("ckpt", "yolov8x")
-        super().__init__(model_config, inference_config)
+        super().__init__(model_config)

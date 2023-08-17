@@ -5,7 +5,7 @@ import sportslabkit as st
 from sportslabkit.types import Tracklet
 from sportslabkit.mot.base import MultiObjectTracker
 from sportslabkit.matching import SimpleMatchingFunction, MotionVisualMatchingFunction
-from sportslabkit.motion_model import KalmanFilterMotionModel
+from sportslabkit.motion_model import KalmanFilter
 from sportslabkit.metrics import IoUCMM, CosineCMM, EuclideanCMM2D
 from sportslabkit.logger import logger
 
@@ -67,7 +67,7 @@ class TeamTracker(MultiObjectTracker):
         self.detection_model = detection_model
 
         if motion_model is None:
-            motion_model = KalmanFilterMotionModel(dt=1 / 30, process_noise=0.1, measurement_noise=0.1)
+            motion_model = KalmanFilter(dt=1 / 30, process_noise=0.1, measurement_noise=0.1)
         self.motion_model = motion_model
         self.motion_model.eval()
 

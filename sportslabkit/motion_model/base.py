@@ -113,13 +113,13 @@ class BaseMotionModel(ABC):
         tracklet.update_states(new_states)
         return prediction
 
-    def update(self, observations: Dict[str, Any], states: Dict[str, Any]) -> None:
-        """Update the motion model's internal state.
+    # def update(self, observations: Dict[str, Any], states: Dict[str, Any]) -> None:
+    #     """Update the motion model's internal state.
 
-        Args:
-            observations (Dict[str, Any]): The observations to update the motion model with.
-            states (Dict[str, Any]): The states to update the motion model with.
-        """
+    #     Args:
+    #         observations (Dict[str, Any]): The observations to update the motion model with.
+    #         states (Dict[str, Any]): The states to update the motion model with.
+    #     """
 
     @abstractmethod
     def predict(

@@ -125,6 +125,23 @@ class SingleObjectTracker(ABC):
     def hparam_searh_space(self):
         return {}
 
+    def create_hparam_dict(self):
+        # Create a dictionary for all hyperparameters
+        hparams = {"self": self.hparam_search_space} if hasattr(self, "hparam_search_space") else {}
+        for attribute in vars(self):
+            value = getattr(self, attribute)
+            if hasattr(value, "hparam_search_space") and attribute not in hparam_search_space:
+                hparams[attribute] = {}
+                search_space = value.hparam_search_space
+                for param_name, param_space in search_space.items():
+                    hparams[attribute][param_name] = {
+                        "type": param_space["type"],
+                        "values": param_space.get("values"),
+                        "low": param_space.get("low"),
+                        "high": param_space.get("high"),
+                    }
+        return hparams
+
     def tune_hparams(
         self,
         frames,
@@ -178,27 +195,11 @@ class SingleObjectTracker(ABC):
             score = iou_scores(predictions, ground_truth_targets, xywh=True)
             return score
 
-        if hparam_search_space is None:
-            hparam_search_space = {}
-
         # check that the ground truth positions are in the correct format
         if isinstance(ground_truth_positions, BBoxDataFrame):
             ground_truth_positions = np.expand_dims(ground_truth_positions.values, axis=1)[:, :, :4]
 
-        # Create a dictionary for all hyperparameters
-        hparams = {"self": self.hparam_search_space} if hasattr(self, "hparam_search_space") else {}
-        for attribute in vars(self):
-            value = getattr(self, attribute)
-            if hasattr(value, "hparam_search_space") and attribute not in hparam_search_space:
-                hparams[attribute] = {}
-                search_space = value.hparam_search_space
-                for param_name, param_space in search_space.items():
-                    hparams[attribute][param_name] = {
-                        "type": param_space["type"],
-                        "values": param_space.get("values"),
-                        "low": param_space.get("low"),
-                        "high": param_space.get("high"),
-                    }
+        hparams = self.create_hparam_dict()
 
         print("Hyperparameter search space: ")
         for attribute, param_space in hparams.items():

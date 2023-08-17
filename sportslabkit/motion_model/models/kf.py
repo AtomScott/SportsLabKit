@@ -21,7 +21,7 @@ class ModelConfigTemplate(BaseConfig):
 class InferenceConfigTemplate(BaseConfig):
     pass
 
-class KalmanFilterMotionModel(BaseMotionModel):
+class KalmanFilter(BaseMotionModel):
     hparam_search_space = {
         "dt": {"type": "categorical", "values": [10, 2, 1, 1 / 30, 1 / 60, 1 / 120]},
         "process_noise": {"type": "logfloat", "low": 1e-6, "high": 1e2},

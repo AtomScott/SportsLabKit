@@ -1,5 +1,5 @@
 from sportslabkit.motion_model.tune import tune_motion_model
-from sportslabkit.motion_model.models import ExponentialMovingAverage, KalmanFilterMotionModel
+from sportslabkit.motion_model.models import ExponentialMovingAverage, KalmanFilter
 from sportslabkit.motion_model.base import BaseMotionModule, BaseMotionModel
 from sportslabkit.logger import logger
 

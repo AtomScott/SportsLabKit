@@ -35,9 +35,6 @@ class MinimumCostFlowTracker(SingleObjectTracker):
         if self.image_model is not None:
             self.target["feature"] = self.image_model.embed_detections([self.target], initial_frame)[0]
 
-        if self.motion_model is not None:
-            self.motion_model.update(self.target)
-
     def update(self, sequence):
         # Initialize an empty graph
         list_of_detections = []

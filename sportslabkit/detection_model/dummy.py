@@ -1,4 +1,4 @@
-from .base import BaseDetectionModel, BaseConfig
+from .base import BaseDetectionModel
 from sportslabkit.logger import logger
 from sportslabkit.types.detections import Detections
 
@@ -8,10 +8,6 @@ class DummyDetectionModel(BaseDetectionModel):
         super().__init__()
         self.precomputed_detections = detections
         self.image_count = 0
-
-    def load(self):
-        # No model to load for the dummy detection model
-        pass
 
     def forward(self, x):
         # Return the precomputed detections based on image_count
@@ -34,14 +30,6 @@ class DummyDetectionModel(BaseDetectionModel):
     def reset_image_count(self):
         self.image_count = 0
         logger.debug("Resetting image count")
-
-    @property
-    def model_config_template(self):
-        return BaseConfig
-
-    @property
-    def inference_config_template(self):
-        return BaseConfig
 
     @staticmethod
     def from_bbdf(bbdf):

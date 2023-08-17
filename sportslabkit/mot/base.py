@@ -1,16 +1,16 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Any, Callable, Dict, Iterable, List, Optional, Sequence, Tuple, Type, Union
+from typing import Any, Dict, Iterable, List, Tuple, Union
 
 import numpy as np
 import optuna
-from sportslabkit import Tracklet
-from sportslabkit.dataframe.bboxdataframe import BBoxDataFrame
-from sportslabkit.logger import logger
-from sportslabkit.metrics import hota_score
 import pandas as pd
+
+from sportslabkit import Tracklet
 from sportslabkit.detection_model.dummy import DummyDetectionModel
+from sportslabkit.logger import logger, tqdm
+from sportslabkit.metrics import hota_score
 
 
 class MultiObjectTracker(ABC):
@@ -60,9 +60,9 @@ class MultiObjectTracker(ABC):
     def track(self, sequence: Union[Iterable[Any], np.ndarray]) -> Tracklet:
         if not isinstance(sequence, (Iterable, np.ndarray)):
             raise ValueError("Input 'sequence' must be an iterable or numpy array of frames/batches")
-
+        self.reset()
         self.pre_track()
-        for i in range(0, len(sequence) - self.window_size + 1, self.step_size):
+        for i in tqdm(range(0, len(sequence) - self.window_size + 1, self.step_size), desc='Tracking Progress'):
             self.process_sequence_item(sequence[i : i + self.window_size].squeeze())
         self.post_track()
         bbdf = self.to_bbdf()
@@ -148,16 +148,36 @@ class MultiObjectTracker(ABC):
     def hparam_searh_space(self):
         return {}
 
+    def create_hparam_dict(self, hparam_search_space=None):
+        hparam_search_space = hparam_search_space or {}
+        # Create a dictionary for all hyperparameters
+        hparams = {"self": self.hparam_search_space} if hasattr(self, "hparam_search_space") else {}
+        for attribute in vars(self):
+            value = getattr(self, attribute)
+            if hasattr(value, "hparam_search_space") and attribute not in hparam_search_space:
+                hparams[attribute] = {}
+                search_space = value.hparam_search_space
+                for param_name, param_space in search_space.items():
+                    hparams[attribute][param_name] = {
+                        "type": param_space["type"],
+                        "values": param_space.get("values"),
+                        "low": param_space.get("low"),
+                        "high": param_space.get("high"),
+                    }
+        return hparams
+
     def tune_hparams(
         self,
-        frames,
-        bbdf_gt,
+        frames_list,
+        bbdf_gt_list,
         n_trials=100,
         hparam_search_space=None,
         verbose=False,
         return_study=False,
         use_bbdf=False,
         reuse_detections=False,
+        sampler=None,
+        pruner=None,
     ):
         def objective(trial: optuna.Trial):
             params = {}
@@ -192,55 +212,49 @@ class MultiObjectTracker(ABC):
                     else:
                         setattr(getattr(self, attribute), param_name, param_value)
 
-            self.reset()
-            self.detection_model = dummy_detection_model
+            scores = []
+            for frames, bbdf_gt in zip(frames_list, bbdf_gt_list):
+                self.reset()
+                bbdf_pred = self.track(frames)
+                score = hota_score(bbdf_pred, bbdf_gt)["HOTA"]
+                scores.append(score)
+                trial.report(np.mean(scores), step=len(scores))  # Report intermediate score
+                if trial.should_prune():  # Check for pruning
+                    raise optuna.TrialPruned()
 
-            bbdf_pred = self.track(frames)
-            score = hota_score(bbdf_pred, bbdf_gt)["HOTA"]
-            return score
+            return np.mean(scores)  # return the average score
 
-        if hparam_search_space is None:
-            hparam_search_space = {}
+        hparams = self.create_hparam_dict(hparam_search_space)
 
-        # Create a dictionary for all hyperparameters
-        hparams = {"self": self.hparam_search_space} if hasattr(self, "hparam_search_space") else {}
-        for attribute in vars(self):
-            value = getattr(self, attribute)
-            if hasattr(value, "hparam_search_space") and attribute not in hparam_search_space:
-                hparams[attribute] = {}
-                search_space = value.hparam_search_space
-                for param_name, param_space in search_space.items():
-                    hparams[attribute][param_name] = {
-                        "type": param_space["type"],
-                        "values": param_space.get("values"),
-                        "low": param_space.get("low"),
-                        "high": param_space.get("high"),
-                    }
-
-        logger.debug("Hyperparameter search space:")
+        logger.info("Hyperparameter search space:")
         for attribute, param_space in hparams.items():
-            logger.debug(f"{attribute}:")
+            logger.info(f"{attribute}:")
             for param_name, param_values in param_space.items():
-                logger.debug(f"\t{param_name}: {param_values}")
+                logger.info(f"\t{param_name}: {param_values}")
         if verbose:
             optuna.logging.set_verbosity(optuna.logging.INFO)
         else:
             optuna.logging.set_verbosity(optuna.logging.WARNING)
 
-        # first perform object detection to get the bounding boxes
         if use_bbdf:
             raise NotImplementedError
         if reuse_detections:
             list_of_detections = []
-            for frame in frames:
-                list_of_detections.append(self.detection_model(frame)[0])
+            for frames in frames_list:
+                for frame in frames:
+                    list_of_detections.append(self.detection_model(frame)[0])
 
             # define dummy model
             dummy_detection_model = DummyDetectionModel(list_of_detections)
             og_detection_model = self.detection_model
             self.detection_model = dummy_detection_model
 
-        study = optuna.create_study(direction="maximize")
+        if sampler is None:
+            sampler = optuna.samplers.TPESampler(multivariate=True)
+        if pruner is None:
+            pruner = optuna.pruners.MedianPruner()
+
+        study = optuna.create_study(direction="maximize", sampler=sampler, pruner=pruner)
         study.optimize(objective, n_trials=n_trials)
 
         if reuse_detections:
@@ -251,3 +265,60 @@ class MultiObjectTracker(ABC):
         if return_study:
             return best_params, best_iou, study
         return best_params, best_iou
+
+    # def tune_hparams(
+    #     self,
+    #     frames_list: List[np.ndarray],
+    #     bbdf_gt_list: List[pd.DataFrame],
+    #     n_trials: int = 100,
+    #     hparam_search_space: Optional[Dict[str, Any]] = None,
+    #     verbose: bool = False,
+    #     return_study: bool = False,
+    #     use_bbdf: bool = False,
+    #     reuse_detections: bool = False,
+    #     sampler: Optional[optuna.samplers.BaseSampler] = None,
+    #     pruner: Optional[optuna.pruners.BasePruner] = None,
+    # ) -> Union[Tuple[Dict[str, Any], float], Tuple[Dict[str, Any], float, optuna.study.Study]]:
+    #     """
+    #     Tune hyperparameters using Optuna.
+
+    #     Args:
+    #         frames_list (List[np.ndarray]): List of frames to process.
+    #         bbdf_gt_list (List[pd.DataFrame]): List of ground truth bounding box dataframes.
+    #         n_trials (int, optional): Number of trials. Defaults to 100.
+    #         hparam_search_space (Dict[str, Any], optional): Hyperparameter search space. Defaults to None.
+    #         verbose (bool, optional): If True, output verbose logs. Defaults to False.
+    #         return_study (bool, optional): If True, return the study object. Defaults to False.
+    #         use_bbdf (bool, optional): If True, use bounding box dataframe. Defaults to False.
+    #         reuse_detections (bool, optional): If True, reuse detections. Defaults to False.
+    #         sampler (optuna.samplers.BaseSampler, optional): Sampler for Optuna. Defaults to None.
+    #         pruner (optuna.pruners.BasePruner, optional): Pruner for Optuna. Defaults to None.
+
+    #     Returns:
+    #         Union[Tuple[Dict[str, Any], float], Tuple[Dict[str, Any], float, optuna.study.Study]]: Best parameters, best IOU, and optionally the study object.
+    #     """
+    #     def objective(trial: optuna.Trial) -> float:
+    #         params = self._suggest_params(trial, hparams)
+    #         self._apply_params(params)
+    #         scores = self._compute_scores(frames_list, bbdf_gt_list)
+    #         return np.mean(scores)
+
+    #     hparams = self.create_hparam_dict(hparam_search_space)
+    #     self._log_hparams(hparams, verbose)
+
+    #     if use_bbdf:
+    #         raise NotImplementedError
+    #     if reuse_detections:
+    #         list_of_detections = self._get_detections(frames_list)
+    #         self._set_dummy_detection_model(list_of_detections)
+
+    #     sampler = sampler or optuna.samplers.TPESampler(multivariate=True)
+    #     pruner = pruner or optuna.pruners.MedianPruner()
+
+    #     study = optuna.create_study(direction="maximize", sampler=sampler, pruner=pruner)
+    #     study.optimize(objective, n_trials=n_trials)
+
+    #     if reuse_detections:
+    #         self._reset_detection_model()
+
+    #     return self._get_study_results(study, return_study)
