@@ -23,6 +23,7 @@
         notebooks/02_user_guide/detection_with_yolov5.ipynb
         notebooks/02_user_guide/tracking_with_deepsort.ipynb
         notebooks/02_user_guide/tracking_evaluation.ipynb
+        notebooks/02_user_guide/tracking_the_ball.ipynb
 
 ..  toctree::
         :maxdepth: 2
