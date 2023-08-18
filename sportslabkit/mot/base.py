@@ -49,9 +49,7 @@ class MultiObjectTracker(ABC):
             raise NotImplementedError("Batched tracking is not yet supported")
 
         assigned_tracklets, new_tracklets, unassigned_tracklets = self.update(sequence, tracklets)
-        logger.debug(
-            f"assigned_tracklets: {len(assigned_tracklets)}, new_tracklets: {len(new_tracklets)}, unassigned_tracklets: {len(unassigned_tracklets)}"
-        )
+        logger.debug(f"assigned_tracklets: {len(assigned_tracklets)}, new_tracklets: {len(new_tracklets)}, unassigned_tracklets: {len(unassigned_tracklets)}")
         self.tracklets = assigned_tracklets + new_tracklets
 
         # Update the dead tracklets with nan values
@@ -62,8 +60,10 @@ class MultiObjectTracker(ABC):
             raise ValueError("Input 'sequence' must be an iterable or numpy array of frames/batches")
         self.reset()
         self.pre_track()
-        for i in tqdm(range(0, len(sequence) - self.window_size + 1, self.step_size), desc='Tracking Progress'):
-            self.process_sequence_item(sequence[i : i + self.window_size].squeeze())
+        with tqdm(range(0, len(sequence) - self.window_size + 1, self.step_size), desc="Tracking Progress") as t:
+            for i in t:
+                self.process_sequence_item(sequence[i : i + self.window_size].squeeze())
+                t.set_postfix_str(f"Active: {len(self.tracklets)}, Dead: {len(self.dead_tracklets)}", refresh=True)
         self.post_track()
         bbdf = self.to_bbdf()
         return bbdf
@@ -88,9 +88,7 @@ class MultiObjectTracker(ABC):
         logger.debug("Tracker initialized.")
 
     def _check_required_observations(self, target: Dict[str, Any]):
-        missing_types = [
-            required_type for required_type in self.required_observation_types if required_type not in target
-        ]
+        missing_types = [required_type for required_type in self.required_observation_types if required_type not in target]
 
         if missing_types:
             required_types_str = ", ".join(self.required_observation_types)
@@ -107,15 +105,11 @@ class MultiObjectTracker(ABC):
         if not isinstance(state, dict):
             raise ValueError("The `update` method must return a dictionary.")
 
-        missing_types = [
-            required_type for required_type in self.required_observation_types if required_type not in state
-        ]
+        missing_types = [required_type for required_type in self.required_observation_types if required_type not in state]
 
         if missing_types:
             missing_types_str = ", ".join(missing_types)
-            raise ValueError(
-                f"The returned state from `update` is missing the following required types: {missing_types_str}."
-            )
+            raise ValueError(f"The returned state from `update` is missing the following required types: {missing_types_str}.")
 
     def create_tracklet(self, state: Dict[str, Any]):
         tracklet = Tracklet()
@@ -187,9 +181,7 @@ class MultiObjectTracker(ABC):
                     if param_values["type"] == "categorical":
                         params[attribute][param_name] = trial.suggest_categorical(param_name, param_values["values"])
                     elif param_values["type"] == "float":
-                        params[attribute][param_name] = trial.suggest_float(
-                            param_name, param_values["low"], param_values["high"]
-                        )
+                        params[attribute][param_name] = trial.suggest_float(param_name, param_values["low"], param_values["high"])
                     elif param_values["type"] == "logfloat":
                         params[attribute][param_name] = trial.suggest_float(
                             param_name,
@@ -198,9 +190,7 @@ class MultiObjectTracker(ABC):
                             log=True,
                         )
                     elif param_values["type"] == "int":
-                        params[attribute][param_name] = trial.suggest_int(
-                            param_name, param_values["low"], param_values["high"]
-                        )
+                        params[attribute][param_name] = trial.suggest_int(param_name, param_values["low"], param_values["high"])
                     else:
                         raise ValueError(f"Unknown parameter type: {param_values['type']}")
 
