@@ -142,8 +142,8 @@ class MultiObjectTracker(ABC):
     def hparam_searh_space(self):
         return {}
 
-    def create_hparam_dict(self, hparam_search_space=None):
-        hparam_search_space = hparam_search_space or {}
+    def create_hparam_dict(self):
+        hparam_search_space = {}
         # Create a dictionary for all hyperparameters
         hparams = {"self": self.hparam_search_space} if hasattr(self, "hparam_search_space") else {}
         for attribute in vars(self):
@@ -214,7 +214,7 @@ class MultiObjectTracker(ABC):
 
             return np.mean(scores)  # return the average score
 
-        hparams = self.create_hparam_dict(hparam_search_space)
+        hparams = hparam_search_space or self.create_hparam_dict()
 
         logger.info("Hyperparameter search space:")
         for attribute, param_space in hparams.items():

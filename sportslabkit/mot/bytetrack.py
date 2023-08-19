@@ -29,6 +29,7 @@ class BYTETracker(MultiObjectTracker):
         ),
         conf=0.6,
         t_lost=1,
+        t_confirm=5,
     ):
         super().__init__(
             pre_init_args={
@@ -162,9 +163,7 @@ class BYTETracker(MultiObjectTracker):
         ##############################
 
         # Second association between unassigned tracklets and low confidence detections
-        matches_second, cost_matrix_second = self.second_matching_fn(
-            unassigned_tracklets, low_confidence_detections, True
-        )
+        matches_second, cost_matrix_second = self.second_matching_fn(unassigned_tracklets, low_confidence_detections, True)
 
         # [Second] assigned tracklets: update
         for match in matches_second:

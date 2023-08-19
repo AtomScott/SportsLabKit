@@ -8,8 +8,8 @@ class SORTTracker(MultiObjectTracker):
     """SORT tracker from https://arxiv.org/pdf/1602.00763.pdf"""
 
     hparam_search_space = {
-        "metric_gate": {"type": "float", "low": 1e-6, "high": 1e2},
-        "t_lost": {"type": "int", "low": 1e-6, "high": 1e2},
+        "metric_gate": {"type": "float", "low": 1e-2, "high": 1},
+        "t_lost": {"type": "int", "low": 1, "high": 1e3},
     }
 
     def __init__(
@@ -121,15 +121,15 @@ class SORTTracker(MultiObjectTracker):
 
     def post_track(self):
         # remove tracklets that a shorter than t_confirm
-        confirmed_tracklets = []
-        unconfirmed_tracklets = []
-        for tracklet in self.tracklets:
-            if tracklet.length < self.t_confim:
-                unconfirmed_tracklets.append(tracklet)
-            else:
-                confirmed_tracklets.append(tracklet)
-        self.tracklets = confirmed_tracklets
-        self.dead_tracklets += unconfirmed_tracklets
+        for tracklets in [self.tracklets, self.dead_tracklets]:
+            confirmed_tracklets = []
+            unconfirmed_tracklets = []
+            for tracklet in tracklets:
+                if tracklet.steps_alive < self.t_confim:
+                    unconfirmed_tracklets.append(tracklet)
+                else:
+                    confirmed_tracklets.append(tracklet)
+            tracklets = confirmed_tracklets
 
     @property
     def required_observation_types(self):

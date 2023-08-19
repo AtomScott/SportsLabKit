@@ -1,25 +1,10 @@
-from dataclasses import dataclass
 from typing import Dict, Tuple, Union
 
 import numpy as np
 from filterpy.kalman import predict, update
 
-from sportslabkit.motion_model.base import BaseConfig, BaseMotionModel
+from sportslabkit.motion_model.base import BaseMotionModel
 
-
-@dataclass
-class ModelConfigTemplate(BaseConfig):
-    name: str = "kalman_filter"
-    path: str = ""
-    device: str = "cpu"
-    dt: float = 1 / 30
-    process_noise: float = 1e-3
-    measurement_noise: float = 1e-3
-    confidence_scaler: float = 1.0
-
-@dataclass
-class InferenceConfigTemplate(BaseConfig):
-    pass
 
 class KalmanFilter(BaseMotionModel):
     hparam_search_space = {
@@ -33,14 +18,16 @@ class KalmanFilter(BaseMotionModel):
 
     def __init__(
         self,
-        model_config: Dict = {},
-        inference_config: Dict = {},
+        dt: float = 1 / 30,
+        process_noise: float = 1e-3,
+        measurement_noise: float = 1e-3,
+        confidence_scaler: float = 1.0,
     ):
-        super().__init__(model_config, inference_config)
-        self.dt = self.model_config["dt"]
-        self.process_noise = self.model_config["process_noise"]
-        self.measurement_noise = self.model_config["measurement_noise"]
-        self.confidence_scaler = self.model_config["confidence_scaler"]
+        super().__init__()
+        self.dt = dt
+        self.process_noise = process_noise
+        self.measurement_noise = measurement_noise
+        self.confidence_scaler = confidence_scaler
         # self._initialize_kalman_filter()
 
     def get_initial_kalman_filter_states(self, box: np.ndarray) -> Dict[str, np.ndarray]:
@@ -152,11 +139,3 @@ class KalmanFilter(BaseMotionModel):
             )
         pred = new_states["x"][:4]
         return pred, new_states
-
-    @property
-    def model_config_template(self):
-        return ModelConfigTemplate
-
-    @property
-    def inference_config_template(self):
-        return InferenceConfigTemplate

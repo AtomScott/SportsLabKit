@@ -1,3 +1,4 @@
+import inspect
 from sportslabkit.detection_model.base import BaseDetectionModel
 from sportslabkit.detection_model.dummy import DummyDetectionModel
 from sportslabkit.detection_model.yolov8 import YOLOv8, YOLOv8l, YOLOv8m, YOLOv8n, YOLOv8s, YOLOv8x
@@ -63,13 +64,13 @@ def load(model_name, **model_config):
     """
     for cls in inheritors(BaseDetectionModel):
         if model_name in [cls.__name__.lower(), cls.__name__]:
-            return cls(**model_config)
-    logger.warning(
-        f"Model {model_name} not found. Available models: {[cls.__name__ for cls in inheritors(BaseDetectionModel)]} (lowercase is allowed)"
-    )
+            # Filtering the model_config to only include keys that match the parameters of the target class
+            config = {k.lower(): v for k, v in model_config.items()}
+            return cls(**config)
+
+    logger.warning(f"Model {model_name} not found. Available models: {[cls.__name__ for cls in inheritors(BaseDetectionModel)]} (lowercase is allowed)")
 
 
 if __name__ == "__main__":
     for cls in inheritors(BaseDetectionModel):
         print(cls.__name__)
-

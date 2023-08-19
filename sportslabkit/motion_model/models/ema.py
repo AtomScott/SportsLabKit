@@ -3,20 +3,7 @@ from typing import Tuple, Union
 
 import numpy as np
 
-from sportslabkit.motion_model.base import BaseConfig, BaseMotionModel
-
-
-@dataclass
-class ModelConfigTemplate(BaseConfig):
-    name: str = "ema"
-    path: str = ""
-    device: str = "cpu"
-    gamma: float = 0.5
-
-
-@dataclass
-class InferenceConfigTemplate(BaseConfig):
-    pass
+from sportslabkit.motion_model.base import BaseMotionModel
 
 
 class ExponentialMovingAverage(BaseMotionModel):
@@ -64,11 +51,3 @@ class ExponentialMovingAverage(BaseMotionModel):
             EMA_t = gamma * EMA_t + (1 - gamma) * box
         new_states = {"EMA_t": EMA_t}
         return EMA_t, new_states
-
-    @property
-    def model_config_template(self):
-        return ModelConfigTemplate
-
-    @property
-    def inference_config_template(self):
-        return InferenceConfigTemplate

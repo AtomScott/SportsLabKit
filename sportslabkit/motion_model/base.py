@@ -12,66 +12,6 @@ from sportslabkit import Tracklet
 from sportslabkit.logger import logger
 
 
-@dataclass
-class BaseConfig:
-    """Base class for configuration dataclasses.
-
-    This class implements basic functionality for handling configuration dataclasses. It requires subclasses to implement a `from_dict` method that converts a dictionary to the dataclass.
-
-    Example:
-        @dataclass
-        class MyConfig(BaseConfig):
-            my_field: str
-            my_other_field: int
-
-            @classmethod
-            def from_dict(cls, config: dict):
-                return cls(**config)
-
-        config = MyConfig.from_dict({"my_field": "foo", "my_other_field": 42})
-    """
-
-    @classmethod
-    def from_dict(cls, data: dict) -> "ModelConfig":
-        return cls(**data)
-
-
-def validate_config(config: dict, config_class):
-    """
-    Validate a configuration dictionary against a dataclass.
-
-    Args:
-        config (dict): The configuration dictionary to validate.
-        config_class (type): The dataclass to validate against.
-
-    Returns:
-        dict: The updated configuration dictionary, containing the default options updated/overwritten by those passed in the config argument.
-    """
-    # Get the names of all fields in the dataclass
-    valid_keys = {f.name for f in fields(config_class)}
-    # Check if there are any unknown keys in the config
-    unknown_keys = set(config.keys()) - valid_keys
-    if unknown_keys:
-        raise ValueError(f"Unknown keys in configuration: {unknown_keys}. Valid keys are {valid_keys}")
-
-    # Create a dictionary with the default options of the dataclass
-    default_config = asdict(config_class())
-    # Update the default configuration with the input configuration
-    default_config.update(config)
-
-    try:
-        # Try to create an instance of the dataclass
-        config_class(**default_config)
-    except TypeError as e:
-        # If a TypeError was raised, an argument was missing or had the wrong type
-        missing_keys = valid_keys - set(default_config.keys())
-        raise ValueError(f"Missing or incorrect type keys in configuration: {missing_keys}. Error: {e}")
-
-    logger.debug(f"Configuration: {default_config}")
-
-    return default_config
-
-
 class BaseMotionModel(ABC):
     """Abstract base class for motion models.
 
@@ -83,11 +23,9 @@ class BaseMotionModel(ABC):
     required_observation_types: List[str] = NotImplemented
     required_state_types: List[str] = NotImplemented
 
-    def __init__(self, model_config={}, inference_config={}):
+    def __init__(self):
         """Initialize the MotionModel."""
 
-        self.model_config = self.validate_model_config(model_config)
-        self.inference_config = self.validate_inference_config(inference_config)
         self.input_is_batched = False  # initialize the input_is_batched attribute
         self.name = self.__class__.__name__
 
@@ -177,34 +115,6 @@ class BaseMotionModel(ABC):
         for state in self.required_state_types:
             if state not in tracklet._states:
                 tracklet.register_state_type(state)
-
-    @property
-    @abstractmethod
-    def model_config_template(self) -> BaseConfig:
-        # return a subclass of BaseConfig or some kind of dataclass
-        raise NotImplementedError
-
-    @property
-    @abstractmethod
-    def inference_config_template(self) -> BaseConfig:
-        # return a subclass of BaseConfig or some kind of dataclass
-        raise NotImplementedError
-
-    def show_model_config(self):
-        logger.info("Model configuration:")
-        for key, value in self.model_config.items():
-            logger.info(f"  {key}: {value}")
-
-    def show_inference_config(self):
-        logger.info("Inference configuration:")
-        for key, value in self.inference_config.items():
-            logger.info(f"  {key}: {value}")
-
-    def validate_model_config(self, config: dict):
-        return validate_config(config, self.model_config_template)
-
-    def validate_inference_config(self, config: dict):
-        return validate_config(config, self.inference_config_template)
 
 
 class BaseMotionModule(pl.LightningModule):

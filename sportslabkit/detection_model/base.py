@@ -12,7 +12,6 @@ from sportslabkit.types.detections import Detections
 from sportslabkit.utils import read_image
 
 
-
 def convert_to_detection(pred):
     """Convert an output to a single detection object.
 
@@ -134,10 +133,7 @@ class BaseDetectionModel(ABC):
         """
         # First the length of outputs and inputs should be equal.
         if len(outputs) != len(inputs):
-            raise ValueError(
-                "Length of outputs does not match length of inputs. "
-                f"Got {len(outputs)} outputs and {len(inputs)} inputs."
-            )
+            raise ValueError("Length of outputs does not match length of inputs. " f"Got {len(outputs)} outputs and {len(inputs)} inputs.")
 
         if isinstance(outputs[0], Detections):
             return outputs
