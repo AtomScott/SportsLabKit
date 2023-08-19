@@ -37,6 +37,7 @@ extensions = [
     "m2r2",
     "nbsphinx",
     "autoapi.extension",
+    'sphinxcontrib.gtagjs',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -335,6 +336,13 @@ autodoc_mock_imports = [
     "more_itertools",
     "sklearn",
 ]
+
+# -- Options for Google Analytics ---------------------------------------------
+
+gtagjs_ids = [
+    "G-GXSVPS0MXS",
+]
+
 
 # -- Options for intersphinx ---------------------------------------------------
 intersphinx_mapping = {
