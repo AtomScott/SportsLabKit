@@ -16,11 +16,22 @@ class SORTTracker(MultiObjectTracker):
         self,
         detection_model,
         motion_model,
-        metric=IoUCMM(),
-        metric_gate=1.0,
-        t_lost=1,
-        t_confirm=5,
+        metric: IoUCMM = IoUCMM(),
+        metric_gate: float = 1.0,
+        t_lost: int = 1,
+        t_confirm: int = 5,
     ):
+        """
+        Initializes the SORT Tracker.
+
+        Args:
+            detection_model (Any): The model used for object detection.
+            motion_model (Any): The model used for motion prediction.
+            metric (IoUCMM, optional): The metric used for matching. Defaults to IoUCMM().
+            metric_gate (float, optional): The gating threshold for the metric. Defaults to 1.0.
+            t_lost (int, optional): The number of frames a tracklet is allowed to be lost for. Defaults to 1.
+            t_confirm (int, optional): The number of frames a tracklet needs to be confirmed. Defaults to 5.
+        """
         super().__init__(
             pre_init_args={
                 "detection_model": detection_model,
