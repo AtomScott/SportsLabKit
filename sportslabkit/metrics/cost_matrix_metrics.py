@@ -50,8 +50,14 @@ class BaseCostMatrixMetric(ABC):
 class IoUCMM(BaseCostMatrixMetric):
     """Compute the IoU Cost Matrix Metric between trackers and detections."""
 
+    def __init__(self, use_pred_box=False):
+        self.use_pred_box = use_pred_box
+
     def compute_metric(self, trackers: Sequence[Tracklet], detections: Sequence[Detection]) -> np.ndarray:
-        bb1 = np.array([(t.box[0], t.box[1], t.box[0] + t.box[2], t.box[1] + t.box[3]) for t in trackers])
+        if self.use_pred_box:
+            bb1 = np.array([(t.pred_box[0], t.pred_box[1], t.pred_box[0] + t.pred_box[2], t.pred_box[1] + t.pred_box[3]) for t in trackers])
+        else:
+            bb1 = np.array([(t.box[0], t.box[1], t.box[0] + t.box[2], t.box[1] + t.box[3]) for t in trackers])
         bb2 = np.array([(d.box[0], d.box[1], d.box[0] + d.box[2], d.box[1] + d.box[3]) for d in detections])
         return 1 - cdist(bb1, bb2, iou_score)
 
@@ -77,9 +83,7 @@ class EuclideanCMM2D(BaseCostMatrixMetric):
     def compute_metric(self, trackers: Sequence[Tracklet], detections: Sequence[Detection]) -> np.ndarray:
         t = trackers[0]
         d = detections[0]
-        centers1 = np.array(
-            [(t.get_state("pitch_coordinates")[0], t.get_state("pitch_coordinates")[1]) for t in trackers]
-        )
+        centers1 = np.array([(t.get_state("pitch_coordinates")[0], t.get_state("pitch_coordinates")[1]) for t in trackers])
         centers2 = np.array([(d.pitch_coordinates[0], d.pitch_coordinates[1]) for d in detections])
         return cdist(centers1, centers2) / self.normalizer  # keep values in [0, 1]
 

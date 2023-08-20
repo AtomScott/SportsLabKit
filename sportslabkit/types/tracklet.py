@@ -6,6 +6,7 @@ from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Type, U
 import pandas as pd
 
 from sportslabkit.dataframe.bboxdataframe import BBoxDataFrame
+from sportslabkit.logger import logger
 import hashlib
 
 
@@ -51,20 +52,27 @@ class Tracklet:
     def __init__(self):
         self.id: int = int(str(int(uuid.uuid4()))[:12])
         self.steps_alive: int = 0
-        self.steps_positive: int = 0
-        self.staleness: float = 0.0
         self.global_step: int = 0
-        self.max_staleness: float = 12.0
+        self.staleness: int = 0
+        self.max_staleness: int = 12
         self._observations: Dict[str, List[Any]] = {}
         self._states: Dict[str, Any] = {}
 
-        # # TODO: this shouldn't be hardcoded
-        # for name in ["box", "score", "class_id", "feature"]:
-        #     self.register_observation_type(name)
+    def __len__(self) -> int:
+        observation_value_lengths = {key: len(self._observations[key]) for key in self._observations.keys()}
+
+        # check if all value lengths are the same
+        if len(set(observation_value_lengths.values())) != 1:
+            logger.warning(f"Tracker {self.id} has inconsistent observation lengths:")
+            for key, val_len in observation_value_lengths.items():
+                logger.warning(f"{key}: {val_len}")
+        return observation_value_lengths[list(observation_value_lengths.keys())[0]]
 
     def __getattr__(self, name: str) -> Any:
         if name in self._observations:
             return self.get_observation(name)
+        elif name in self._states:
+            return self.get_state(name)
         else:
             raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{name}'")
 
@@ -201,6 +209,17 @@ class Tracklet:
         else:
             raise ValueError(f"State type '{name}' not registered")
 
+    def cleanup(self):
+        # if staleness > 0, remove most recent n=staleness observations
+        staleness = self.staleness
+        pre_cleanup_length = len(self)
+
+        if staleness > 0:
+            self._observations = {k: v[:-staleness] for k, v in self._observations.items()}
+
+        post_cleanup_length = len(self)
+        logger.debug(f"{self.id} has cleaned up {pre_cleanup_length - post_cleanup_length}(={pre_cleanup_length} - {post_cleanup_length}) observations (staleness of {staleness})")
+
     # FIXME: Maybe refactor this to be override_current_observation?
     def update_current_observation(self, name: str, value: Any) -> None:
         """Update the most recent observation with a new value.
@@ -261,15 +280,13 @@ class Tracklet:
 
         df = pd.DataFrame(data_dict)
 
-        df = pd.DataFrame(df["box"].to_list(), columns=["bb_left", "bb_top", "bb_width", "bb_height"]).join(
-            df.drop(columns=["box"])
-        )
+        df = pd.DataFrame(df["box"].to_list(), columns=["bb_left", "bb_top", "bb_width", "bb_height"]).join(df.drop(columns=["box"]))
 
         df.rename(columns={"global_step": "frame", "score": "conf"}, inplace=True)
 
         df.set_index(["frame"], inplace=True)
-        if 'conf' not in df.columns:
-            df['conf'] = 1.0
+        if "conf" not in df.columns:
+            df["conf"] = 1.0
 
         box_df = df[["bb_left", "bb_top", "bb_width", "bb_height", "conf"]]
         team_id = 0
@@ -282,41 +299,6 @@ class Tracklet:
 
         bbdf = BBoxDataFrame(box_df.values, index=df.index, columns=idx)
         return bbdf
-
-    # def update(
-    #     self,
-    #     detection: Union[Detection, None],
-    #     states: Optional[Dict[str, Any]] = None,
-    # ) -> None:
-    #     """Update the tracker with a new detection and optional additional observation values.
-
-    #     Args:
-    #         detection (Union[Detection, None]): Detection object to update the tracker with, or None if no detection is available.
-    #         global_step (Optional[int], optional): The global step counter for the tracking process. Defaults to None.
-    #         **kwargs: Additional keyword arguments containing observation values to update, which will overwrite the values from the detection object if there are any overlaps.
-
-    #     Note:
-    #         If there is no detection (i.e., detection is None), the tracker will still update the observation with None values.
-    #         Additional observation values provided through keyword arguments will still be updated even if detection is None.
-
-    #     Example:
-    #         # Assuming tracker is an instance of the SingleObjectTracker class and detection is a Detection object
-    #         tracker.update(detection, global_step=5, velocity=0.8)
-    #     """
-
-    #     self.steps_alive += 1
-    #     if global_step is not None:
-    #         self.global_step = int(global_step)
-    #     else:
-    #         self.global_step += 1
-
-    #     if detection is not None:
-    #         self.steps_positive += 1
-    #         self.staleness = 0.0
-    #         self.update_observation(detection, **kwargs)
-    #     else:
-    #         self.staleness += 1
-    #         self.update_observation(None, **kwargs)
 
     def print(self, num_recent_obs: int = 1, use_colors: bool = False) -> None:
         """
@@ -336,9 +318,7 @@ class Tracklet:
 
         title = f"Tracklet(id={self.id}, steps_alive={self.steps_alive}, staleness={self.staleness}, is_active={self.is_active()})"
         max_name_length = max([len(name) for name in self._observations.keys()])
-        max_values_length = max(
-            [len(", ".join([str(val) for val in obs[-num_recent_obs:]])) for obs in self._observations.values()]
-        )
+        max_values_length = max([len(", ".join([str(val) for val in obs[-num_recent_obs:]])) for obs in self._observations.values()])
 
         box_width = max(len(title) + 4, max_name_length + max_values_length + 7)
         box_width = min(box_width, 100)
@@ -348,9 +328,7 @@ class Tracklet:
         message += f"{'╟' + '─' * box_width + '╢'}{ENDC}\n"
         for name, obs in self._observations.items():
             recent_values = obs[-num_recent_obs:] if obs else []
-            values_str = ", ".join(
-                [f"{WHITE}{str(val)[:60]}{ENDC}" if len(str(val)) > 60 else str(val) for val in recent_values]
-            )
+            values_str = ", ".join([f"{WHITE}{str(val)[:60]}{ENDC}" if len(str(val)) > 60 else str(val) for val in recent_values])
             message += f"{id_color}║ {ENDC}"
             message += f"{WHITE} {name}: [{values_str}]{' ' * (box_width - len(name) - len(values_str) - 6)}{ENDC}"
             message += f"{id_color}║{ENDC}\n"
@@ -399,3 +377,37 @@ class Tracklet:
     #             self.update_observation(key, new_observations[key])
     #         else:
     #             self.update_observation(key, None)
+    # def update(
+    #     self,
+    #     detection: Union[Detection, None],
+    #     states: Optional[Dict[str, Any]] = None,
+    # ) -> None:
+    #     """Update the tracker with a new detection and optional additional observation values.
+
+    #     Args:
+    #         detection (Union[Detection, None]): Detection object to update the tracker with, or None if no detection is available.
+    #         global_step (Optional[int], optional): The global step counter for the tracking process. Defaults to None.
+    #         **kwargs: Additional keyword arguments containing observation values to update, which will overwrite the values from the detection object if there are any overlaps.
+
+    #     Note:
+    #         If there is no detection (i.e., detection is None), the tracker will still update the observation with None values.
+    #         Additional observation values provided through keyword arguments will still be updated even if detection is None.
+
+    #     Example:
+    #         # Assuming tracker is an instance of the SingleObjectTracker class and detection is a Detection object
+    #         tracker.update(detection, global_step=5, velocity=0.8)
+    #     """
+
+    #     self.steps_alive += 1
+    #     if global_step is not None:
+    #         self.global_step = int(global_step)
+    #     else:
+    #         self.global_step += 1
+
+    #     if detection is not None:
+    #         self.steps_positive += 1
+    #         self.staleness = 0.0
+    #         self.update_observation(detection, **kwargs)
+    #     else:
+    #         self.staleness += 1
+    #         self.update_observation(None, **kwargs)
