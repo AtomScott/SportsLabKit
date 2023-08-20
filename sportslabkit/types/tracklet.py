@@ -40,33 +40,29 @@ class Tracklet:
 
     States are stored in a dictionary, where the key is the name of the state and the value is the most recent state. The state is an indication of the current state of the tracker.
 
+    Args:
+        max_staleness (int, optional): The maximum number of steps a tracker can be stale for before it is considered dead. Defaults to 5.
     Attributes:
         id (int): unique id of the tracker
         steps_alive (int): number of steps the tracker was alive
-        steps_positive (int): number of steps the tracker was positive (i.e., had a detection associated with it)
         staleness (float): number of steps since the last positive update
         global_step (int): number of steps since the start of the tracking process
-        max_staleness (float): number of steps after which a tracker is considered stale
+        max_staleness (float): number of steps after which a tracker is considered dead
     """
 
-    def __init__(self):
+    def __init__(self, max_staleness: int = 5):
         self.id: int = int(str(int(uuid.uuid4()))[:12])
         self.steps_alive: int = 0
         self.global_step: int = 0
         self.staleness: int = 0
-        self.max_staleness: int = 12
+        self.max_staleness: int = max_staleness
         self._observations: Dict[str, List[Any]] = {}
         self._states: Dict[str, Any] = {}
 
     def __len__(self) -> int:
-        observation_value_lengths = {key: len(self._observations[key]) for key in self._observations.keys()}
+        assert self.check_observation_lengths(), "Observation lengths are inconsistent"
+        return len(list(self._observations.values())[0])
 
-        # check if all value lengths are the same
-        if len(set(observation_value_lengths.values())) != 1:
-            logger.warning(f"Tracker {self.id} has inconsistent observation lengths:")
-            for key, val_len in observation_value_lengths.items():
-                logger.warning(f"{key}: {val_len}")
-        return observation_value_lengths[list(observation_value_lengths.keys())[0]]
 
     def __getattr__(self, name: str) -> Any:
         if name in self._observations:
@@ -78,6 +74,16 @@ class Tracklet:
 
     def __repr__(self) -> str:
         return f"Tracklet(id={self.id}, current_box={self.box})"
+
+    def check_observation_lengths(self) -> None:
+        """check if all value lengths are the same"""
+        observation_value_lengths = {k: len(v) for k, v in self._observations.items()}
+        valid = len(set(observation_value_lengths.values())) == 1
+        if not valid:
+            logger.warning(f"Tracker {self.id} has inconsistent observation lengths:")
+            for key, val_len in observation_value_lengths.items():
+                logger.warning(f"{key}: {val_len}")
+        return valid
 
     def register_observation_type(self, name: str) -> None:
         """Register a new observation type.
@@ -210,15 +216,9 @@ class Tracklet:
             raise ValueError(f"State type '{name}' not registered")
 
     def cleanup(self):
-        # if staleness > 0, remove most recent n=staleness observations
-        staleness = self.staleness
-        pre_cleanup_length = len(self)
-
-        if staleness > 0:
-            self._observations = {k: v[:-staleness] for k, v in self._observations.items()}
-
-        post_cleanup_length = len(self)
-        logger.debug(f"{self.id} has cleaned up {pre_cleanup_length - post_cleanup_length}(={pre_cleanup_length} - {post_cleanup_length}) observations (staleness of {staleness})")
+        """Remove most recent n=staleness observations"""
+        self._observations = {k: v[:-self.staleness] for k, v in self._observations.items()}
+        self.steps_alive -= self.staleness
 
     # FIXME: Maybe refactor this to be override_current_observation?
     def update_current_observation(self, name: str, value: Any) -> None:
@@ -234,6 +234,7 @@ class Tracklet:
             raise ValueError(f"Observation type '{name}' not registered")
 
     def increment_counter(self, global_step: Optional[int] = None) -> None:
+        """Increment the step counters, steps_alive and global_step. If global_step is provided, it will be used instead of incrementing the global_step counter."""
         self.steps_alive += 1
         if global_step is not None:
             self.global_step = int(global_step)
@@ -262,9 +263,6 @@ class Tracklet:
         Returns:
             BBoxDataFrame: BBoxDataFrame of the tracker
         """
-
-        if len(self.box) == 0:
-            return pd.DataFrame()
 
         if self.global_step >= self.steps_alive:
             frame_range = range(self.global_step + 1 - self.steps_alive, self.global_step + 1)

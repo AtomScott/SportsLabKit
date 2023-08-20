@@ -14,22 +14,12 @@ from sportslabkit.metrics import hota_score
 
 
 class MultiObjectTracker(ABC):
-    def __init__(self, window_size=1, step_size=None, pre_init_args={}, post_init_args={}):
+    def __init__(self, window_size=1, step_size=None, max_staleness=5, min_length=5):
         self.window_size = window_size
         self.step_size = step_size or window_size
-
-        self.pre_init_args = pre_init_args
-        self.post_init_args = post_init_args
-        self.detection_model = None
+        self.max_staleness = max_staleness
+        self.min_length = min_length
         self.reset()
-
-    def pre_initialize(self, **kwargs):
-        # Hook that subclasses can override
-        pass
-
-    def post_initialize(self, **kwargs):
-        # Hook that subclasses can override
-        pass
 
     def update_tracklet(self, tracklet: Tracklet, states: Dict[str, Any]):
         self._check_required_observations(states)
@@ -44,16 +34,24 @@ class MultiObjectTracker(ABC):
     def process_sequence_item(self, sequence: Any):
         self.frame_count += 1  # incremenmt first to match steps alive
         is_batched = isinstance(sequence, np.ndarray) and len(sequence.shape) == 4
-        tracklets = self.tracklets
+        tracklets = self.alive_tracklets
         if is_batched:
             raise NotImplementedError("Batched tracking is not yet supported")
 
         assigned_tracklets, new_tracklets, unassigned_tracklets = self.update(sequence, tracklets)
-        logger.debug(f"assigned_tracklets: {len(assigned_tracklets)}, new_tracklets: {len(new_tracklets)}, unassigned_tracklets: {len(unassigned_tracklets)}")
-        self.tracklets = assigned_tracklets + new_tracklets
 
-        # Update the dead tracklets with nan values
-        self.dead_tracklets += unassigned_tracklets
+        # Manage tracklet staleness
+        assigned_tracklets = self.reset_staleness(assigned_tracklets)
+        unassigned_tracklets = self.increment_staleness(unassigned_tracklets)
+        non_stale_tracklets, stale_tracklets = self.separate_stale_tracklets(unassigned_tracklets)
+        stale_tracklets = self.cleanup_tracklets(stale_tracklets)
+
+        # Report tracklet status
+        logger.debug(f"assigned: {len(assigned_tracklets)}, new: {len(new_tracklets)}, unassigned: {len(non_stale_tracklets)}, stale: {len(stale_tracklets)}")
+
+        # Update alive and dead tracklets
+        self.alive_tracklets = assigned_tracklets + new_tracklets + non_stale_tracklets
+        self.dead_tracklets += stale_tracklets
 
     def track(self, sequence: Union[Iterable[Any], np.ndarray]) -> Tracklet:
         if not isinstance(sequence, (Iterable, np.ndarray)):
@@ -63,11 +61,31 @@ class MultiObjectTracker(ABC):
         with tqdm(range(0, len(sequence) - self.window_size + 1, self.step_size), desc="Tracking Progress") as t:
             for i in t:
                 self.process_sequence_item(sequence[i : i + self.window_size].squeeze())
-                t.set_postfix_str(f"Active: {len(self.tracklets)}, Dead: {len(self.dead_tracklets)}", refresh=True)
+                t.set_postfix_str(f"Active: {len(self.alive_tracklets)}, Dead: {len(self.dead_tracklets)}", refresh=True)
+        self.alive_tracklets = self.cleanup_tracklets(self.alive_tracklets)
+        print(self.alive_tracklets)
+        print(self.dead_tracklets)
         self.post_track()
         bbdf = self.to_bbdf()
         return bbdf
 
+    def cleanup_tracklets(self, tracklets):
+        for i, _ in enumerate(tracklets):
+            tracklets[i].cleanup()
+        
+        filter_short_tracklets = lambda tracklet: len(tracklet) >= self.min_length
+        tracklets = list(filter(filter_short_tracklets, tracklets))
+        return tracklets
+
+    def increment_staleness(self, tracklets):
+        for i, _ in enumerate(tracklets):
+            tracklets[i].staleness += 1
+        return tracklets
+
+    def reset_staleness(self, tracklets):
+        for i, _ in enumerate(tracklets):
+            tracklets[i].staleness = 0
+        return tracklets
     def pre_track(self):
         # Hook that subclasses can override
         pass
@@ -76,15 +94,11 @@ class MultiObjectTracker(ABC):
         pass
 
     def reset(self):
-        self.pre_initialize(**self.pre_init_args)
-
         # Initialize the single object tracker
         logger.debug("Initializing tracker...")
-        self.tracklets = []
+        self.alive_tracklets = []
         self.dead_tracklets = []
         self.frame_count = 0
-
-        self.post_initialize(**self.post_init_args)
         logger.debug("Tracker initialized.")
 
     def _check_required_observations(self, target: Dict[str, Any]):
@@ -112,7 +126,7 @@ class MultiObjectTracker(ABC):
             raise ValueError(f"The returned state from `update` is missing the following required types: {missing_types_str}.")
 
     def create_tracklet(self, state: Dict[str, Any]):
-        tracklet = Tracklet()
+        tracklet = Tracklet(max_staleness=self.max_staleness)
         for required_type in self.required_observation_types:
             tracklet.register_observation_type(required_type)
         for required_type in self.required_state_types:
@@ -124,11 +138,17 @@ class MultiObjectTracker(ABC):
 
     def to_bbdf(self):
         """Create a bounding box dataframe."""
-        df = pd.concat([t.to_bbdf() for t in self.tracklets], axis=1).sort_index()
-        df = df.reindex(index=range(self.frame_count))
-
-        all_tracklets = self.tracklets + self.dead_tracklets
+        all_tracklets = self.alive_tracklets + self.dead_tracklets
         return pd.concat([t.to_bbdf() for t in all_tracklets], axis=1).sort_index()
+
+    def separate_stale_tracklets(self, unassigned_tracklets):
+        stale_tracklets, non_stale_tracklets = [], []
+        for tracklet in unassigned_tracklets:
+            if tracklet.is_stale():
+                stale_tracklets.append(tracklet)
+            else:
+                non_stale_tracklets.append(tracklet)
+        return non_stale_tracklets, stale_tracklets
 
     @property
     def required_observation_types(self):
