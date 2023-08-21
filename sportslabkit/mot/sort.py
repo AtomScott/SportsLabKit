@@ -58,7 +58,6 @@ class SORTTracker(MultiObjectTracker):
             predicted_box = self.motion_model(tracklet)
             tracklet.update_state("pred_box", predicted_box)
 
-
         # extract features from the detections
         detections = detections[0].to_list()
 
@@ -112,17 +111,6 @@ class SORTTracker(MultiObjectTracker):
                 unassigned_tracklets.append(tracklet)
 
         return assigned_tracklets, new_tracklets, unassigned_tracklets
-
-    # def post_track(self):
-    #     # remove tracklets that are shorter than t_confirm
-    #     n_tracklets = len(self.alive_tracklets) + len(self.dead_tracklets)
-        
-    #     filter_short_tracklets = lambda tracklet: len(tracklet) >= self.t_confim
-    #     self.active_tracklets = list(filter(filter_short_tracklets, self.active_tracklets))
-    #     self.dead_tracklets = list(filter(filter_short_tracklets, self.dead_tracklets))
-        
-    #     n_confirmed_tracklets = len(self.alive_tracklets) + len(self.dead_tracklets)
-    #     logger.debug(f"Removed {n_tracklets - n_confirmed_tracklets} tracklets shorter than {self.t_confim} frames.")
 
     @property
     def required_observation_types(self):
