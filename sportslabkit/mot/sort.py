@@ -8,8 +8,8 @@ class SORTTracker(MultiObjectTracker):
     """SORT tracker from https://arxiv.org/pdf/1602.00763.pdf"""
 
     hparam_search_space = {
-        "metric_gate": {"type": "float", "low": 1e-2, "high": 1},
-        "t_lost": {"type": "int", "low": 1, "high": 1e3},
+        "max_staleness": {"type": "int", "low": 1, "high": 1e3},
+        "min_length": {"type": "int", "low": 1, "high": 1e3},
     }
 
     def __init__(
@@ -58,10 +58,6 @@ class SORTTracker(MultiObjectTracker):
 
         # Use predicted tracklets to match with detections since the order is the same
         matches, cost_matrix = self.matching_fn(tracklets, detections, return_cost_matrix=True)
-
-        #
-        # for i, tracklet in enumerate(tracklets):
-        #     tracklet.update_current_observation("box", current_boxes[i])
 
         assigned_tracklets = []
         new_tracklets = []

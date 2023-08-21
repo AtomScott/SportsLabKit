@@ -19,6 +19,7 @@ class MultiObjectTracker(ABC):
         self.step_size = step_size or window_size
         self.max_staleness = max_staleness
         self.min_length = min_length
+        self.trial_params = []
         self.reset()
 
     def update_tracklet(self, tracklet: Tracklet, states: Dict[str, Any]):
@@ -180,6 +181,45 @@ class MultiObjectTracker(ABC):
                     }
         return hparams
 
+    def get_new_hyperparameters(self, hparams, trial):
+        params = {}
+        for attribute, param_space in hparams.items():
+            params[attribute] = {}
+            for param_name, param_values in param_space.items():
+                if param_values["type"] == "categorical":
+                    params[attribute][param_name] = trial.suggest_categorical(param_name, param_values["values"])
+                elif param_values["type"] == "float":
+                    params[attribute][param_name] = trial.suggest_float(param_name, param_values["low"], param_values["high"])
+                elif param_values["type"] == "logfloat":
+                    params[attribute][param_name] = trial.suggest_float(
+                        param_name,
+                        param_values["low"],
+                        param_values["high"],
+                        log=True,
+                    )
+                elif param_values["type"] == "int":
+                    params[attribute][param_name] = trial.suggest_int(param_name, param_values["low"], param_values["high"])
+                else:
+                    raise ValueError(f"Unknown parameter type: {param_values['type']}")
+        return params
+
+    def apply_hyperparameters(self, params):
+        # Apply the hyperparameters to the attributes of `self`
+        for attribute, param_values in params.items():
+            for param_name, param_value in param_values.items():
+                if attribute not in self.__dict__ and attribute != "self":
+                    raise AttributeError(f"{attribute=} not found in object")  # Raising specific error
+
+                if attribute == "self":
+                    logger.debug(f"Setting {param_name} to {param_value} for {self}")
+                    setattr(self, param_name, param_value)
+                else:
+                    attr_obj = getattr(self, attribute)
+                    if param_name in attr_obj.__dict__:
+                        setattr(attr_obj, param_name, param_value)
+                        logger.debug(f"Setting {param_name} to {param_value} for {attribute}")
+                    else:
+                        raise TypeError(f"Cannot set {param_name} on {attribute}, as it is immutable or not in __dict__")
     def tune_hparams(
         self,
         frames_list,
@@ -194,42 +234,9 @@ class MultiObjectTracker(ABC):
         pruner=None,
     ):
         def objective(trial: optuna.Trial):
-            params = {}
-            for attribute, param_space in hparams.items():
-                params[attribute] = {}
-                for param_name, param_values in param_space.items():
-                    if param_values["type"] == "categorical":
-                        params[attribute][param_name] = trial.suggest_categorical(param_name, param_values["values"])
-                    elif param_values["type"] == "float":
-                        params[attribute][param_name] = trial.suggest_float(param_name, param_values["low"], param_values["high"])
-                    elif param_values["type"] == "logfloat":
-                        params[attribute][param_name] = trial.suggest_float(
-                            param_name,
-                            param_values["low"],
-                            param_values["high"],
-                            log=True,
-                        )
-                    elif param_values["type"] == "int":
-                        params[attribute][param_name] = trial.suggest_int(param_name, param_values["low"], param_values["high"])
-                    else:
-                        raise ValueError(f"Unknown parameter type: {param_values['type']}")
-
-            # Apply the hyperparameters to the attributes of `self`
-            for attribute, param_values in params.items():
-                for param_name, param_value in param_values.items():
-                    if attribute not in self.__dict__ and attribute != "self":
-                        raise AttributeError(f"{attribute=} not found in object")  # Raising specific error
-
-                    if attribute == "self":
-                        logger.debug(f"Setting {param_name} to {param_value} for {self}")
-                        setattr(self, param_name, param_value)
-                    else:
-                        attr_obj = getattr(self, attribute)
-                        if param_name in attr_obj.__dict__:
-                            setattr(attr_obj, param_name, param_value)
-                            logger.debug(f"Setting {param_name} to {param_value} for {attribute}")
-                        else:
-                            raise TypeError(f"Cannot set {param_name} on {attribute}, as it is immutable or not in __dict__")
+            params = self.get_new_hyperparameters(hparams, trial)
+            self.trial_params.append(params)
+            self.apply_hyperparameters(params)
 
             scores = []
             for i, (frames, bbdf_gt) in enumerate(zip(frames_list, bbdf_gt_list)):
@@ -238,7 +245,7 @@ class MultiObjectTracker(ABC):
                     self.detection_model = self.detection_models[i]
                 try:
                     bbdf_pred = self.track(frames)
-                except ValueError:  # Reuturn nan when no tracks are detected
+                except ValueError as e:  # Reuturn nan when no tracks are detected
                     return np.nan
                 score = hota_score(bbdf_pred, bbdf_gt)["HOTA"]
                 scores.append(score)
@@ -279,71 +286,18 @@ class MultiObjectTracker(ABC):
         if pruner is None:
             pruner = optuna.pruners.MedianPruner()
 
+        self.trial_params = [] # Used to store the parameters for each trial
         study = optuna.create_study(direction="maximize", sampler=sampler, pruner=pruner)
         study.optimize(objective, n_trials=n_trials)
-
+        
         if reuse_detections:
             # reset detection model
             self.detection_model = og_detection_model
-        best_params = study.best_params
-        best_iou = study.best_value
+        
+        best_value = study.best_value
+        self.best_params = self.trial_params[study.best_trial.number]
+        self.apply_hyperparameters(self.best_params)
+
         if return_study:
-            return best_params, best_iou, study
-        return best_params, best_iou
-
-    # def tune_hparams(
-    #     self,
-    #     frames_list: List[np.ndarray],
-    #     bbdf_gt_list: List[pd.DataFrame],
-    #     n_trials: int = 100,
-    #     hparam_search_space: Optional[Dict[str, Any]] = None,
-    #     verbose: bool = False,
-    #     return_study: bool = False,
-    #     use_bbdf: bool = False,
-    #     reuse_detections: bool = False,
-    #     sampler: Optional[optuna.samplers.BaseSampler] = None,
-    #     pruner: Optional[optuna.pruners.BasePruner] = None,
-    # ) -> Union[Tuple[Dict[str, Any], float], Tuple[Dict[str, Any], float, optuna.study.Study]]:
-    #     """
-    #     Tune hyperparameters using Optuna.
-
-    #     Args:
-    #         frames_list (List[np.ndarray]): List of frames to process.
-    #         bbdf_gt_list (List[pd.DataFrame]): List of ground truth bounding box dataframes.
-    #         n_trials (int, optional): Number of trials. Defaults to 100.
-    #         hparam_search_space (Dict[str, Any], optional): Hyperparameter search space. Defaults to None.
-    #         verbose (bool, optional): If True, output verbose logs. Defaults to False.
-    #         return_study (bool, optional): If True, return the study object. Defaults to False.
-    #         use_bbdf (bool, optional): If True, use bounding box dataframe. Defaults to False.
-    #         reuse_detections (bool, optional): If True, reuse detections. Defaults to False.
-    #         sampler (optuna.samplers.BaseSampler, optional): Sampler for Optuna. Defaults to None.
-    #         pruner (optuna.pruners.BasePruner, optional): Pruner for Optuna. Defaults to None.
-
-    #     Returns:
-    #         Union[Tuple[Dict[str, Any], float], Tuple[Dict[str, Any], float, optuna.study.Study]]: Best parameters, best IOU, and optionally the study object.
-    #     """
-    #     def objective(trial: optuna.Trial) -> float:
-    #         params = self._suggest_params(trial, hparams)
-    #         self._apply_params(params)
-    #         scores = self._compute_scores(frames_list, bbdf_gt_list)
-    #         return np.mean(scores)
-
-    #     hparams = self.create_hparam_dict(hparam_search_space)
-    #     self._log_hparams(hparams, verbose)
-
-    #     if use_bbdf:
-    #         raise NotImplementedError
-    #     if reuse_detections:
-    #         list_of_detections = self._get_detections(frames_list)
-    #         self._set_dummy_detection_model(list_of_detections)
-
-    #     sampler = sampler or optuna.samplers.TPESampler(multivariate=True)
-    #     pruner = pruner or optuna.pruners.MedianPruner()
-
-    #     study = optuna.create_study(direction="maximize", sampler=sampler, pruner=pruner)
-    #     study.optimize(objective, n_trials=n_trials)
-
-    #     if reuse_detections:
-    #         self._reset_detection_model()
-
-    #     return self._get_study_results(study, return_study)
+            return self.best_params, best_value, study
+        return self.best_params, best_value
