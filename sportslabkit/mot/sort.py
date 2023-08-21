@@ -16,7 +16,7 @@ class SORTTracker(MultiObjectTracker):
         self,
         detection_model,
         motion_model,
-        matching_fn: SimpleMatchingFunction = SimpleMatchingFunction(IoUCMM = IoUCMM(use_pred_box=True), gate=1.0),
+        matching_fn: SimpleMatchingFunction = SimpleMatchingFunction(metric = IoUCMM(use_pred_box=True), gate=1.0),
         window_size: int = 1,
         step_size: int = None,
         max_staleness: int = 5,
