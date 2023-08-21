@@ -62,9 +62,8 @@ class MultiObjectTracker(ABC):
             for i in t:
                 self.process_sequence_item(sequence[i : i + self.window_size].squeeze())
                 t.set_postfix_str(f"Active: {len(self.alive_tracklets)}, Dead: {len(self.dead_tracklets)}", refresh=True)
+
         self.alive_tracklets = self.cleanup_tracklets(self.alive_tracklets)
-        print(self.alive_tracklets)
-        print(self.dead_tracklets)
         self.post_track()
         bbdf = self.to_bbdf()
         return bbdf
@@ -72,7 +71,7 @@ class MultiObjectTracker(ABC):
     def cleanup_tracklets(self, tracklets):
         for i, _ in enumerate(tracklets):
             tracklets[i].cleanup()
-        
+
         filter_short_tracklets = lambda tracklet: len(tracklet) >= self.min_length
         tracklets = list(filter(filter_short_tracklets, tracklets))
         return tracklets
@@ -86,6 +85,7 @@ class MultiObjectTracker(ABC):
         for i, _ in enumerate(tracklets):
             tracklets[i].staleness = 0
         return tracklets
+
     def pre_track(self):
         # Hook that subclasses can override
         pass
@@ -217,15 +217,29 @@ class MultiObjectTracker(ABC):
             # Apply the hyperparameters to the attributes of `self`
             for attribute, param_values in params.items():
                 for param_name, param_value in param_values.items():
+                    if attribute not in self.__dict__ and attribute != "self":
+                        raise AttributeError(f"{attribute=} not found in object")  # Raising specific error
+
                     if attribute == "self":
+                        logger.debug(f"Setting {param_name} to {param_value} for {self}")
                         setattr(self, param_name, param_value)
                     else:
-                        setattr(getattr(self, attribute), param_name, param_value)
+                        attr_obj = getattr(self, attribute)
+                        if param_name in attr_obj.__dict__:
+                            setattr(attr_obj, param_name, param_value)
+                            logger.debug(f"Setting {param_name} to {param_value} for {attribute}")
+                        else:
+                            raise TypeError(f"Cannot set {param_name} on {attribute}, as it is immutable or not in __dict__")
 
             scores = []
-            for frames, bbdf_gt in zip(frames_list, bbdf_gt_list):
+            for i, (frames, bbdf_gt) in enumerate(zip(frames_list, bbdf_gt_list)):
                 self.reset()
-                bbdf_pred = self.track(frames)
+                if reuse_detections:
+                    self.detection_model = self.detection_models[i]
+                try:
+                    bbdf_pred = self.track(frames)
+                except ValueError:  # Reuturn nan when no tracks are detected
+                    return np.nan
                 score = hota_score(bbdf_pred, bbdf_gt)["HOTA"]
                 scores.append(score)
                 trial.report(np.mean(scores), step=len(scores))  # Report intermediate score
@@ -249,15 +263,16 @@ class MultiObjectTracker(ABC):
         if use_bbdf:
             raise NotImplementedError
         if reuse_detections:
-            list_of_detections = []
+            self.detection_models = []
+
             for frames in frames_list:
-                for frame in frames:
+                list_of_detections = []
+                for frame in tqdm(frames, desc="Detecting frames for reuse"):
                     list_of_detections.append(self.detection_model(frame)[0])
 
-            # define dummy model
-            dummy_detection_model = DummyDetectionModel(list_of_detections)
-            og_detection_model = self.detection_model
-            self.detection_model = dummy_detection_model
+                dummy_detection_model = DummyDetectionModel(list_of_detections)
+                og_detection_model = self.detection_model
+                self.detection_models.append(dummy_detection_model)
 
         if sampler is None:
             sampler = optuna.samplers.TPESampler(multivariate=True)

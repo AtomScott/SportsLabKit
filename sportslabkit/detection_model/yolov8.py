@@ -36,6 +36,7 @@ class YOLOv8(BaseDetectionModel):
         iou: float = 0.45,
         device: str = "cpu",
         verbose: bool = False,
+        augment: bool = False,
     ):
         """
         Initializes the base detection model.
@@ -53,7 +54,7 @@ class YOLOv8(BaseDetectionModel):
         self.iou = iou
         self.device = device
         self.verbose = verbose
-
+        self.augment = augment
         self.model = YOLO(model=model)
 
     def forward(self, x, **kwargs):
@@ -84,6 +85,7 @@ class YOLOv8(BaseDetectionModel):
             device=kwargs.get("device", self.device),
             verbose=kwargs.get("verbose", self.verbose),
             task="detect",
+            augment=kwargs.get("augment", self.augment),
         )
         preds = []
         for result in results:
@@ -134,5 +136,6 @@ class YOLOv8x(YOLOv8):
         iou: float = 0.45,
         device: str = "cpu",
         verbose: bool = False,
+        augment: bool = False,
     ):
-        super().__init__(model, agnostic_nms, multi_label, classes, max_det, amp, imgsz, conf, iou, device, verbose)
+        super().__init__(model, agnostic_nms, multi_label, classes, max_det, amp, imgsz, conf, iou, device, verbose, augment)

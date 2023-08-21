@@ -66,11 +66,17 @@ class EuclideanCMM(BaseCostMatrixMetric):
     """Compute the Euclidean Cost Matrix Metric between trackers and
     detections."""
 
-    def __init__(self, im_shape: tuple[float, float] = (1080, 1920)):
+    def __init__(self, use_pred_box=False, im_shape: tuple[float, float] = (1080, 1920)):
         self.normalizer = np.sqrt(im_shape[0] ** 2 + im_shape[1] ** 2)
+        self.use_pred_box = use_pred_box
+        
 
     def compute_metric(self, trackers: Sequence[Tracklet], detections: Sequence[Detection]) -> np.ndarray:
-        centers1 = np.array([(t.box[0] + t.box[2] / 2, t.box[1] + t.box[3] / 2) for t in trackers])
+        if self.use_pred_box:
+            centers1 = np.array([(t.pred_box[0] + t.pred_box[2] / 2, t.pred_box[1] + t.pred_box[3] / 2) for t in trackers])
+        else:
+            centers1 = np.array([(t.box[0] + t.box[2] / 2, t.box[1] + t.box[3] / 2) for t in trackers])
+
         centers2 = np.array([(d.box[0] + d.box[2] / 2, d.box[1] + d.box[3] / 2) for d in detections])
         return cdist(centers1, centers2) / self.normalizer  # keep values in [0, 1]
 

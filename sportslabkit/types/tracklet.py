@@ -63,7 +63,6 @@ class Tracklet:
         assert self.check_observation_lengths(), "Observation lengths are inconsistent"
         return len(list(self._observations.values())[0])
 
-
     def __getattr__(self, name: str) -> Any:
         if name in self._observations:
             return self.get_observation(name)
@@ -217,8 +216,9 @@ class Tracklet:
 
     def cleanup(self):
         """Remove most recent n=staleness observations"""
-        self._observations = {k: v[:-self.staleness] for k, v in self._observations.items()}
-        self.steps_alive -= self.staleness
+        if self.staleness > 0:
+            self._observations = {k: v[: -self.staleness] for k, v in self._observations.items()}
+            self.steps_alive -= self.staleness
 
     # FIXME: Maybe refactor this to be override_current_observation?
     def update_current_observation(self, name: str, value: Any) -> None:

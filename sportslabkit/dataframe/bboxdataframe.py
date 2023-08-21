@@ -380,6 +380,8 @@ class BBoxDataFrame(SoccerTrackMixin, pd.DataFrame):
             list: List of tuples.
         """
         long_df = self.to_long_df().reset_index()
+        # drop nan rows
+        long_df = long_df.dropna()
 
         # TODO: Abstract mapping functionality to a separate function
 
