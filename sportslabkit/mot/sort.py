@@ -16,8 +16,7 @@ class SORTTracker(MultiObjectTracker):
         self,
         detection_model,
         motion_model,
-        metric: IoUCMM = IoUCMM(use_pred_box=True),
-        metric_gate: float = 1.0,
+        matching_fn: SimpleMatchingFunction = SimpleMatchingFunction(IoUCMM = IoUCMM(use_pred_box=True), gate=1.0),
         window_size: int = 1,
         step_size: int = None,
         max_staleness: int = 5,
@@ -41,11 +40,7 @@ class SORTTracker(MultiObjectTracker):
 
         self.detection_model = detection_model
         self.motion_model = motion_model
-
-        self.matching_fn = SimpleMatchingFunction(
-            metric=metric,
-            gate=metric_gate,
-        )
+        self.matching_fn = matching_fn
 
     def update(self, current_frame, tracklets):
         # detect objects using the detection model
