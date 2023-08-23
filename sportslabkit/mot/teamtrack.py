@@ -12,85 +12,54 @@ from sportslabkit.logger import logger
 
 class TeamTracker(MultiObjectTracker):
     """TeamTrack"""
-
     def __init__(
         self,
         detection_model=None,
         image_model=None,
         motion_model=None,
-        first_matching_fn=MotionVisualMatchingFunction(
-            motion_metric=EuclideanCMM2D(),
-            motion_metric_beta=0.5,
-            motion_metric_gate=0.9,
+        calibration_model=None,
+        first_matching_fn: MotionVisualMatchingFunction=MotionVisualMatchingFunction(
+            motion_metric=IoUCMM(use_pred_box=True),
+            motion_metric_gate=0.2,
             visual_metric=CosineCMM(),
-            visual_metric_beta=0.5,
-            visual_metric_gate=0.5,
+            visual_metric_gate=0.2,
+            beta=0.5,
         ),
         second_matching_fn=SimpleMatchingFunction(
-            metric=EuclideanCMM2D(),
+            metric=IoUCMM(use_pred_box=True),
             gate=0.9,
         ),
-        conf=0.6,
-        t_lost=1,
-        H=None,
+        detection_score_threshold=0.6,
+        window_size: int = 1,
+        step_size: int = None,
+        max_staleness: int = 5,
+        min_length: int = 5,
         multi_target_motion_model=False,
     ):
         super().__init__(
-            pre_init_args={
-                "detection_model": detection_model,
-                "motion_model": motion_model,
-                "image_model": image_model,
-                "first_matching_fn": first_matching_fn,
-                "second_matching_fn": second_matching_fn,
-                "conf": conf,
-                "t_lost": t_lost,
-                "H": H,
-                "multi_target_motion_model": multi_target_motion_model,
-            }
+            window_size=window_size,
+            step_size=step_size,
+            max_staleness=max_staleness,
+            min_length=min_length,
         )
-
-    def pre_initialize(
-        self,
-        detection_model,
-        motion_model,
-        image_model,
-        first_matching_fn,
-        second_matching_fn,
-        conf,
-        t_lost,
-        H,
-        multi_target_motion_model,
-    ):
-        if detection_model is None:
-            # use yolov8 as default
-            detection_model = st.detection_model.load("yolov8x")
         self.detection_model = detection_model
-
-        if motion_model is None:
-            motion_model = KalmanFilter(dt=1 / 30, process_noise=0.1, measurement_noise=0.1)
-        self.motion_model = motion_model
-        self.motion_model.eval()
-
-        if image_model is None:
-            # use osnet as default
-            image_model = st.image_model.load("osnet_x1_0")
         self.image_model = image_model
-
+        self.motion_model = motion_model
+        self.calibration_model = calibration_model
         self.first_matching_fn = first_matching_fn
         self.second_matching_fn = second_matching_fn
-        self.conf = conf
-        self.t_lost = t_lost
-        self.H = H
+        self.detection_score_threshold = detection_score_threshold
         self.multi_target_motion_model = multi_target_motion_model
 
     def update(self, current_frame, tracklets):
         # detect objects using the detection model
         detections = self.detection_model(current_frame)
+
         # extract features from the detections
         detections = detections[0].to_list()
 
         # calculate 2d pitch coordinates
-        H = self.H
+        H = self.calibration_model(current_frame)
         for i, det in enumerate(detections):
             # calculate the bottom center of the box
             box = det.box
@@ -138,7 +107,7 @@ class TeamTracker(MultiObjectTracker):
         high_confidence_detections = []
         low_confidence_detections = []
         for detection in detections:
-            if detection.score > self.conf:
+            if detection.score > self.detection_score_threshold:
                 high_confidence_detections.append(detection)
             else:
                 low_confidence_detections.append(detection)
@@ -241,5 +210,5 @@ class TeamTracker(MultiObjectTracker):
     @property
     def required_state_types(self):
         motion_model_required_state_types = self.motion_model.required_state_types
-        required_state_types = motion_model_required_state_types + ["staleness"]
+        required_state_types = motion_model_required_state_types + ["pred_box"]
         return required_state_types

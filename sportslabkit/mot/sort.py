@@ -53,7 +53,6 @@ class SORTTracker(MultiObjectTracker):
             predicted_box = self.motion_model(tracklet)
             tracklet.update_state("pred_box", predicted_box)
 
-        # extract features from the detections
         detections = detections[0].to_list()
 
         # Use predicted tracklets to match with detections since the order is the same

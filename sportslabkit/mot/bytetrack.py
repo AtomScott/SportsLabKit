@@ -15,62 +15,35 @@ class BYTETracker(MultiObjectTracker):
         detection_model=None,
         image_model=None,
         motion_model=None,
-        first_matching_fn=MotionVisualMatchingFunction(
-            motion_metric=IoUCMM(),
-            motion_metric_beta=0.5,
-            motion_metric_gate=0.9,
+        first_matching_fn: MotionVisualMatchingFunction=MotionVisualMatchingFunction(
+            motion_metric=IoUCMM(use_pred_box=True),
+            motion_metric_gate=0.2,
             visual_metric=CosineCMM(),
-            visual_metric_beta=0.5,
-            visual_metric_gate=0.5,
+            visual_metric_gate=0.2,
+            beta=0.5,
         ),
         second_matching_fn=SimpleMatchingFunction(
-            metric=IoUCMM(),
+            metric=IoUCMM(use_pred_box=True),
             gate=0.9,
         ),
-        conf=0.6,
-        t_lost=1,
-        t_confirm=5,
+        detection_score_threshold=0.6,
+        window_size: int = 1,
+        step_size: int = None,
+        max_staleness: int = 5,
+        min_length: int = 5,
     ):
         super().__init__(
-            pre_init_args={
-                "detection_model": detection_model,
-                "motion_model": motion_model,
-                "image_model": image_model,
-                "first_matching_fn": first_matching_fn,
-                "second_matching_fn": second_matching_fn,
-                "conf": conf,
-                "t_lost": t_lost,
-            }
+            window_size=window_size,
+            step_size=step_size,
+            max_staleness=max_staleness,
+            min_length=min_length,
         )
-
-    def pre_initialize(
-        self,
-        detection_model,
-        motion_model,
-        image_model,
-        first_matching_fn,
-        second_matching_fn,
-        conf,
-        t_lost,
-    ):
-        if detection_model is None:
-            # use yolov8 as default
-            detection_model = st.detection_model.load("yolov8x")
         self.detection_model = detection_model
-
-        if motion_model is None:
-            motion_model = KalmanFilter(dt=1 / 30, process_noise=0.1, measurement_noise=0.1)
-        self.motion_model = motion_model
-
-        if image_model is None:
-            # use osnet as default
-            image_model = st.image_model.load("osnet_x1_0")
         self.image_model = image_model
-
+        self.motion_model = motion_model
         self.first_matching_fn = first_matching_fn
         self.second_matching_fn = second_matching_fn
-        self.conf = conf
-        self.t_lost = t_lost
+        self.detection_score_threshold = detection_score_threshold
 
     def update(self, current_frame, tracklets):
         # detect objects using the detection model
@@ -78,17 +51,14 @@ class BYTETracker(MultiObjectTracker):
 
         # update the motion model with the new detections
         # self.update_tracklets_with_motion_model_predictions
-        current_boxes = []
         for i, tracklet in enumerate(tracklets):
-            predictions = self.motion_model(tracklet)
+            # `predicted_box` should be in form [bbleft, bbtop, bbwidth, bbheight]
+            predicted_box = self.motion_model(tracklet)
+            tracklet.update_state("pred_box", predicted_box)
 
-            # FIXME : should overwrite the next observation not the current
-            current_box = tracklet.get_observation("box")
-            current_boxes.append(current_box)
-            tracklet.update_current_observation("box", predictions)
+        detections = detections[0].to_list()
 
         # extract features from the detections
-        detections = detections[0].to_list()
         if len(detections) > 0:
             embeds = self.image_model.embed_detections(detections, current_frame)
             for i, det in enumerate(detections):
@@ -98,7 +68,7 @@ class BYTETracker(MultiObjectTracker):
         high_confidence_detections = []
         low_confidence_detections = []
         for detection in detections:
-            if detection.score > self.conf:
+            if detection.score > self.detection_score_threshold:
                 high_confidence_detections.append(detection)
             else:
                 low_confidence_detections.append(detection)
@@ -110,13 +80,9 @@ class BYTETracker(MultiObjectTracker):
         new_tracklets = []
         assigned_tracklets = []
         unassigned_tracklets = []
-        unassigned_current_boxes = []
 
         # [First] Associatie between all tracklets and high confidence detections
         matches_first, cost_matrix_first = self.first_matching_fn(tracklets, high_confidence_detections, True)
-
-        # for i, tracklet in enumerate(tracklets):
-        #     tracklet.update_current_observation("box", current_boxes[i])
 
         # [First] assigned tracklets: update
         for match in matches_first:
@@ -125,11 +91,7 @@ class BYTETracker(MultiObjectTracker):
             det = high_confidence_detections[det_idx]
             tracklet = tracklets[track_idx]
 
-            # Undo previous update that was done with the motion model
-            current_box = current_boxes[track_idx]
-            tracklet.update_current_observation("box", current_box)
-
-            new_state = {
+            new_observation = {
                 "box": det.box,
                 "score": det.score,
                 "feature": det.feature,
@@ -137,26 +99,25 @@ class BYTETracker(MultiObjectTracker):
             }
 
             # update the tracklet with the new state
-            tracklet = self.update_tracklet(tracklet, new_state)
+            tracklet = self.update_tracklet(tracklet, new_observation)
             assigned_tracklets.append(tracklet)
 
         # [First] not assigned detections: create new trackers
         for i, det in enumerate(high_confidence_detections):
             if i not in [match[1] for match in matches_first]:
-                new_state = {
+                new_observation = {
                     "box": det.box,
                     "score": det.score,
                     "frame": self.frame_count,
                     "feature": det.feature,
                 }
-                new_tracklet = self.create_tracklet(new_state)
+                new_tracklet = self.create_tracklet(new_observation)
                 new_tracklets.append(new_tracklet)
 
-        # [First] Get the tracklets that were not matched
+        # [First] unassigned tracklets: store for second association
         for i, tracklet in enumerate(tracklets):
             if i not in [match[0] for match in matches_first]:
                 unassigned_tracklets.append(tracklet)
-                unassigned_current_boxes.append(current_boxes[i])
 
         ##############################
         # Second association
@@ -173,11 +134,7 @@ class BYTETracker(MultiObjectTracker):
             det = low_confidence_detections[det_idx]
             tracklet = unassigned_tracklets[track_idx]
 
-            # Undo previous update that was done with the motion model
-            current_box = unassigned_current_boxes[track_idx]
-            tracklet.update_current_observation("box", current_box)
-
-            new_state = {
+            new_observation = {
                 "box": det.box,
                 "score": det.score,
                 "feature": det.feature,
@@ -185,7 +142,7 @@ class BYTETracker(MultiObjectTracker):
             }
 
             # update the tracklet with the new state
-            tracklet = self.update_tracklet(tracklet, new_state)
+            tracklet = self.update_tracklet(tracklet, new_observation)
             assigned_tracklets.append(tracklet)
 
         # [Second] not assigned detections: Do nothing
@@ -195,14 +152,14 @@ class BYTETracker(MultiObjectTracker):
         unassigned_tracklets_second = []
         for i, tracklet in enumerate(unassigned_tracklets):
             if i not in [match[0] for match in matches_second]:
-                staleness = tracklet.get_state("staleness")
-                if staleness is None:
-                    staleness = 0
-                if staleness > self.t_lost:
-                    unassigned_tracklets_second.append(tracklet)
-                else:
-                    tracklet.update_state("staleness", staleness + 1)
-                    assigned_tracklets.append(tracklet)
+                new_observation = {
+                    "box": tracklet.get_state("pred_box"),
+                    "score": tracklet.get_observation("score"),
+                    "frame": self.frame_count,
+                    "feature": tracklet.get_observation("feature"),
+                }
+                tracklet = self.update_tracklet(tracklet, new_observation)
+                unassigned_tracklets_second.append(tracklet)
 
         logger.debug(f"1st matches: {len(matches_first)}, 2nd matches: {len(matches_second)}")
         return assigned_tracklets, new_tracklets, unassigned_tracklets_second
@@ -214,5 +171,5 @@ class BYTETracker(MultiObjectTracker):
     @property
     def required_state_types(self):
         motion_model_required_state_types = self.motion_model.required_state_types
-        required_state_types = motion_model_required_state_types + ["staleness"]
+        required_state_types = motion_model_required_state_types + ["pred_box"]
         return required_state_types

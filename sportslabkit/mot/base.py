@@ -219,7 +219,8 @@ class MultiObjectTracker(ABC):
                         setattr(attr_obj, param_name, param_value)
                         logger.debug(f"Setting {param_name} to {param_value} for {attribute}")
                     else:
-                        raise TypeError(f"Cannot set {param_name} on {attribute}, as it is immutable or not in __dict__")
+                        __dict__ = attr_obj.__dict__
+                        raise TypeError(f"Cannot set {param_name=} on {attribute=}, as it is immutable or not in {list(__dict__.keys())}")
     def tune_hparams(
         self,
         frames_list,
@@ -246,6 +247,7 @@ class MultiObjectTracker(ABC):
                 try:
                     bbdf_pred = self.track(frames)
                 except ValueError as e:  # Reuturn nan when no tracks are detected
+                    logger.error(e)
                     return np.nan
                 score = hota_score(bbdf_pred, bbdf_gt)["HOTA"]
                 scores.append(score)
