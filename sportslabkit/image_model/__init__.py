@@ -20,6 +20,7 @@ from sportslabkit.image_model.visualization import plot_tsne
 from sportslabkit.logger import logger
 from sportslabkit.types.detection import Detection
 
+
 __all__ = [
     "ShuffleNet",
     "CLIP_RN50",
@@ -58,7 +59,7 @@ def show_available_models():
     return sorted([cls.__name__ for cls in inheritors(BaseImageModel)])
 
 
-def load(model_name, model_config={}, inference_config={}):
+def load(model_name, **model_config):
     """
     Load a model by name.
 
@@ -66,18 +67,14 @@ def load(model_name, model_config={}, inference_config={}):
 
     Args:
         model_name (str): The name of the model to load.
-        model_config (dict, optional): The model configuration to use when instantiating the model. Defaults to {}.
-        inference_config (dict, optional): The inference configuration to use when instantiating the model. Defaults to {}.
 
     Returns:
         BaseDetectionModel: An instance of the requested model, or None if no match was found.
     """
     for cls in inheritors(BaseImageModel):
         if model_name in [cls.__name__.lower(), cls.__name__]:
-            return cls(
-                model_config=model_config,
-                inference_config=inference_config,
-            )
+            config = {k.lower(): v for k, v in model_config.items()}
+            return cls(**config)
     logger.warning(
         f"Model {model_name} not found. Available models: {[cls.__name__ for cls in inheritors(BaseImageModel)]} (lowercase is allowed)"
     )

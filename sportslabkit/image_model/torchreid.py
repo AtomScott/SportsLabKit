@@ -1,17 +1,19 @@
-from dataclasses import dataclass, field
+from dataclasses import field
+
 
 try:
     from torchreid.utils import FeatureExtractor
 except ImportError:
     print("The torchreid module is not installed. Please install it using the following command:\n" "pip install git+https://github.com/KaiyangZhou/deep-person-reid.git")
 
-from sportslabkit.image_model.base import BaseConfig, BaseImageModel
+from sportslabkit.image_model.base import BaseImageModel
 from sportslabkit.logger import logger
 from sportslabkit.utils import (
     HiddenPrints,
     download_file_from_google_drive,
     get_git_root,
 )
+
 
 model_save_dir = get_git_root() / "models" / "torchreid"
 
@@ -32,26 +34,9 @@ model_dict = {
     "resnet50_MSMT17": "https://drive.google.com/file/d/1yiBteqgIZoOeywE8AhGmEQl7FTVwrQmf/view?usp=sharing",
     "osnet_x1_0_MSMT17": "https://drive.google.com/file/d/1IosIFlLiulGIjwW3H8uMRmx3MzPwf86x/view?usp=sharing",
     "osnet_ain_x1_0_MSMT17": "https://drive.google.com/file/d/1SigwBE6mPdqiJMqhuIY4aqC7--5CsMal/view?usp=sharing",
-    "resnet50_MSMT17": "https://drive.google.com/file/d/1ep7RypVDOthCRIAqDnn4_N-UhkkFHJsj/view?usp=sharing",
+    "resnet50_MSMT17x": "https://drive.google.com/file/d/1ep7RypVDOthCRIAqDnn4_N-UhkkFHJsj/view?usp=sharing",
     "resnet50_fc512_MSMT17": "https://drive.google.com/file/d/1fDJLcz4O5wxNSUvImIIjoaIF9u1Rwaud/view?usp=sharing",
 }
-
-
-@dataclass
-class ModelConfigTemplate(BaseConfig):
-    name: str = "osnet_x1_0"
-    path: str = ""
-    device: str = "cpu"
-    image_size: tuple[int, int] = (256, 128)
-    pixel_mean: list[float] = field(default_factory=lambda: [0.485, 0.456, 0.406])
-    pixel_std: list[float] = field(default_factory=lambda: [0.229, 0.224, 0.225])
-    pixel_norm: bool = True
-    verbose: bool = False
-
-
-@dataclass
-class InferenceConfigTemplate(BaseConfig):
-    pass
 
 
 def show_torchreid_models():
@@ -78,11 +63,33 @@ def download_model(model_name):
 
 
 class BaseTorchReIDModel(BaseImageModel):
+    def __init__(
+        self,
+        name: str = "osnet_x1_0",
+        path: str = "",
+        device: str = "cpu",
+        image_size: tuple[int, int] = (256, 128),
+        pixel_mean: list[float] = field(default_factory=lambda: [0.485, 0.456, 0.406]),
+        pixel_std: list[float] = field(default_factory=lambda: [0.229, 0.224, 0.225]),
+        pixel_norm: bool = True,
+        verbose: bool = False
+    ):
+        super().__init__()
+        self.name = name
+        self.path = path
+        self.device = device
+        self.image_size = image_size
+        self.pixel_mean = pixel_mean
+        self.pixel_std = pixel_std
+        self.pixel_norm = pixel_norm
+        self.verbose = verbose
+        self.model = self.load()
+
     def load(self):
-        model_name = self.model_config["name"]
-        model_path = self.model_config["path"]
-        device = self.model_config["device"]
-        verbose = self.model_config["verbose"]
+        model_name = self.name
+        model_path = self.path
+        device = self.device
+        verbose = self.verbose
 
         if (model_name != "") and (model_path == ""):
             model_path = download_model(model_name)
@@ -105,31 +112,48 @@ class BaseTorchReIDModel(BaseImageModel):
     def forward(self, x):
         return self.model(list(x))
 
-    @property
-    def model_config_template(self):
-        return ModelConfigTemplate
-
-    @property
-    def inference_config_template(self):
-        return InferenceConfigTemplate
-
 
 class ShuffleNet(BaseTorchReIDModel):
-    def __init__(self, model_config={}, inference_config={}):
-        model_config["name"] = "shufflenet"
-        super().__init__(model_config, inference_config)
+    def __init__(self,
+        name: str = "shufflenet",
+        path: str = "",
+        device: str = "cpu",
+        image_size: tuple[int, int] = (256, 128),
+        pixel_mean: list[float] = field(default_factory=lambda: [0.485, 0.456, 0.406]),
+        pixel_std: list[float] = field(default_factory=lambda: [0.229, 0.224, 0.225]),
+        pixel_norm: bool = True,
+        verbose: bool = False
+    ):
+        super().__init__(name, path, device, image_size, pixel_mean, pixel_std, pixel_norm, verbose)
 
 
 class MobileNetV2_x1_0(BaseTorchReIDModel):
-    def __init__(self, model_config={}, inference_config={}):
-        model_config["name"] = "mobilenetv2_x1_0"
-        super().__init__(model_config, inference_config)
-
+    def __init__(
+        self,
+        name: str = "mobilenetv2_x1_0",
+        path: str = "",
+        device: str = "cpu",
+        image_size: tuple[int, int] = (256, 128),
+        pixel_mean: list[float] = field(default_factory=lambda: [0.485, 0.456, 0.406]),
+        pixel_std: list[float] = field(default_factory=lambda: [0.229, 0.224, 0.225]),
+        pixel_norm: bool = True,
+        verbose: bool = False
+    ):
+        super().__init__(name, path, device, image_size, pixel_mean, pixel_std, pixel_norm, verbose)
 
 class MobileNetV2_x1_4(BaseTorchReIDModel):
-    def __init__(self, model_config={}, inference_config={}):
-        model_config["name"] = "mobilenetv2_x1_4"
-        super().__init__(model_config, inference_config)
+    def __init__(
+        self,
+        name: str = "mobilenetv2_x1_4",
+        path: str = "",
+        device: str = "cpu",
+        image_size: tuple[int, int] = (256, 128),
+        pixel_mean: list[float] = field(default_factory=lambda: [0.485, 0.456, 0.406]),
+        pixel_std: list[float] = field(default_factory=lambda: [0.229, 0.224, 0.225]),
+        pixel_norm: bool = True,
+        verbose: bool = False
+    ):
+        super().__init__(name, path, device, image_size, pixel_mean, pixel_std, pixel_norm, verbose)
 
 
 class MLFN(BaseTorchReIDModel):
@@ -193,14 +217,29 @@ class OSNet_ain_x0_25(BaseTorchReIDModel):
 
 
 class ResNet50(BaseTorchReIDModel):
-    def __init__(self, model_config={}, inference_config={}):
-        model_config["name"] = "resnet50"
-        model_config["path"] = model_dict["resnet50_MSMT17"]
-        super().__init__(model_config, inference_config)
-
+    def __init__(
+        self,
+        name: str = "resnet50",
+        path: str = model_dict["resnet50_MSMT17"],
+        device: str = "cpu",
+        image_size: tuple[int, int] = (256, 128),
+        pixel_mean: list[float] = field(default_factory=lambda: [0.485, 0.456, 0.406]),
+        pixel_std: list[float] = field(default_factory=lambda: [0.229, 0.224, 0.225]),
+        pixel_norm: bool = True,
+        verbose: bool = False
+    ):
+        super().__init__(name, path, device, image_size, pixel_mean, pixel_std, pixel_norm, verbose)
 
 class ResNet50_fc512(BaseTorchReIDModel):
-    def __init__(self, model_config={}, inference_config={}):
-        model_config["name"] = "resnet50_fc512"
-        model_config["path"] = model_dict["resnet50_fc512_MSMT17"]
-        super().__init__(model_config, inference_config)
+    def __init__(
+        self,
+        name: str = "resnet50_fc512",
+        path: str = model_dict["resnet50_fc512_MSMT17"],
+        device: str = "cpu",
+        image_size: tuple[int, int] = (256, 128),
+        pixel_mean: list[float] = field(default_factory=lambda: [0.485, 0.456, 0.406]),
+        pixel_std: list[float] = field(default_factory=lambda: [0.229, 0.224, 0.225]),
+        pixel_norm: bool = True,
+        verbose: bool = False
+    ):
+        super().__init__(name, path, device, image_size, pixel_mean, pixel_std, pixel_norm, verbose)

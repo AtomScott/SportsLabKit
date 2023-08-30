@@ -11,17 +11,17 @@ from dataclasses import dataclass, field
 import torch
 from PIL import Image
 
-from sportslabkit.image_model.base import BaseConfig, BaseImageModel
+from sportslabkit.image_model.base import BaseImageModel
 
 
 @dataclass
-class ModelConfigTemplate(BaseConfig):
+class ModelConfigTemplate():
     name: str = "ViT-B/32"
     device: str = "cpu"
     image_size: int = (224, 224)
 
 @dataclass
-class InferenceConfigTemplate(BaseConfig):
+class InferenceConfigTemplate():
     pass
 
 
