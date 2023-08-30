@@ -4,7 +4,7 @@ from torch.nn import functional as F
 from einops import rearrange
 
 
-class SingleTargetLSTM(nn.Module):
+class LSTM(nn.Module):
     def __init__(self, hidden_dim, n_layers=1, dropout=0.0):
         super().__init__()
         self.hidden_dim = hidden_dim
@@ -26,6 +26,10 @@ class SingleTargetLSTM(nn.Module):
         if c0 is None:
             c0 = torch.zeros(self.n_layers, x.shape[0], self.lstm.hidden_size)
             c0 = c0.to(device)
+
+        # B: batch size, L: sequence length, D: dimension==2
+        assert len(x.shape) == 3, f"Input dimension must be 3, got {len(x.shape)}"
+        assert x.shape[2] == 2, f"Input at dimension 2 must be 2, got {x.shape[2]}"
 
         lstm_out, (h_n, c_n) = self.lstm(x, (h0, c0))
 
@@ -82,6 +86,8 @@ class MultiTargetLSTM(nn.Module):
             c0 = torch.zeros(self.n_layers, x.shape[0], self.lstm.hidden_size)
 
         # B: batch size, L: sequence length, N: number of agents, D: dimension
+        assert len(x.shape) == 4, f"Input dimension must be 4, got {len(x.shape)}"
+        assert x.shape[3] == 2, f"Input at dimension 3 must be 2, got {x.shape[3]}"
         num_agents = x.shape[2]
         x = rearrange(x, "B L N D -> B L (N D)")
 

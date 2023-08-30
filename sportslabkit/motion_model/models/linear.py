@@ -1,16 +1,15 @@
 import torch
-import numpy as np
 from torch import nn
-from torch.nn import functional as F
 
 
-class SingleTargetLinear(nn.Module):
+class Linear(nn.Module):
     def __init__(self, obs_steps):
         """Simple linear model that predicts the next position based on the last `obs_steps`, using a constant velocity model."""
-        super().__init__()
+        nn.Module.__init__(self)
         self.obs_steps = obs_steps
 
     def forward(self, x):
+
         if x.shape[1] == 1:
             # If only one observation, just return it
             return x[:, -1]
@@ -36,8 +35,7 @@ class SingleTargetLinear(nn.Module):
 
         return torch.stack(y_pred, dim=1)
 
-
 if __name__ == "__main__":
-    model = SingleTargetLinear(5)
+    model = Linear(5)
     x = torch.randn(2, 20, 2)  # (batch_size, seq_len, input_dim)
     y_pred = model.roll_out(x, 5)  # (batch_size, n_steps, 2)

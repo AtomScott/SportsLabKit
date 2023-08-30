@@ -1,13 +1,11 @@
 import cv2
-import torch
 import numpy as np
-import sportslabkit as st
-from sportslabkit.types import Tracklet
-from sportslabkit.mot.base import MultiObjectTracker
-from sportslabkit.matching import SimpleMatchingFunction, MotionVisualMatchingFunction
-from sportslabkit.motion_model import KalmanFilter
-from sportslabkit.metrics import IoUCMM, CosineCMM, EuclideanCMM2D
+import torch
+
 from sportslabkit.logger import logger
+from sportslabkit.matching import MotionVisualMatchingFunction, SimpleMatchingFunction
+from sportslabkit.metrics import CosineCMM, IoUCMM
+from sportslabkit.mot.base import MultiObjectTracker
 
 
 class TeamTracker(MultiObjectTracker):
@@ -34,7 +32,6 @@ class TeamTracker(MultiObjectTracker):
         step_size: int = None,
         max_staleness: int = 5,
         min_length: int = 5,
-        multi_target_motion_model=False,
     ):
         super().__init__(
             window_size=window_size,
@@ -49,7 +46,47 @@ class TeamTracker(MultiObjectTracker):
         self.first_matching_fn = first_matching_fn
         self.second_matching_fn = second_matching_fn
         self.detection_score_threshold = detection_score_threshold
-        self.multi_target_motion_model = multi_target_motion_model
+
+    def predict_single_tracklet_motion(self, tracklet):
+        # x = self.tracklet_to_points(tracklet, H)
+        y = self.motion_model(tracklet).squeeze(0).numpy()
+        return y
+
+    def predict_multi_tracklet_motion(self, tracklets):
+        # for i, tracklet in enumerate(tracklets):
+            # x = self.tracklet_to_points(tracklet)
+            # X.append(tracklet)
+
+        with torch.no_grad():
+            Y = self.motion_model(tracklets)
+            Y = np.array(Y).squeeze()
+        return Y
+        # obs_len = self.motion_model.model.input_channels // 2
+        # if x.shape[1] < obs_len:
+        #     x = torch.cat([x] + [x[:, 0, :].unsqueeze(1)] * (obs_len - x.shape[1]), dim=1)
+        # else:
+        #     x = x[:, -obs_len:]
+        # X.append(x)
+    # if self.multi_target_motion_model and len(X) > 0:
+    #     X = torch.stack(X, dim=2)
+    #     with torch.no_grad():
+    #         Y = self.motion_model(X).numpy().squeeze(0)
+    #     for i, tracklet in enumerate(tracklets):
+    #         tracklet.update_state("pitch_coordinates", Y[i])
+
+    def tracklet_to_points(self, tracklet, H):
+        # calculate the 2d pitch coordinates from the tracklet data
+        boxes = np.array(tracklet.get_observations("box"))
+        bcxs, bcys = boxes[:, 0] + boxes[:, 2] / 2, boxes[:, 1] + boxes[:, 3]
+        x = cv2.perspectiveTransform(np.stack([bcxs, bcys], axis=1).reshape(1, -1, 2).astype("float32"), H)[0]
+        x = np.expand_dims(x, axis=0)
+        x = torch.from_numpy(x)
+        return x
+
+    def detection_to_points(self, detection, H):
+        box = detection.box
+        bcx, bcy = box[0] + box[2] / 2, box[1] + box[3]
+        return cv2.perspectiveTransform(np.array([[[bcx, bcy]]], dtype="float32"), H)[0][0]
 
     def update(self, current_frame, tracklets):
         # detect objects using the detection model
@@ -61,43 +98,25 @@ class TeamTracker(MultiObjectTracker):
         # calculate 2d pitch coordinates
         H = self.calibration_model(current_frame)
         for i, det in enumerate(detections):
-            # calculate the bottom center of the box
-            box = det.box
-            bcx, bcy = box[0] + box[2] / 2, box[1] + box[3]
-            pitch_coordinates = cv2.perspectiveTransform(np.array([[[bcx, bcy]]], dtype="float32"), H)[0][0]
-            det.pitch_coordinates = pitch_coordinates
+            det.pt = self.detection_to_points(det, H)
 
-        # update the motion model with the new detections
-        # self.update_tracklets_with_motion_model_predictions
-        if self.multi_target_motion_model:
-            X = []
+        ##############################
+        # Motion prediction
+        ##############################
+        # `pred_pt` should be in form [x, y]
+        # `pred_pts` should be in form [n, x, y]
+        if self.motion_model.is_multi_target:
+            pred_pts = self.predict_multi_tracklet_motion(tracklets)
+
         for i, tracklet in enumerate(tracklets):
-            # calculate the 2d pitch coordinates from the tracklet data
-            boxes = np.array(tracklet.get_observations("box"))
-            bcxs, bcys = boxes[:, 0] + boxes[:, 2] / 2, boxes[:, 1] + boxes[:, 3]
-            x = cv2.perspectiveTransform(np.stack([bcxs, bcys], axis=1).reshape(1, -1, 2).astype("float32"), self.H)[0]
-            x = np.expand_dims(x, axis=0)
-            x = torch.from_numpy(x)
-
-            # calculate the motion model prediction
-            if not self.multi_target_motion_model:
-                with torch.no_grad():
-                    y = self.motion_model(x).squeeze(0).numpy()
-                tracklet.update_state("pitch_coordinates", y)
+            if self.motion_model.is_multi_target:
+                pred_pt = pred_pts[i]
             else:
-                obs_len = self.motion_model.model.input_channels // 2
-                if x.shape[1] < obs_len:
-                    x = torch.cat([x] + [x[:, 0, :].unsqueeze(1)] * (obs_len - x.shape[1]), dim=1)
-                else:
-                    x = x[:, -obs_len:]
-                X.append(x)
-        if self.multi_target_motion_model and len(X) > 0:
-            X = torch.stack(X, dim=2)
-            with torch.no_grad():
-                Y = self.motion_model(X).numpy().squeeze(0)
-            for i, tracklet in enumerate(tracklets):
-                tracklet.update_state("pitch_coordinates", Y[i])
+                pred_pt = self.predict_single_tracklet_motion(tracklet)
+            tracklet.update_state("pred_pt", pred_pt)
 
+
+        # extract features from the detections
         if len(detections) > 0:
             embeds = self.image_model.embed_detections(detections, current_frame)
             for i, det in enumerate(detections):
@@ -132,6 +151,7 @@ class TeamTracker(MultiObjectTracker):
 
             new_state = {
                 "box": det.box,
+                "pt": det.pt,
                 "score": det.score,
                 "feature": det.feature,
                 "frame": self.frame_count,
@@ -146,6 +166,7 @@ class TeamTracker(MultiObjectTracker):
             if i not in [match[1] for match in matches_first]:
                 new_state = {
                     "box": det.box,
+                    "pt": det.pt,
                     "score": det.score,
                     "frame": self.frame_count,
                     "feature": det.feature,
@@ -175,6 +196,7 @@ class TeamTracker(MultiObjectTracker):
 
             new_state = {
                 "box": det.box,
+                "pt": det.pt,
                 "score": det.score,
                 "feature": det.feature,
                 "frame": self.frame_count,
@@ -205,10 +227,10 @@ class TeamTracker(MultiObjectTracker):
 
     @property
     def required_observation_types(self):
-        return ["box", "frame", "score", "feature"]
+        return ["box", "frame", "score", "feature", "pt"]
 
     @property
     def required_state_types(self):
         motion_model_required_state_types = self.motion_model.required_state_types
-        required_state_types = motion_model_required_state_types + ["pred_box"]
+        required_state_types = motion_model_required_state_types + ["pred_pt"]
         return required_state_types

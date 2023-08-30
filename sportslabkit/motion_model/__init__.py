@@ -1,10 +1,14 @@
 import inspect
-from sportslabkit.motion_model.tune import tune_motion_model
-from sportslabkit.motion_model.models import ExponentialMovingAverage, KalmanFilter
-from sportslabkit.motion_model.base import BaseMotionModule, BaseMotionModel
-from sportslabkit.logger import logger
 
-__all__ = ["tune_motion_model", "ExponentialMovingAverage", "KalmanFilter", "BaseMotionModule"]
+from sportslabkit.logger import logger
+from sportslabkit.motion_model.base import BaseMotionModel, BaseMotionModule
+from sportslabkit.motion_model.models import ExponentialMovingAverage, KalmanFilter, Linear, LSTM
+from sportslabkit.motion_model.multi_target import MultiTargetLinear
+from sportslabkit.motion_model.single_target import SingleTargetLinear, SingleTargetLSTM
+from sportslabkit.motion_model.tune import tune_motion_model
+
+
+__all__ = ["tune_motion_model", "ExponentialMovingAverage", "KalmanFilter", "BaseMotionModule", "BaseMotionModel", "SingleTargetLinear", "SingleTargetLSTM", "MultiTargetLinear"]
 
 
 def inheritors(cls: type) -> set[type]:

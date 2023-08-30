@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from dataclasses import asdict, dataclass, fields
 from typing import Any, Dict, List, Tuple, Type, Union
 
 import matplotlib.pyplot as plt
@@ -9,7 +8,6 @@ import torch
 from torchmetrics.functional import mean_squared_error
 
 from sportslabkit import Tracklet
-from sportslabkit.logger import logger
 
 
 class BaseMotionModel(ABC):
@@ -23,11 +21,13 @@ class BaseMotionModel(ABC):
     required_observation_types: List[str] = NotImplemented
     required_state_types: List[str] = NotImplemented
 
-    def __init__(self):
+    def __init__(self, is_multi_target=False):
         """Initialize the MotionModel."""
 
         self.input_is_batched = False  # initialize the input_is_batched attribute
         self.name = self.__class__.__name__
+        self.is_multi_target = is_multi_target
+
 
     def __call__(self, tracklet: Tracklet) -> Any:
         """Call the motion model to update its state and return the prediction.
@@ -38,6 +38,9 @@ class BaseMotionModel(ABC):
         Returns:
             Any: The predicted state after updating the motion model.
         """
+        if self.is_multi_target:
+            return self._multi_target_call(tracklet)
+
         self._check_required_observations(tracklet)
         self._check_required_states(tracklet)
 
@@ -51,6 +54,33 @@ class BaseMotionModel(ABC):
         tracklet.update_states(new_states)
         return prediction
 
+    def _multi_target_call(self, tracklets: List[Tracklet]) -> List[Any]:
+        """Call the motion model to update its state and return the prediction for multiple targets.
+
+        Args:
+            tracklets (List[Tracklet]): The list of tracklet instances.
+
+        Returns:
+            List[Any]: The list of predicted states after updating the motion model for each tracklet.
+        """
+        all_observations = []
+        all_states = []
+        for tracklet in tracklets:
+            self._check_required_observations(tracklet)
+            self._check_required_states(tracklet)
+
+            if isinstance(tracklet, Tracklet):
+                _obs = tracklet.get_observations()
+                observations = {t: _obs[t] for t in self.required_observation_types}
+            else:
+                observations = {t: tracklet[t] for t in self.required_observation_types}
+            all_observations.append(observations)
+            all_states.append(tracklet.states)
+
+        all_predictions, all_new_states =  self.predict(all_observations, all_states)
+        for i, tracklet in enumerate(tracklets):
+            tracklet.update_states(all_new_states[i])
+        return all_predictions
     # def update(self, observations: Dict[str, Any], states: Dict[str, Any]) -> None:
     #     """Update the motion model's internal state.
 

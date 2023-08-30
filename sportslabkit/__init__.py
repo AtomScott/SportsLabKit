@@ -27,6 +27,7 @@ import sportslabkit.datasets as datasets
 import sportslabkit.detection_model
 import sportslabkit.image_model
 import sportslabkit.motion_model
+import sportslabkit.calibration_model
 
 __all__ = [
     "Camera",

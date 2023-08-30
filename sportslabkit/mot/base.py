@@ -132,7 +132,6 @@ class MultiObjectTracker(ABC):
             tracklet.register_observation_type(required_type)
         for required_type in self.required_state_types:
             tracklet.register_state_type(required_type)
-
         self._check_required_observations(state)
         self.update_tracklet(tracklet, state)
         return tracklet

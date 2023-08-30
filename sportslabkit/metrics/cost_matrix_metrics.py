@@ -69,7 +69,6 @@ class EuclideanCMM(BaseCostMatrixMetric):
     def __init__(self, use_pred_box=False, im_shape: tuple[float, float] = (1080, 1920)):
         self.normalizer = np.sqrt(im_shape[0] ** 2 + im_shape[1] ** 2)
         self.use_pred_box = use_pred_box
-        
 
     def compute_metric(self, trackers: Sequence[Tracklet], detections: Sequence[Detection]) -> np.ndarray:
         if self.use_pred_box:
@@ -80,18 +79,20 @@ class EuclideanCMM(BaseCostMatrixMetric):
         centers2 = np.array([(d.box[0] + d.box[2] / 2, d.box[1] + d.box[3] / 2) for d in detections])
         return cdist(centers1, centers2) / self.normalizer  # keep values in [0, 1]
 
-
 # FIXME: 技術負債を返済しましょう
 class EuclideanCMM2D(BaseCostMatrixMetric):
-    def __init__(self, im_shape: tuple[float, float] = (68, 105)):
+    def __init__(self, use_pred_pt=False, im_shape: tuple[float, float] = (1080, 1920)):
         self.normalizer = np.sqrt(im_shape[0] ** 2 + im_shape[1] ** 2)
+        self.use_pred_pt = use_pred_pt
 
     def compute_metric(self, trackers: Sequence[Tracklet], detections: Sequence[Detection]) -> np.ndarray:
-        t = trackers[0]
-        d = detections[0]
-        centers1 = np.array([(t.get_state("pitch_coordinates")[0], t.get_state("pitch_coordinates")[1]) for t in trackers])
-        centers2 = np.array([(d.pitch_coordinates[0], d.pitch_coordinates[1]) for d in detections])
-        return cdist(centers1, centers2) / self.normalizer  # keep values in [0, 1]
+        if self.use_pred_pt:
+            c1 = np.array([(t.pred_pt[0], t.pred_pt[1]) for t in trackers])
+        else:
+            c1 = np.array([(t.pt[0], t.pt[1]) for t in trackers])
+        c2 = np.array([(d.pt[0], d.pt[1]) for d in detections])
+
+        return cdist(c1, c2) / self.normalizer  # keep values in [0, 1]
 
 
 class CosineCMM(BaseCostMatrixMetric):
