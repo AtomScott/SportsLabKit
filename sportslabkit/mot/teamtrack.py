@@ -213,14 +213,15 @@ class TeamTracker(MultiObjectTracker):
         unassigned_tracklets_second = []
         for i, tracklet in enumerate(unassigned_tracklets):
             if i not in [match[0] for match in matches_second]:
-                staleness = tracklet.get_state("staleness")
-                if staleness is None:
-                    staleness = 0
-                if staleness > self.t_lost:
-                    unassigned_tracklets_second.append(tracklet)
-                else:
-                    tracklet.update_state("staleness", staleness + 1)
-                    assigned_tracklets.append(tracklet)
+                new_observation = {
+                    "box": tracklet.get_state("pred_box"),
+                    "score": tracklet.get_observation("score"),
+                    "frame": self.frame_count,
+                    "feature": tracklet.get_observation("feature"),
+                    "pt": tracklet.get_state("pred_pt"),
+                }
+                tracklet = self.update_tracklet(tracklet, new_observation)
+                unassigned_tracklets_second.append(tracklet)
 
         logger.debug(f"1st matches: {len(matches_first)}, 2nd matches: {len(matches_second)}")
         return assigned_tracklets, new_tracklets, unassigned_tracklets_second
