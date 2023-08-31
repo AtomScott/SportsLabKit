@@ -1,10 +1,26 @@
+<div align="center">
+  <p>
+    <a align="center" href="" target="_blank">
+      <img
+        width="100%"
+        src="docs/_static/sportslabkit-banner.png"
+      >
+    </a>
+  </p>
+  <br>
+
+  [notebooks](https://github.com/sportslab/notebooks) | [documentation](https://sportslabkit.readthedocs.io/) | [papers](https://scholar.google.com/citations?user=bjSLu7wAAAAJ&hl=en)
+
+  <br>
+
+  [![Documentation Status](https://readthedocs.org/projects/sportslabkit/badge/?version=latest)](https://soccertrack.readthedocs.io/en/latest/?badge=latest) 
+  [![Kaggle](https://kaggle.com/static/images/open-in-kaggle.svg)](https://www.kaggle.com/datasets/atomscott/soccertrack)
+  [![PWC](https://img.shields.io/badge/%7C-Papers%20with%20Code-lightblue)](https://paperswithcode.com/dataset/soccertrack-dataset)
+  [![dm](https://img.shields.io/pypi/dm/soccertrack)](https://pypi.org/project/soccertrack/)
+
+</div>
+
 # SportsLabKit
-
-[![Documentation Status](https://readthedocs.org/projects/sportslabkit/badge/?version=latest)](https://soccertrack.readthedocs.io/en/latest/?badge=latest) 
-[![Kaggle](https://kaggle.com/static/images/open-in-kaggle.svg)](https://www.kaggle.com/datasets/atomscott/soccertrack)
-[![PWC](https://img.shields.io/badge/%7C-Papers%20with%20Code-lightblue)](https://paperswithcode.com/dataset/soccertrack-dataset)
-[![dm](https://img.shields.io/pypi/dm/soccertrack)](https://pypi.org/project/soccertrack/)
-
 
 ## **News**
 
