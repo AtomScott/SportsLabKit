@@ -8,19 +8,39 @@ import optuna
 import pandas as pd
 
 from sportslabkit import Tracklet
+from sportslabkit.callbacks import Callback, with_callbacks
 from sportslabkit.detection_model.dummy import DummyDetectionModel
 from sportslabkit.logger import logger, tqdm
 from sportslabkit.metrics import hota_score
 
 
 class MultiObjectTracker(ABC):
-    def __init__(self, window_size=1, step_size=None, max_staleness=5, min_length=5):
+    def __init__(self, window_size=1, step_size=None, max_staleness=5, min_length=5, callbacks=None):
         self.window_size = window_size
         self.step_size = step_size or window_size
         self.max_staleness = max_staleness
         self.min_length = min_length
         self.trial_params = []
+        self.callbacks = callbacks or []
         self.reset()
+
+    def _check_callbacks(self, callbacks):
+        if callbacks:
+            for callback in callbacks:
+                if not isinstance(callback, Callback):
+                    raise ValueError("All callbacks must be instances of Callback class.")
+
+    def _invoke_callbacks(self, method_name):
+        """
+        Invokes the appropriate methods on all callback objects.
+
+        Args:
+            method_name (str): The name of the method to invoke on the callback objects.
+        """
+        for callback in self.callbacks:
+            method = getattr(callback, method_name, None)
+            if method:
+                method(self)
 
     def update_tracklet(self, tracklet: Tracklet, states: Dict[str, Any]):
         self._check_required_observations(states)
@@ -58,22 +78,25 @@ class MultiObjectTracker(ABC):
         if not isinstance(sequence, (Iterable, np.ndarray)):
             raise ValueError("Input 'sequence' must be an iterable or numpy array of frames/batches")
         self.reset()
-        self.pre_track()
+        self.track_sequence(sequence)
+        self.alive_tracklets = self.cleanup_tracklets(self.alive_tracklets)
+
+        bbdf = self.to_bbdf()
+        return bbdf
+
+    @with_callbacks
+    def track_sequence(self, sequence):
         with tqdm(range(0, len(sequence) - self.window_size + 1, self.step_size), desc="Tracking Progress") as t:
             for i in t:
                 self.process_sequence_item(sequence[i : i + self.window_size].squeeze())
                 t.set_postfix_str(f"Active: {len(self.alive_tracklets)}, Dead: {len(self.dead_tracklets)}", refresh=True)
 
-        self.alive_tracklets = self.cleanup_tracklets(self.alive_tracklets)
-        self.post_track()
-        bbdf = self.to_bbdf()
-        return bbdf
-
     def cleanup_tracklets(self, tracklets):
         for i, _ in enumerate(tracklets):
             tracklets[i].cleanup()
 
-        filter_short_tracklets = lambda tracklet: len(tracklet) >= self.min_length
+        def filter_short_tracklets(tracklet):
+            return len(tracklet) >= self.min_length
         tracklets = list(filter(filter_short_tracklets, tracklets))
         return tracklets
 
@@ -290,11 +313,11 @@ class MultiObjectTracker(ABC):
         self.trial_params = [] # Used to store the parameters for each trial
         study = optuna.create_study(direction="maximize", sampler=sampler, pruner=pruner)
         study.optimize(objective, n_trials=n_trials)
-        
+
         if reuse_detections:
             # reset detection model
             self.detection_model = og_detection_model
-        
+
         best_value = study.best_value
         self.best_params = self.trial_params[study.best_trial.number]
         self.apply_hyperparameters(self.best_params)
