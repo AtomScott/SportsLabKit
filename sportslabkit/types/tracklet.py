@@ -52,6 +52,8 @@ class Tracklet:
 
     def __init__(self, max_staleness: int = 5):
         self.id: int = int(str(int(uuid.uuid4()))[:12])
+        self.player_id: int = None
+        self.team_id: int = None
         self.steps_alive: int = 0
         self.global_step: int = 0
         self.staleness: int = 0
@@ -287,8 +289,8 @@ class Tracklet:
             df["conf"] = 1.0
 
         box_df = df[["bb_left", "bb_top", "bb_width", "bb_height", "conf"]]
-        team_id = 0
-        player_id = df.id.unique()[0]
+        team_id = self.team_id or 0
+        player_id = self.player_id or df.id.unique()[0]
 
         idx = pd.MultiIndex.from_product(
             [[team_id], [player_id], box_df.columns],
