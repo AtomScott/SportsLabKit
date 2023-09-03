@@ -18,14 +18,16 @@
         :caption: User Guide
         :hidden:
 
-        notebooks/02_user_guide/dataset_preparation.ipynb
-        notebooks/02_user_guide/dataframe_manipulation.ipynb
-        notebooks/02_user_guide/detection_with_yolov5.ipynb
-        notebooks/02_user_guide/tracking_with_deepsort.ipynb
-        notebooks/02_user_guide/tracking_evaluation.ipynb
-        notebooks/02_user_guide/tracking_the_ball.ipynb
-        notebooks/02_user_guide/visualization.ipynb
-
+        notebooks/02_user_guide/00_dataset_preparation.ipynb
+        notebooks/02_user_guide/01_dataframe_manipulation.ipynb
+        notebooks/02_user_guide/02_dataframe_visualization.ipynb
+        notebooks/02_user_guide/03_evaluation_metrics.ipynb
+        notebooks/02_user_guide/04_tune_the_tracker.ipynb
+        notebooks/02_user_guide/05_tracking_the_ball.ipynb
+        notebooks/02_user_guide/06_tracking_the_players.ipynb
+        notebooks/02_user_guide/07_tracking_method_comparison.ipynb
+        notebooks/02_user_guide/08_GNSS_data.ipynb
+  
 ..  toctree::
         :maxdepth: 2
         :caption: Core Components

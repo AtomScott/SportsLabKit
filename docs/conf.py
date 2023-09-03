@@ -364,7 +364,16 @@ intersphinx_mapping = {
 
 # -- Options for myst-nb -------------------------------------------------------
 
+myst_enable_extensions = [
+    "amsmath",
+    "colon_fence",
+    "deflist",
+    "dollarmath",
+    "html_image",
+]
+myst_url_schemes = ("http", "https", "mailto")
 jupyter_execute_notebooks = "off"
+
 
 # -- custom auto_summary() macro ---------------------------------------------
 
