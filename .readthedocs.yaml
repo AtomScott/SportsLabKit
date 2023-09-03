@@ -18,7 +18,7 @@ build:
     post_install:
       - cp -r ./notebooks ./docs/notebooks
       - sed 's#./docs/_static#./_static#g' ./README.md > ./docs/README.md
-      - sed 's#./docs/_static#./_static#g' ../contributing.md > ./contributing.md
+      - sed 's#./docs/_static#./_static#g' ./contributing.md > ./docs/contributing.md
 
 # Build documentation in the docs/ directory with Sphinx
 sphinx:
