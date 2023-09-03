@@ -359,6 +359,13 @@ intersphinx_mapping = {
     "more_itertools": ("https://more-itertools.readthedocs.io/en/stable/", None),
     "mypy": ("https://mypy.readthedocs.io/en/stable/", None),
 }
+
+
+
+# -- Options for myst-nb -------------------------------------------------------
+
+jupyter_execute_notebooks = "off"
+
 # -- custom auto_summary() macro ---------------------------------------------
 
 
@@ -386,6 +393,7 @@ rst_prolog = """
 # Related custom CSS
 html_css_files = [
     "css/label.css",
+    "css/dataframe.css"
 ]
 
 # noinspection PyUnusedLocal

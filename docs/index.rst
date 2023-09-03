@@ -19,11 +19,12 @@
         :hidden:
 
         notebooks/02_user_guide/dataset_preparation.ipynb
-        notebooks/02_user_guide/convert_bbdf_to_codf.ipynb
+        notebooks/02_user_guide/dataframe_manipulation.ipynb
         notebooks/02_user_guide/detection_with_yolov5.ipynb
         notebooks/02_user_guide/tracking_with_deepsort.ipynb
         notebooks/02_user_guide/tracking_evaluation.ipynb
         notebooks/02_user_guide/tracking_the_ball.ipynb
+        notebooks/02_user_guide/visualization.ipynb
 
 ..  toctree::
         :maxdepth: 2
