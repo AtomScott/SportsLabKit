@@ -5,6 +5,7 @@ models/*
 data/*
 docs/autoapi
 docs/README.md
+docs/contributing.md
 sportslabkit/datasets/GNSS
 sportslabkit/datasets/top-view
 sportslabkit/datasets/top_view
