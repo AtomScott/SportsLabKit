@@ -6,7 +6,6 @@ except ImportError:
         "pip install git+https://github.com/openai/CLIP.git"
     )
 
-from dataclasses import dataclass, field
 
 import torch
 from PIL import Image
@@ -14,21 +13,26 @@ from PIL import Image
 from sportslabkit.image_model.base import BaseImageModel
 
 
-@dataclass
-class ModelConfigTemplate():
-    name: str = "ViT-B/32"
-    device: str = "cpu"
-    image_size: int = (224, 224)
-
-@dataclass
-class InferenceConfigTemplate():
-    pass
-
-
 class BaseCLIP(BaseImageModel):
+    def __init__(self, name: str = "RN50", device: str = "cpu", image_size: tuple[int, int] = (224, 224),):
+        """
+        Initializes the base image embedding model.
+
+        Args:
+            name (str, optional): Name of the model. Defaults to "RN50".
+            device (str, optional): Device to run the model on. Defaults to "cpu".
+            image_size (tuple[int, int], optional): Size of the image. Defaults to (224, 224).
+        """
+        super().__init__()
+        self.name = name
+        self.device = device
+        self.image_size = image_size
+        self.input_is_batched = False  # initialize the input_is_batched attribute
+        self.model = self.load()
+
     def load(self):
-        model_name = self.model_config["name"]
-        device = self.model_config["device"]
+        model_name = self.name
+        device = self.device
         model, preprocess = clip.load(model_name, device=device)
         self.preprocess = preprocess
         return model
@@ -37,7 +41,7 @@ class BaseCLIP(BaseImageModel):
         ims = []
         for _x in x:
             im = Image.fromarray(_x)
-            im = im.resize(self.model_config["image_size"])
+            im = im.resize(self.image_size)
             im = self.preprocess(im)
             ims.append(im)
         ims = torch.stack(ims)
@@ -45,64 +49,93 @@ class BaseCLIP(BaseImageModel):
             image_features = self.model.encode_image(ims)
         return image_features
 
-    @property
-    def model_config_template(self):
-        return ModelConfigTemplate
-
-    @property
-    def inference_config_template(self):
-        return InferenceConfigTemplate
-
 
 class CLIP_RN50(BaseCLIP):
-    def __init__(self, model_config={}, inference_config={}):
-        model_config["name"] = "RN50"
-        super().__init__(model_config, inference_config)
+    def __init__(
+        self,
+        name: str = "RN50",
+        device: str = "cpu",
+        image_size: tuple[int, int] = (224, 224),
+    ):
+        super().__init__(name, device, image_size)
+
 
 
 class CLIP_RN101(BaseCLIP):
-    def __init__(self, model_config={}, inference_config={}):
-        model_config["name"] = "RN101"
-        super().__init__(model_config, inference_config)
+    def __init__(
+        self,
+        name: str = "RN101",
+        device: str = "cpu",
+        image_size: tuple[int, int] = (224, 224),
+    ):
+        super().__init__(name, device, image_size)
 
 
 class CLIP_RN50x4(BaseCLIP):
-    def __init__(self, model_config={}, inference_config={}):
-        model_config["name"] = "RN50x4"
-        super().__init__(model_config, inference_config)
+    def __init__(
+        self,
+        name: str = "RN50x4",
+        device: str = "cpu",
+        image_size: tuple[int, int] = (224, 224),
+    ):
+        super().__init__(name, device, image_size)
 
 
 class CLIP_RN50x16(BaseCLIP):
-    def __init__(self, model_config={}, inference_config={}):
-        model_config["name"] = "RN50x16"
-        super().__init__(model_config, inference_config)
+    def __init__(
+        self,
+        name: str = "RN50x16",
+        device: str = "cpu",
+        image_size: tuple[int, int] = (224, 224),
+    ):
+        super().__init__(name, device, image_size)
 
 
 class CLIP_RN50x64(BaseCLIP):
-    def __init__(self, model_config={}, inference_config={}):
-        model_config["name"] = "RN50x64"
-        super().__init__(model_config, inference_config)
+    def __init__(
+        self,
+        name: str = "RN50x64",
+        device: str = "cpu",
+        image_size: tuple[int, int] = (224, 224),
+    ):
+        super().__init__(name, device, image_size)
 
 
 class CLIP_ViT_B_32(BaseCLIP):
-    def __init__(self, model_config={}, inference_config={}):
-        model_config["name"] = "ViT-B/32"
-        super().__init__(model_config, inference_config)
+    def __init__(
+        self,
+        name: str = "ViT-B/32",
+        device: str = "cpu",
+        image_size: tuple[int, int] = (224, 224),
+    ):
+        super().__init__(name, device, image_size)
 
 
 class CLIP_ViT_B_16(BaseCLIP):
-    def __init__(self, model_config={}, inference_config={}):
-        model_config["name"] = "ViT-B/16"
-        super().__init__(model_config, inference_config)
+    def __init__(
+        self,
+        name: str = "ViT-B/16",
+        device: str = "cpu",
+        image_size: tuple[int, int] = (224, 224),
+    ):
+        super().__init__(name, device, image_size)
 
 
 class CLIP_ViT_L_14(BaseCLIP):
-    def __init__(self, model_config={}, inference_config={}):
-        model_config["name"] = "ViT-L/14"
-        super().__init__(model_config, inference_config)
+    def __init__(
+        self,
+        name: str = "ViT-L/14",
+        device: str = "cpu",
+        image_size: tuple[int, int] = (224, 224),
+    ):
+        super().__init__(name, device, image_size)
 
 
 class CLIP_ViT_L_14_336px(BaseCLIP):
-    def __init__(self, model_config={}, inference_config={}):
-        model_config["name"] = "ViT-L/14@336px"
-        super().__init__(model_config, inference_config)
+    def __init__(
+        self,
+        name: str = "ViT-L/14@336px",
+        device: str = "cpu",
+        image_size: tuple[int, int] = (224, 224),
+    ):
+        super().__init__(name, device, image_size)
