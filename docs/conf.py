@@ -37,6 +37,7 @@ extensions = [
     "autoapi.extension",
     'sphinxcontrib.gtagjs',
     "myst_nb",
+    "sphinx_copybutton",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -132,7 +133,7 @@ html_theme = "furo"
 # further.  For a list of options available for each theme, see the
 # documentation.
 html_theme_options = {
-    "sidebar_hide_name": True,
+    "sidebar_hide_name": False,
     "dark_css_variables": {
         "color-brand-primary": "#0097A7",
         "color-brand-content": "#0097A7",
