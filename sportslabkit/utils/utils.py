@@ -1,5 +1,6 @@
 """Genereal utils."""
 import itertools
+import json
 import os
 from collections import deque
 from datetime import datetime
@@ -15,23 +16,21 @@ from numpy.typing import NDArray
 from omegaconf import OmegaConf
 from PIL import Image
 from vidgear.gears import WriteGear
-import json
+
 from sportslabkit.logger import logger, tqdm
+
 
 OmegaConf.register_new_resolver("now", lambda x: datetime.now().strftime(x), replace=True)
 
 import sys
 from ast import literal_eval
-from itertools import zip_longest
 from pathlib import Path
 from typing import Any, Union
 
 import dateutil.parser
 import git
 import numpy as np
-import pandas as pd
 import requests
-from pandas._typing import FilePath, WriteBuffer
 from PIL import Image
 
 
@@ -293,7 +292,7 @@ def make_video(
     )
 
     # loop over
-    for frame in tqdm(frames, desc=f"Writing video", level="INFO"):
+    for frame in tqdm(frames, desc="Writing video", level="INFO"):
         writer.write(frame, rgb_mode=True)  # activate RGB Mode
 
     writer.close()

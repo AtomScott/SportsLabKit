@@ -8,6 +8,7 @@ import pandas as pd
 
 from sportslabkit.dataframe import BBoxDataFrame
 
+
 X_INDEX = 0  # xmin
 Y_INDEX = 1  # ymin
 W_INDEX = 2  # width
@@ -303,7 +304,7 @@ def ap_score(
         CLASS_ID_INDEX = 5
         IMAGE_NAME_INDEX = 6
     """
-    assert len(bboxes_gt_per_class) != 0, f"It must contain at least one Grand Truth."
+    assert len(bboxes_gt_per_class) != 0, "It must contain at least one Grand Truth."
 
     class_id = bboxes_gt_per_class[0][CLASS_ID_INDEX]
     n_dets = len(bboxes_det_per_class)

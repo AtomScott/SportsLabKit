@@ -1,10 +1,7 @@
-import sportslabkit as st
-from sportslabkit.types import Tracklet
-from sportslabkit.mot.base import MultiObjectTracker
-from sportslabkit.matching import SimpleMatchingFunction, MotionVisualMatchingFunction
-from sportslabkit.motion_model import KalmanFilter
-from sportslabkit.metrics import IoUCMM, CosineCMM
 from sportslabkit.logger import logger
+from sportslabkit.matching import MotionVisualMatchingFunction, SimpleMatchingFunction
+from sportslabkit.metrics import CosineCMM, IoUCMM
+from sportslabkit.mot.base import MultiObjectTracker
 
 
 class BYTETracker(MultiObjectTracker):

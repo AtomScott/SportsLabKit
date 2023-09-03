@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-import os
 import platform
 from pathlib import Path
 from typing import Any, Optional, Union
 
 from sportslabkit.logger import inspect, logger
+
 
 _pathlike = Union[str, Path]
 _module_path = Path(__file__).parent

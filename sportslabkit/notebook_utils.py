@@ -1,5 +1,4 @@
 import random
-from pathlib import Path
 
 import matplotlib.patches as patches
 import matplotlib.pyplot as plt
@@ -7,6 +6,7 @@ import numpy as np
 from IPython.display import HTML
 from IPython.display import display as ipy_display
 from matplotlib.animation import FuncAnimation
+
 from sportslabkit.types.detection import Detection
 
 

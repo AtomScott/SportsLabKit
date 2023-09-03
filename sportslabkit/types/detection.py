@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+from typing import Optional
+
 import numpy as np
-from typing import Any, Dict, List, Optional, Tuple, Union
+
 from sportslabkit.types.types import Box, Vector
 
 

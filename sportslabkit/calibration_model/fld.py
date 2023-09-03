@@ -1,6 +1,8 @@
 import cv2
 import numpy as np
+
 from .base import BaseCalibrationModel
+
 
 class LineBasedCalibrator(BaseCalibrationModel):
     def __init__(self, min_line_length=50, line_distance_threshold=50, line_thickness=15, morph_size=15, dst_points=None):
@@ -80,21 +82,21 @@ class LineBasedCalibrator(BaseCalibrationModel):
 
     def forward(self, image):
         """Calculate the homography matrix for the given image.
-        
+
         Parameters:
         - image: numpy array
             The source image.
         - dst_points: numpy array or None
-            The destination points for the transformation. If not provided, 
+            The destination points for the transformation. If not provided,
             it defaults to the four corners of a standard soccer pitch (105m x 68m).
 
         Returns:
         - numpy array
             The computed homography matrix.
         """
-        
+
         contour = self._get_largest_contour(image)
         quadrilateral = self._approximate_contour(contour)
-        
+
         homography_matrix = self._calculate_homography(quadrilateral, self.dst_points)
         return homography_matrix

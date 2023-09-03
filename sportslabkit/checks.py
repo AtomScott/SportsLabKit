@@ -70,9 +70,9 @@ def _check_matches(
         raise ValueError(f"matches should have 2 columns, but has {matches.shape[1]}.")
     if np.any(matches[:, 0] >= len(trackers)):
         raise ValueError(
-            f"matches contains rows with tracker index greater than number of trackers."
+            "matches contains rows with tracker index greater than number of trackers."
         )
     if np.any(matches[:, 1] >= len(detections)):
         raise ValueError(
-            f"matches contains rows with detection index greater than number of detections."
+            "matches contains rows with detection index greater than number of detections."
         )

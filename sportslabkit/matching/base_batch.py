@@ -2,35 +2,22 @@
 
 from __future__ import annotations
 
-from abc import ABC, abstractmethod
-from typing import Any, Callable, Optional, Sequence, Tuple
+from abc import abstractmethod
 
 import numpy as np
-import scipy
-from scipy.optimize import linear_sum_assignment
-from scipy.spatial.distance import cdist
 
-from sportslabkit.checks import (
-    _check_cost_matrix,
-    _check_detections,
-    _check_matches,
-    _check_trackers,
-)
-from sportslabkit.metrics import BaseCostMatrixMetric, CosineCMM, IoUCMM
 from sportslabkit import Tracklet
 from sportslabkit.types.detection import Detection
+
 
 EPS = 1e-7
 from typing import List
-from sportslabkit import Tracklet
-from sportslabkit.types.detection import Detection
 
-
-from typing import List
-from sportslabkit import Tracklet
-from sportslabkit.types.detection import Detection
-from sportslabkit.logger import logger
 import networkx as nx
+
+from sportslabkit import Tracklet
+from sportslabkit.logger import logger
+from sportslabkit.types.detection import Detection
 
 
 class BaseBatchMatchingFunction:

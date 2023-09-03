@@ -1,11 +1,9 @@
 from abc import ABC, abstractmethod
-from dataclasses import dataclass, fields
 
 import numpy as np
 import torch
 from PIL import Image
 
-from sportslabkit.logger import logger
 from sportslabkit.types import Detection
 from sportslabkit.types.detection import Detection
 from sportslabkit.types.detections import Detections

@@ -1,21 +1,17 @@
 from __future__ import annotations
 
-import time
-import uuid
-from collections.abc import Iterable
 from typing import Any
 
 import numpy as np
 import pandas as pd
-from filterpy.kalman import KalmanFilter
-from motpy.model import Model, ModelPreset
+from motpy.model import ModelPreset
 
-from sportslabkit import BBoxDataFrame, Camera
+from sportslabkit import Camera
 from sportslabkit.logger import logger, tqdm
-from sportslabkit.types.types import Box, Vector, _pathlike
-from sportslabkit.types.detections import Detections
 from sportslabkit.types.detection import Detection
 from sportslabkit.types.tracklet import Tracklet
+from sportslabkit.types.types import _pathlike
+
 
 DEFAULT_MODEL_SPEC = ModelPreset.constant_velocity_and_static_box_size_2d.value
 
@@ -179,10 +175,11 @@ class MultiObjectTracker:
     def tune(self):
         pass
 
-import optuna
 import numpy as np
+import optuna
+
 from sportslabkit import Tracklet
-from sportslabkit.metrics import iou_score, convert_to_x1y1x2y2
+from sportslabkit.metrics import convert_to_x1y1x2y2, iou_score
 
 
 def tune_motion_model(

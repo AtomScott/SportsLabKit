@@ -1,5 +1,4 @@
 from sportslabkit.sot.base import SingleObjectTracker
-from sportslabkit.metrics.object_detection import iou_scores
 
 
 class MinimumCostFlowTracker(SingleObjectTracker):

@@ -1,6 +1,6 @@
-from .base import BaseDetectionModel
 from sportslabkit.logger import logger
-from sportslabkit.types.detections import Detections
+
+from .base import BaseDetectionModel
 
 
 class DummyDetectionModel(BaseDetectionModel):

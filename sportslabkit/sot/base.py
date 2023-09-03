@@ -1,21 +1,15 @@
 from __future__ import annotations
 
-import optuna
-from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Type, Union, Iterable
+from abc import ABC, abstractmethod
+from typing import Any, Dict, Iterable, Union
 
 import numpy as np
+import optuna
+
 from sportslabkit import Tracklet
+from sportslabkit.dataframe.bboxdataframe import BBoxDataFrame
 from sportslabkit.logger import logger
 from sportslabkit.metrics.object_detection import iou_scores
-from sportslabkit.dataframe.bboxdataframe import BBoxDataFrame
-
-import numpy as np
-from abc import ABC, abstractmethod
-
-
-from typing import Dict, Any, List, Union
-from abc import ABC, abstractmethod
-import numpy as np
 
 
 class SingleObjectTracker(ABC):

@@ -4,12 +4,13 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 import numpy as np
+import pandas as pd
 from PIL import Image
-from sportslabkit.utils import read_image, increment_path
+
 from sportslabkit.logger import logger
 from sportslabkit.types.detection import Detection
+from sportslabkit.utils import increment_path, read_image
 from sportslabkit.utils.draw import draw_bounding_boxes
-import pandas as pd
 
 
 class Detections:

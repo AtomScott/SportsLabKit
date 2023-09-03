@@ -7,7 +7,6 @@ from fire import Fire
 
 from sportslabkit.utils import logger, set_log_level
 from sportslabkit.utils.camera import Camera, find_intrinsic_camera_parameters
-from sportslabkit.utils.utils import make_video
 
 
 class CLI:

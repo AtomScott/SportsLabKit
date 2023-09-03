@@ -1,8 +1,7 @@
-from typing import Any, List, Optional, Tuple, Type, Union
+from typing import List, Optional, Tuple, Union
 
 import matplotlib
 import numpy as np
-from mplsoccer import Pitch
 from PIL import Image, ImageColor, ImageDraw, ImageFont
 
 from sportslabkit.logger import logger

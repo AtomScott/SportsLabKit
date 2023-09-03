@@ -1,9 +1,9 @@
 import torch
+from teamtrack.mdn_module import MDNMotionModule
 
 from sportslabkit.motion_model.base import BaseMotionModel, BaseMotionModule
-from sportslabkit.motion_model.models import LSTM, Linear
+from sportslabkit.motion_model.models import Linear
 
-from teamtrack.mdn_module import MDNMotionModule
 
 class SingleTargetLinear(BaseMotionModel):
     required_observation_types = ["pt"]

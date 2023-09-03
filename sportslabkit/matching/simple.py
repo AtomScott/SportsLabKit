@@ -1,23 +1,17 @@
 from __future__ import annotations
+
+from collections import defaultdict, namedtuple
+from typing import Sequence, Tuple
+
 import networkx as nx
-from collections import defaultdict
-
-from abc import ABC, abstractmethod
-from typing import Any, Callable, Optional, Sequence, Tuple
-
 import numpy as np
-import scipy
-from scipy.optimize import linear_sum_assignment
-from scipy.spatial.distance import cdist
 
-from sportslabkit.metrics import BaseCostMatrixMetric, CosineCMM, IoUCMM
 from sportslabkit import Tracklet
-from sportslabkit.types.detection import Detection
 from sportslabkit.matching.base import BaseMatchingFunction
 from sportslabkit.matching.base_batch import BaseBatchMatchingFunction
-from sportslabkit.logger import logger
+from sportslabkit.metrics import BaseCostMatrixMetric, IoUCMM
+from sportslabkit.types.detection import Detection
 
-from collections import namedtuple
 
 # Define the named tuple outside of the function.
 Node = namedtuple("Node", ["frame", "detection", "is_dummy"])
@@ -65,8 +59,10 @@ class SimpleMatchingFunction(BaseMatchingFunction):
         return cost_matrix
 
 
-import numpy as np
 from typing import List
+
+import numpy as np
+
 from sportslabkit import Tracklet
 from sportslabkit.types.detection import Detection
 
