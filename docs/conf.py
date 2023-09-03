@@ -34,10 +34,9 @@ extensions = [
     "sphinx.ext.viewcode",
     "sphinx.ext.intersphinx",
     "sphinx_autodoc_typehints",
-    "m2r2",
-    "nbsphinx",
     "autoapi.extension",
     'sphinxcontrib.gtagjs',
+    "myst_nb",
 ]
 
 # Add any paths that contain templates here, relative to this directory.

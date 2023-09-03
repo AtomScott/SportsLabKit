@@ -7,10 +7,12 @@ dependencies:
   - pip
   - pip:
     - readthedocs-sphinx-ext
-    - furo==2023.08.19
-    - sphinx==7.2.2
     - sphinx-autoapi==2.0.0
     - sphinx-autodoc-typehints==1.18.3
     - nbsphinx==0.8.9
     - m2r2==0.3.2
+    - myst-nb==0.17.2 # requires sphinx > 6.0
+    - sphinx
+    - furo 
     - sphinxcontrib-gtagjs
+  

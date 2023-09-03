@@ -1,5 +1,5 @@
-.. mdinclude:: ../README.md
-
+.. include:: ./README.md
+        :parser: myst_parser.sphinx_
 
 .. Indices and tables
 .. ==================
@@ -49,5 +49,5 @@
         :caption: Dev
         :hidden:
 
-        Contributing <04_contributing>
+        04_contributing.rst
         notebooks/05_dev/logging-demo.ipynb

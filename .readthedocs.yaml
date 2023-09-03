@@ -17,6 +17,8 @@ build:
     # https://github.com/readthedocs/readthedocs.org/issues/4912#issuecomment-1143587902
     post_install:
       - cp -r ./notebooks ./docs/notebooks
+      - sed 's|./docs/_static|./_static|g' ./README.md > ./docs/README.md
+      -	sed 's|./docs/_static|./_static|g' ../contributing.md > ./contributing.md
 
 
 # Build documentation in the docs/ directory with Sphinx

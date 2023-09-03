@@ -74,8 +74,8 @@ Your project’s pull request build status will show as one of your pull request
 
 ![](https://docs.readthedocs.io/en/stable/_images/github-build-status-reporting.gif)
 
-<img src='https://raw.githubusercontent.com/AtomScott/SoccerTrack/feature/major_refactor/docs/_static/contributing/docs_01.webp'/>
-<img src='https://raw.githubusercontent.com/AtomScott/SoccerTrack/feature/major_refactor/docs/_static/contributing/docs_02.webp'/>
+<img src='./docs/_static/contributing/docs_01.webp'/>
+<img src='./docs/_static/contributing/docs_02.webp'/>
 
 ### How to add a new notebook to the documentation
 

@@ -3,13 +3,13 @@
     <a align="center" href="" target="_blank">
       <img
         width="100%"
-        src="docs/_static/sportslabkit-banner.png"
+        src="./docs/_static/sportslabkit-banner.png"
       >
     </a>
   </p>
   <br>
 
-  [notebooks](https://github.com/sportslab/notebooks) | [documentation](https://sportslabkit.readthedocs.io/) | [papers](https://scholar.google.com/citations?user=bjSLu7wAAAAJ&hl=en)
+  [notebooks](https://github.com/atomscott/sportslabkit/notebooks) | [documentation](https://sportslabkit.readthedocs.io/) | [papers](https://scholar.google.com/citations?user=bjSLu7wAAAAJ&hl=en)
 
   <br>
 
@@ -22,65 +22,79 @@
 
 # SportsLabKit
 
-## **News**
+## Introduction
 
-* **(2023/08/10)** [Announcing SportLabKit!](https://atomscott.me/blog-posts-table-includes-wip/announcing-sportslabkit) We are currently working on a dataset for basketball and handball which will be released in the near future. Stay tuned!
+Meet SportsLabKit: The essential toolkit for advanced sports analytics. Designed for pros and amateurs alike, we convert raw game footage into actionable data.
 
----
+We're kicking off with soccer and expanding to other sports soon. Need to quantify your game? Make human movement computable with SportsLabKit.
 
-## Welcome!
 
-Introducing SportsLabKit – your go-to toolkit for unlocking the game's secrets! Tailored for everyone from coaches to hobbyists, it's all about transforming sports videos into insights you can act on.
+## Features
 
-Starting strong with soccer, we're on our way to slam-dunking basketball and handball too. Want to turn a game's footage into numbers for analysis? We've got you covered.
+### Core Capabilities
+- **High-Performance Tracking**: In-house implementations of SORT, DeepSORT, ByteTrack, and TeamTrack for object tracking in sports.
 
-## What's Inside?
+### Flexibility
+- **Plug-and-Play Architecture**: Swap out detection and ReID models on the fly. Supported models include YOLOv8 and torch-ReID.
 
-* Tracking: Spot-on tracking for soccer today, with basketball and handball on the horizon.
-* Simplicity: Videos to numbers? Done. No fuss, no hassle.
-* Growth: Event detection and pose estimation are coming. We're just getting started.
+### Usability
+- **2D Pitch Calibration**: Translate bounding boxes to 2D pitch coordinates.
+  
+- **DataFrame Wrappers**: `BoundingBoxDataFrame` and `CoordinatesDataFrame` for effortless manipulation and analysis of tracking data.
 
-Join us in the SportsLabKit journey, and let's take sports analysis to the next level!
+### Tutorials
+- [**Get Started**](./notebooks/01_get_started): Your first steps in understanding and setting up SportsLabKit.
+- [**User Guide**](./notebooks/02_user_guide): A comprehensive guide for effectively using the toolkit in real-world scenarios.
+- [**Core Components**](./notebooks/03_core_components/): Deep dive into the essential elements that make up SportsLabKit, including tracking algorithms and DataFrame wrappers.
 
-## Documentation
+## Installation
 
-See the [documentation](https://sportslabkit.readthedocs.io/).
-
-## Install
-
-### pip
-
-The software can be installed using `pip`.
+To install SportsLabKit, simply run:
 
 ```bash
 pip install SportsLabKit
 ```
 
-You will neeed to install the following dependencies:
-```bash
-pip install torch torchvision pytorch-lightning
+> **Note**: We're in active development, so expect updates and changes.
+
+## Example Usage
+
+To get started with tracking your first game, follow this simple example:
+
+```python
+import sportslabkit as slk
+
+# Initialize your camera and models
+cam = slk.Camera(path_to_mp4)
+det_model = slk.detection_model.load('YOLOv8x')
+motion_model = slk.motion_model.load('KalmanFilter')
+
+# Configure and execute the tracker
+tracker = slk.mot.SORTTracker(detection_model=det_model, motion_model=motion_model)
+bbdf = tracker.track(cam)
+
+# The tracking data is now ready for analysis
 ```
 
-To use torch reid, you will need to install the following dependencies:
-```bash
-pip install git+https://github.com/KaiyangZhou/deep-person-reid.git
-```
+The output is a `BoundingBoxDataFrame`, a multi-level Pandas DataFrame that contains Team ID, Player ID, and various attributes like bounding box dimensions. Each row is indexed by Frame ID for easy analysis. The DataFrame is also customizable, allowing you to adapt Team and Player IDs as needed.
 
-We recommed using poetry to handle dependencies. So install poetry and run the following command:
-```bash
-poetry install
-poetry run pip install torch torchvision pytorch-lightning 
-poetry run pip install git+https://github.com/KaiyangZhou/deep-person-reid.git
-```
+![Example of BoundingBoxDataFrame](./docs/_static/soccertrack_dataframe.png)
 
-> **Note** The software is currently in development so it will break and change frequently!
+## Roadmap
+
+- **Better CV tools**: Implement state of the art tracking methods, add event detection etc.
+
+- **Unified Data Representation**: In the pipeline are event data detection and a single DataFrame structure for both event and trajectory data.
+  
+- **Enhanced Compatibility**: Upcoming support for data export to standard formats for easy integration with other tools.
+
 
 ## Contributing
 
-See the [Contributing Guide](https://soccertrack.readthedocs.io/en/latest/contributing.html) for more information.
+See the [Contributing Guide](./contributing.md) for more information.
 
 
-## Contributors ✨
+## Contributors
 
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
 [![All Contributors](https://img.shields.io/badge/all_contributors-2-orange.svg?style=flat-square)](#contributors-)
@@ -105,17 +119,13 @@ See the [Contributing Guide](https://soccertrack.readthedocs.io/en/latest/contri
 
 This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
 
-## Star History
-
-[![Star History Chart](https://api.star-history.com/svg?repos=atomscott/soccertrack&type=Date)](https://star-history.com/#atomscott/soccertrack&Date)
-
 
 ## Related Papers
 
 <table>
 <td width=30% style='padding: 20px;'>
 <a href="https://openaccess.thecvf.com/content/CVPR2022W/CVSports/papers/Scott_SoccerTrack_A_Dataset_and_Tracking_Algorithm_for_Soccer_With_Fish-Eye_CVPRW_2022_paper.pdf">
-<img src='https://raw.githubusercontent.com/AtomScott/SoccerTrack/c13b88c2700610bd9c886976a92dd81afa7a7a98/docs/_static/paper_preview.jpg'/>
+<img src='./docs/_static/paper_preview.jpg'/>
 </a>
 </td>
 <td width=70%>
