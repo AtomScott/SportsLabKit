@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# SoccerTrack documentation build configuration file, created by
+# SportsLabKit documentation build configuration file, created by
 # sphinx-quickstart.
 #
 # This file is execfile()d with the current directory set to its containing dir.
@@ -34,9 +34,10 @@ extensions = [
     "sphinx.ext.viewcode",
     "sphinx.ext.intersphinx",
     "sphinx_autodoc_typehints",
-    "m2r2",
-    "nbsphinx",
     "autoapi.extension",
+    'sphinxcontrib.gtagjs',
+    "myst_nb",
+    "sphinx_copybutton",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -44,7 +45,7 @@ templates_path = ["_templates"]
 
 # -- Options for autoapi -------------------------------------------------------
 
-autoapi_dirs = ["../soccertrack"]
+autoapi_dirs = ["../sportslabkit"]
 autoapi_type = "python"
 
 autoapi_template_dir = "_templates/autoapi"
@@ -76,7 +77,7 @@ source_suffix = [".md", ".rst"]
 master_doc = "index"
 
 # General information about the project.
-project = "SoccerTrack"
+project = "SportsLabKit"
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -132,7 +133,7 @@ html_theme = "furo"
 # further.  For a list of options available for each theme, see the
 # documentation.
 html_theme_options = {
-    "sidebar_hide_name": True,
+    "sidebar_hide_name": False,
     "dark_css_variables": {
         "color-brand-primary": "#0097A7",
         "color-brand-content": "#0097A7",
@@ -141,7 +142,7 @@ html_theme_options = {
     # "icon_links": [
     #     {
     #         "name": "Github",
-    #         "url": "https://github.com/AtomScott/SoccerTrack",
+    #         "url": "https://github.com/AtomScott/SportsLabKit",
     #         "icon": "fab fa-github-square",
     #     },
     #     {
@@ -228,7 +229,7 @@ html_sidebars = {
 # html_file_suffix = None
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = "soccertrackdoc"
+htmlhelp_basename = "sportslabkitdoc"
 
 
 # -- Options for LaTeX output --------------------------------------------------
@@ -245,7 +246,7 @@ latex_elements = {
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-    ("index", "soccertrack.tex", "SoccerTrack Documentation", "Atom Scott", "manual"),
+    ("index", "sportslabkit.tex", "SportsLabKit Documentation", "Atom Scott", "manual"),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -273,7 +274,7 @@ latex_documents = [
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [("index", "soccertrack", "SoccerTrack Documentation", ["Atom Scott"], 1)]
+man_pages = [("index", "sportslabkit", "SportsLabKit Documentation", ["Atom Scott"], 1)]
 
 # If true, show URL addresses after external links.
 # man_show_urls = False
@@ -287,10 +288,10 @@ man_pages = [("index", "soccertrack", "SoccerTrack Documentation", ["Atom Scott"
 texinfo_documents = [
     (
         "index",
-        "soccertrack",
-        "SoccerTrack Documentation",
+        "sportslabkit",
+        "SportsLabKit Documentation",
         "Atom Scott",
-        "SoccerTrack",
+        "SportsLabKit",
         "A short description of the project.",
         "Miscellaneous",
     ),
@@ -336,6 +337,13 @@ autodoc_mock_imports = [
     "sklearn",
 ]
 
+# -- Options for Google Analytics ---------------------------------------------
+
+gtagjs_ids = [
+    "G-GXSVPS0MXS",
+]
+
+
 # -- Options for intersphinx ---------------------------------------------------
 intersphinx_mapping = {
     "python": ("https://docs.python.org/3", None),
@@ -351,6 +359,22 @@ intersphinx_mapping = {
     "more_itertools": ("https://more-itertools.readthedocs.io/en/stable/", None),
     "mypy": ("https://mypy.readthedocs.io/en/stable/", None),
 }
+
+
+
+# -- Options for myst-nb -------------------------------------------------------
+
+myst_enable_extensions = [
+    "amsmath",
+    "colon_fence",
+    "deflist",
+    "dollarmath",
+    "html_image",
+]
+myst_url_schemes = ("http", "https", "mailto")
+jupyter_execute_notebooks = "off"
+
+
 # -- custom auto_summary() macro ---------------------------------------------
 
 
@@ -378,6 +402,7 @@ rst_prolog = """
 # Related custom CSS
 html_css_files = [
     "css/label.css",
+    "css/dataframe.css"
 ]
 
 # noinspection PyUnusedLocal

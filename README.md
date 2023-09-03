@@ -1,111 +1,131 @@
-# SoccerTrack
-![](https://raw.githubusercontent.com/AtomScott/SoccerTrack/gh-pages/img/title-banner.png)
-[![Documentation Status](https://readthedocs.org/projects/soccertrack/badge/?version=latest)](https://soccertrack.readthedocs.io/en/latest/?badge=latest) 
-[![Kaggle](https://kaggle.com/static/images/open-in-kaggle.svg)](https://www.kaggle.com/datasets/atomscott/soccertrack)
-[![PWC](https://img.shields.io/badge/%7C-Papers%20with%20Code-lightblue)](https://paperswithcode.com/dataset/soccertrack-dataset)
-[![dm](https://img.shields.io/pypi/dm/soccertrack)](https://pypi.org/project/soccertrack/)
+<div align="center">
+  <p>
+    <a align="center" href="" target="_blank">
+      <img
+        width="100%"
+        src="./docs/_static/sportslabkit-banner.png"
+      >
+    </a>
+  </p>
+  <br>
 
-[![DeepSource](https://deepsource.io/gh/AtomScott/SoccerTrack.svg/?label=active+issues&show_trend=true&token=TIxJg8BLzszYnWeVDMHr6pMU)](https://deepsource.io/gh/AtomScott/SoccerTrack/?ref=repository-badge)
-[![DeepSource](https://deepsource.io/gh/AtomScott/SoccerTrack.svg/?label=resolved+issues&show_trend=true&token=TIxJg8BLzszYnWeVDMHr6pMU)](https://deepsource.io/gh/AtomScott/SoccerTrack/?ref=repository-badge)
+  [notebooks](https://github.com/atomscott/sportslabkit/notebooks) | [documentation](https://sportslabkit.readthedocs.io/) | [papers](https://scholar.google.com/citations?user=bjSLu7wAAAAJ&hl=en)
 
+  <br>
 
-## **News**
+  [![Documentation Status](https://readthedocs.org/projects/sportslabkit/badge/?version=latest)](https://soccertrack.readthedocs.io/en/latest/?badge=latest) 
+  [![Kaggle](https://kaggle.com/static/images/open-in-kaggle.svg)](https://www.kaggle.com/datasets/atomscott/soccertrack)
+  [![PWC](https://img.shields.io/badge/%7C-Papers%20with%20Code-lightblue)](https://paperswithcode.com/dataset/soccertrack-dataset)
+  [![dm](https://img.shields.io/pypi/dm/soccertrack)](https://pypi.org/project/soccertrack/)
 
-* **(2023/02/08)** We have finished fixing the datasets and have also uploaded extra footage with complete annotations! The dataset can be downloaded from [Kaggle](https://www.kaggle.com/datasets/atomscott/soccertrack).
+</div>
 
-* **(2022/11/03)** After receving reports of erroneous  data, we have fixed and reuploaded a majority of SoccerTrack. We are also adding videos with visualized bounding boxes so that you can be sure that the data is good. The visualizations can be found in the viz_results directory under Top-view/Wide-view (see [Kaggle](https://www.kaggle.com/datasets/atomscott/soccertrack)). We have created a spreadsheet to keep everyone updated on our progress.
-[Spreadsheet Link](https://docs.google.com/spreadsheets/d/1V4TF84nIZWtYBrT6oNhAc3tp01QCBn41aadp96vfWww/edit#gid=208157415)
+# SportsLabKit
 
----
-A Dataset and Tracking Algorithm for Soccer with Fish-eye and Drone Videos.
+## Introduction
 
+Meet SportsLabKit: The essential toolkit for advanced sports analytics. Designed for pros and amateurs alike, we convert raw game footage into actionable data.
 
-* [Project page](https://atomscott.github.io/SoccerTrack/)
-* [Paper](https://openaccess.thecvf.com/content/CVPR2022W/CVSports/papers/Scott_SoccerTrack_A_Dataset_and_Tracking_Algorithm_for_Soccer_With_Fish-Eye_CVPRW_2022_paper.pdf)
-* [Tracking Algorithm](https://github.com/AtomScott/SoccerTrack) (Work In Progress)
-* [Documentation](https://soccertrack.readthedocs.io/) (Work In Progress)
-
-
-## Dataset Details
-
- | -/-             | **Wide-View Camera**     | **Top-View Camera**       | **GNSS**                             |
- | --------------- | ------------------------ | ------------------------- | ------------------------------------ |
- | Device          | Z CAM E2-F8              | DJI Mavic 3               | STATSPORTS APEX 10 Hz                |
- | Resolution      | 8K (7,680 × 4,320 pixel) | 4K (3,840 × 2,160 pixesl) | Abs. err. in 20-m run: 0.22 ± 0.20 m |
- | FPS             | 30                       | 30                        | 10                                   |
- | Player tracking | ✅                        | ✅                         | ✅                                    |
- | Ball tracking   | ✅                        | ✅                         | -                                    |
- | Bounding box    | ✅                        | ✅                         | -                                    |
- | Location data   | ✅                        | ✅                         | ✅                                    |
- | Player ID       | ✅                        | ✅                         | ✅                                    |
-
-All data in SoccerTrack was obtained from 11-vs-11 soccer games between college-aged athletes. Measurements were conducted after we received the approval of Tsukuba university’s ethics committee, and all participants provided signed informed permission. After recording several soccer matches, the videos were semi-automatically annotated based on the GNSS coordinates of each player.
-
-Below are low resolution samples from the soccertrack dataset we plan to release. The actual dataset will contains (drone) and 8K (fisheye) footage!
-
-### Drone Video
-
-<video style='max-width:640px' controls>
-  <source src="https://user-images.githubusercontent.com/22371492/178085041-a8a2de85-bcd3-4c81-8b81-5ca93dbd4336.mp4" type="video/mp4">
-</video>
-
-https://user-images.githubusercontent.com/22371492/178085041-a8a2de85-bcd3-4c81-8b81-5ca93dbd4336.mp4
-
-### Fisheye Video
-<video style='max-width:640px' controls>
-  <source src="https://user-images.githubusercontent.com/22371492/178085027-5d25781d-e3ed-4791-ad14-141b58187dcf.mp4" type="video/mp4">
-</video>
-
-https://user-images.githubusercontent.com/22371492/178085027-5d25781d-e3ed-4791-ad14-141b58187dcf.mp4
+We're kicking off with soccer and expanding to other sports soon. Need to quantify your game? Make human movement computable with SportsLabKit.
 
 
-> **Note** The resolution for the fisheye camera may change after calibration.
+## Features
 
-## Dataset Download
+### Core Capabilities
+- **High-Performance Tracking**: In-house implementations of SORT, DeepSORT, ByteTrack, and TeamTrack for object tracking in sports.
 
-All the data can be downloaded from [Kaggle](https://www.kaggle.com/datasets/atomscott/soccertrack)!
+### Flexibility
+- **Plug-and-Play Architecture**: Swap out detection and ReID models on the fly. Supported models include YOLOv8 and torch-ReID.
 
-For more details on how to use the dataset, please see the section "[Dataset Preparation](https://soccertrack.readthedocs.io/en/latest/01_get_started/dataset_preparation.html)".
+### Usability
+- **2D Pitch Calibration**: Translate bounding boxes to 2D pitch coordinates.
+  
+- **DataFrame Wrappers**: `BoundingBoxDataFrame` and `CoordinatesDataFrame` for effortless manipulation and analysis of tracking data.
 
-## Install
+### Tutorials
+- [**Get Started**](./notebooks/01_get_started): Your first steps in understanding and setting up SportsLabKit.
+- [**User Guide**](./notebooks/02_user_guide): A comprehensive guide for effectively using the toolkit in real-world scenarios.
+- [**Core Components**](./notebooks/03_core_components/): Deep dive into the essential elements that make up SportsLabKit, including tracking algorithms and DataFrame wrappers.
 
-### pip
+## Installation
 
-The software can be installed using `pip`.
+To install SportsLabKit, simply run:
 
 ```bash
-pip install soccertrack
+pip install SportsLabKit
 ```
 
-You will neeed to install the following dependencies:
-```bash
-pip install torch torchvision pytorch-lightning
+> **Note**: We're in active development, so expect updates and changes.
+
+## Example Usage
+
+To get started with tracking your first game, follow this simple example:
+
+```python
+import sportslabkit as slk
+
+# Initialize your camera and models
+cam = slk.Camera(path_to_mp4)
+det_model = slk.detection_model.load('YOLOv8x')
+motion_model = slk.motion_model.load('KalmanFilter')
+
+# Configure and execute the tracker
+tracker = slk.mot.SORTTracker(detection_model=det_model, motion_model=motion_model)
+bbdf = tracker.track(cam)
+
+# The tracking data is now ready for analysis
 ```
 
-To use torch reid, you will need to install the following dependencies:
-```bash
-pip install git+https://github.com/KaiyangZhou/deep-person-reid.git
-```
+The output is a `BoundingBoxDataFrame`, a multi-level Pandas DataFrame that contains Team ID, Player ID, and various attributes like bounding box dimensions. Each row is indexed by Frame ID for easy analysis. The DataFrame is also customizable, allowing you to adapt Team and Player IDs as needed.
 
-We recommed using poetry to handle dependencies. So install poetry and run the following command:
-```bash
-poetry install
-poetry run pip install torch torchvision pytorch-lightning 
-poetry run pip install git+https://github.com/KaiyangZhou/deep-person-reid.git
-```
+![Example of BoundingBoxDataFrame](./docs/_static/soccertrack_dataframe.png)
 
-> **Note** The software is currently in development so it will break and change frequently!
+## Roadmap
+
+- **Better CV tools**: Implement state of the art tracking methods, add event detection etc.
+
+- **Unified Data Representation**: In the pipeline are event data detection and a single DataFrame structure for both event and trajectory data.
+  
+- **Enhanced Compatibility**: Upcoming support for data export to standard formats for easy integration with other tools.
+
 
 ## Contributing
 
-See the [Contributing Guide](https://soccertrack.readthedocs.io/en/latest/contributing.html) for more information.
+See the [Contributing Guide](./contributing.md) for more information.
 
-## Papers
+
+## Contributors
+
+<!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
+[![All Contributors](https://img.shields.io/badge/all_contributors-2-orange.svg?style=flat-square)](#contributors-)
+<!-- ALL-CONTRIBUTORS-BADGE:END -->
+
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+<table>
+  <tbody>
+    <tr>
+      <td align="center" valign="top" width="14.28%"><a href="https://atomscott.me/"><img src="https://avatars.githubusercontent.com/u/22371492?v=4?s=100" width="100px;" alt="Atom Scott"/><br /><sub><b>Atom Scott</b></sub></a><br /><a href="#maintenance-AtomScott" title="Maintenance">🚧</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/IkumaUchida"><img src="https://avatars.githubusercontent.com/u/48281753?v=4?s=100" width="100px;" alt="Ikuma Uchida"/><br /><sub><b>Ikuma Uchida</b></sub></a><br /><a href="#tutorial-IkumaUchida" title="Tutorials">✅</a></td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- markdownlint-restore -->
+<!-- prettier-ignore-end -->
+
+<!-- ALL-CONTRIBUTORS-LIST:END -->
+
+This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
+
+
+## Related Papers
 
 <table>
 <td width=30% style='padding: 20px;'>
 <a href="https://openaccess.thecvf.com/content/CVPR2022W/CVSports/papers/Scott_SoccerTrack_A_Dataset_and_Tracking_Algorithm_for_Soccer_With_Fish-Eye_CVPRW_2022_paper.pdf">
-<img src='https://raw.githubusercontent.com/AtomScott/SoccerTrack/feature/major_refactor/docs/_static/paper_preview.jpg'/>
+<img src='./docs/_static/paper_preview.jpg'/>
 </a>
 </td>
 <td width=70%>
@@ -133,6 +153,7 @@ See the [Contributing Guide](https://soccertrack.readthedocs.io/en/latest/contri
 </td>
 </table>
 
+See papers that cite SoccerTrack on [Google Scholar](https://scholar.google.com/scholar?oi=bibs&hl=en&cites=13090652901875753929).
 ## Citation
 
 ```
@@ -144,36 +165,3 @@ See the [Contributing Guide](https://soccertrack.readthedocs.io/en/latest/contri
   year={2022}
 }
 ```
-
-## Acknowledgements
-
-Part of the tracking module has been adapted from [motpy](https://github.com/wmuron/motpy). We would like to thank the authors for their work.
-
-## Star History
-
-[![Star History Chart](https://api.star-history.com/svg?repos=atomscott/soccertrack&type=Date)](https://star-history.com/#atomscott/soccertrack&Date)
-
-## Contributors ✨
-
-<!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-2-orange.svg?style=flat-square)](#contributors-)
-<!-- ALL-CONTRIBUTORS-BADGE:END -->
-
-<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
-<!-- prettier-ignore-start -->
-<!-- markdownlint-disable -->
-<table>
-  <tbody>
-    <tr>
-      <td align="center" valign="top" width="14.28%"><a href="https://atomscott.me/"><img src="https://avatars.githubusercontent.com/u/22371492?v=4?s=100" width="100px;" alt="Atom Scott"/><br /><sub><b>Atom Scott</b></sub></a><br /><a href="#maintenance-AtomScott" title="Maintenance">🚧</a></td>
-      <td align="center" valign="top" width="14.28%"><a href="https://github.com/IkumaUchida"><img src="https://avatars.githubusercontent.com/u/48281753?v=4?s=100" width="100px;" alt="Ikuma Uchida"/><br /><sub><b>Ikuma Uchida</b></sub></a><br /><a href="#tutorial-IkumaUchida" title="Tutorials">✅</a></td>
-    </tr>
-  </tbody>
-</table>
-
-<!-- markdownlint-restore -->
-<!-- prettier-ignore-end -->
-
-<!-- ALL-CONTRIBUTORS-LIST:END -->
-
-This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!

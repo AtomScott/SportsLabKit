@@ -1,0 +1,61 @@
+/* Light Mode */
+[data-theme="light"] div.cell_output table {
+  border: none;
+  border-collapse: collapse;
+  border-spacing: 0;
+  color: var(--color-code-foreground);  /* Text color */
+  background-color: var(--color-background-secondary);  /* Table background */
+  width: 100%;
+  max-width: 1000px;
+  overflow-x: auto;
+  display: block;
+}
+
+/* Dark Mode */
+[data-theme="dark"] div.cell_output table {
+  border: none;
+  border-collapse: collapse;
+  border-spacing: 0;
+  color: var(--color-code-foreground);  /* Text color */
+  background: var(--color-background-secondary);  /* Table background */
+  width: 100%;
+  max-width: 1000px;
+  overflow-x: auto;
+  display: block;
+}
+
+/* Common Styles for Thead */
+div.cell_output thead {
+  border-bottom: 1px solid var(--color-brand-primary);
+}
+
+/* Common Styles for tr, th, td */
+div.cell_output tr,
+div.cell_output th,
+div.cell_output td {
+  text-align: right;
+  vertical-align: middle;
+  padding: 0.5em 0.5em;
+}
+
+/* Common Styles for th */
+div.cell_output th {
+  font-weight: bold;
+}
+
+/* Common Styles for tbody */
+div.cell_output tbody tr:nth-child(odd) {
+  background: var(--color-code-background);
+}
+
+/* Common hover effect */
+div.cell_output tbody tr:hover {
+  background: rgba(255, 165, 0, 0.5);
+}
+
+/* Common hover effect */
+/* Fix overflow */
+div.cell_output table {
+  overflow-x: auto;
+  display: block;
+}

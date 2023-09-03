@@ -1,14 +1,18 @@
-name: soccertrack_docs
+name: sportslabkit-docs
 channels:
   - defaults
   - conda-forge
 dependencies:
   - python=3.10
-  - sphinx
+  - pip
   - pip:
-    - furo
-    - sphinx==6.1.3
+    - readthedocs-sphinx-ext
     - sphinx-autoapi==2.0.0
     - sphinx-autodoc-typehints==1.18.3
     - nbsphinx==0.8.9
     - m2r2==0.3.2
+    - sphinx-copybutton==0.5.2
+    - myst-nb==0.17.2 # requires sphinx > 6.0
+    - sphinx
+    - furo 
+    - sphinxcontrib-gtagjs

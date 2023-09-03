@@ -1,9 +1,13 @@
 # Makefile for Sphinx documentation
 #
 
+SHELL = /bin/zsh
+CONDA_ACTIVATE = source $$(conda info --base)/etc/profile.d/conda.sh ; conda activate ; conda activate
+CONDA_DEACTIVATE = source $$(conda info --base)/etc/profile.d/conda.sh ; conda deactivate
+
 # You can set these variables from the command line.
-SPHINXOPTS    =
-SPHINXBUILD   = sphinx-build
+SPHINXOPTS    = -j 4
+SPHINXBUILD   = sphinx
 PAPER         =
 BUILDDIR      = _build
 
@@ -46,7 +50,13 @@ html:
 	rm -rf api _build
 	cp -r ../notebooks .
 
-	poetry run $(SPHINXBUILD) -E -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
+	sed 's|./docs/_static|./_static|g' ../README.md > ./README.md
+	sed 's|./docs/_static|./_static|g' ../contributing.md > ./contributing.md
+
+	$(CONDA_ACTIVATE) sportslabkit-docs
+	export JUPYTER_PATH=/opt/homebrew/share/jupyter:$JUPYTER_PATH; python -m $(SPHINXBUILD) -T -E -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
+	$(CONDA_DEACTIVATE)
+	
 	rm -rf notebooks
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
