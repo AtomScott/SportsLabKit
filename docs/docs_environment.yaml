@@ -14,5 +14,3 @@ dependencies:
     - nbsphinx==0.8.9
     - m2r2==0.3.2
     - sphinxcontrib-gtagjs
-
-make
