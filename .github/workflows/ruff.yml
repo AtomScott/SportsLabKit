@@ -9,8 +9,8 @@ jobs:
     - uses: actions/setup-python@v2
     - uses: chartboost/ruff-action@v1
       with:
-        args: check sportslabkit
-        fix_args: fix sportslabkit
+        args: check --fix 
+        src: sportslabkit
     - uses: stefanzweifel/git-auto-commit-action@v4
       with:
         commit_message: 'style fixes by ruff'
