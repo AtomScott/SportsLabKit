@@ -19,7 +19,7 @@ clean:
 	find . -type d -name "__pycache__" -delete
 
 ## Lint using ruff
-lint:
+ruff:
 	$(CONDA_ACTIVATE) && \
 	ruff check $(i)
 
