@@ -182,7 +182,7 @@ def find_intrinsic_camera_parameters(
     media_path: _pathlike,
     fps: int = 1,
     scale: int = 4,
-    save_path: Optional[_pathlike] = None,
+    save_path: _pathlike | None = None,
     draw_on_save: bool = False,
     points_to_use: int = 50,
     calibration_method: str = "zhang",

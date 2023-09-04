@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections import defaultdict, namedtuple
-from typing import Sequence, Tuple
+from typing import List, Sequence, Tuple
 
 import networkx as nx
 import numpy as np
@@ -59,12 +59,6 @@ class SimpleMatchingFunction(BaseMatchingFunction):
         return cost_matrix
 
 
-from typing import List
-
-import numpy as np
-
-from sportslabkit import Tracklet
-from sportslabkit.types.detection import Detection
 
 
 class SimpleBatchMatchingFunction(BaseBatchMatchingFunction):
@@ -110,7 +104,7 @@ class SimpleBatchMatchingFunction(BaseBatchMatchingFunction):
 
     def _convert_cost_matrix_to_graph(
         self, cost_matrices: List[np.ndarray], no_detection_cost: float = 1e5
-    ) -> Tuple[List[int], List[int], List[int], List[int], List[int], Dict[int, Node], int, int]:
+    ) -> Tuple[List[int], List[int], List[int], List[int], List[int], dict[int, Node], int, int]:
         """
         Converts cost matrix to graph representation for optimization.
 

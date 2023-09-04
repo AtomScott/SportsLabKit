@@ -3,21 +3,17 @@
 from __future__ import annotations
 
 from abc import abstractmethod
-
-import numpy as np
-
-from sportslabkit import Tracklet
-from sportslabkit.types.detection import Detection
-
-
-EPS = 1e-7
 from typing import List
 
 import networkx as nx
+import numpy as np
 
 from sportslabkit import Tracklet
 from sportslabkit.logger import logger
 from sportslabkit.types.detection import Detection
+
+
+EPS = 1e-7
 
 
 class BaseBatchMatchingFunction:
