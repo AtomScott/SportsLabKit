@@ -1,7 +1,7 @@
 import inspect
 
 from sportslabkit.logger import logger
-from sportslabkit.motion_model.base import BaseMotionModel, BaseMotionModule
+from sportslabkit.motion_model.base import BaseMotionModel
 from sportslabkit.motion_model.models import ExponentialMovingAverage, KalmanFilter
 from sportslabkit.motion_model.tune import tune_motion_model
 
@@ -10,11 +10,7 @@ __all__ = [
     "tune_motion_model",
     "ExponentialMovingAverage",
     "KalmanFilter",
-    "BaseMotionModule",
     "BaseMotionModel",
-    "SingleTargetLinear",
-    "SingleTargetLSTM",
-    "MultiTargetLinear",
 ]
 
 

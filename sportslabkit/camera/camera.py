@@ -17,7 +17,7 @@ import cv2 as cv
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
 
-from sportslabkit.calibrate import find_intrinsic_camera_parameters
+from sportslabkit.camera.calibrate import find_intrinsic_camera_parameters
 from sportslabkit.camera.videoreader import VideoReader
 from sportslabkit.types.types import _pathlike
 from sportslabkit.utils import logger

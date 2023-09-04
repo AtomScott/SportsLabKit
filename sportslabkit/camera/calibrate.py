@@ -6,14 +6,13 @@ from numpy.typing import NDArray
 from sklearn.decomposition import PCA
 from vidgear.gears.stabilizer import Stabilizer
 
-from sportslabkit import Camera
 from sportslabkit.logger import logger, tqdm
 from sportslabkit.types.types import _pathlike
 from sportslabkit.utils import make_video
 
 
 def detect_corners(
-    camera: Camera,
+    camera,
     scale: float,
     fps: float,
     num_corners_x: int = 5,
@@ -202,6 +201,7 @@ def find_intrinsic_camera_parameters(
     """
 
     # Support multiple video files
+    from sportslabkit.camera import Camera
     camera = Camera(media_path)
 
     # Find corners in each video
@@ -258,6 +258,8 @@ def calibrate_video_from_mappings(
 
     def generator():
         stab = Stabilizer()
+
+        from sportslabkit.camera import Camera
         camera = Camera(media_path)
         for frame in camera:
             stab_frame = stab.stabilize(frame)
