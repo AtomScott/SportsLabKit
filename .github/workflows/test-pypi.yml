@@ -22,4 +22,4 @@ jobs:
     - name: Build and publish to Test PyPI
       run: |
         poetry build
-        poetry publish --repository testpypi -u ${{ secrets.TEST_PYPI_USERNAME }} -p ${{ secrets.TEST_PYPI_PASSWORD }}
+        poetry publish --repository testpypi -u __token__ -p ${{ secrets.TEST_PYPI_API_TOKEN }}
