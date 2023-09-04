@@ -179,11 +179,11 @@ class BBoxDataFrame(SLKMixin, pd.DataFrame):
 
     def to_yolov5_format(
         self,
-        mapping: dict[dict[Any, Any], dict[Any, Any]] = None,
+        mapping: Optional[dict[dict[Any, Any], dict[Any, Any]]] = None,
         na_class: int = 0,
-        h: int = None,
-        w: int = None,
-        save_dir: str = None,
+        h: Optional[int] = None,
+        w: Optional[int] = None,
+        save_dir: Optional[str] = None,
     ):
         """Convert a dataframe to the YOLOv5 format.
 
@@ -369,7 +369,7 @@ class BBoxDataFrame(SLKMixin, pd.DataFrame):
 
     def to_list_of_tuples_format(
         self,
-        mapping: dict[dict[Any, Any], dict[Any, Any]] = None,
+        mapping: Optional[dict[dict[Any, Any], dict[Any, Any]]] = None,
         na_class: int | str = "player",
     ):
         """Convert a dataframe to a list of tuples.

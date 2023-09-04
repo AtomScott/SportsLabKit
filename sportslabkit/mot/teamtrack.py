@@ -6,6 +6,7 @@ from sportslabkit.logger import logger
 from sportslabkit.matching import MotionVisualMatchingFunction, SimpleMatchingFunction
 from sportslabkit.metrics import CosineCMM, IoUCMM
 from sportslabkit.mot.base import MultiObjectTracker
+from typing import Optional
 
 
 class TeamTracker(MultiObjectTracker):
@@ -29,7 +30,7 @@ class TeamTracker(MultiObjectTracker):
         ),
         detection_score_threshold=0.6,
         window_size: int = 1,
-        step_size: int = None,
+        step_size: Optional[int] = None,
         max_staleness: int = 5,
         min_length: int = 5,
         callbacks=None,
