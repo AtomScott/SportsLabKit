@@ -3,21 +3,19 @@
 from __future__ import annotations
 
 from abc import abstractmethod
-
-import numpy as np
-
-from sportslabkit import Tracklet
-from sportslabkit.types.detection import Detection
-
-
-EPS = 1e-7
-from typing import List
+from collections import namedtuple
 
 import networkx as nx
+import numpy as np
 
 from sportslabkit import Tracklet
 from sportslabkit.logger import logger
 from sportslabkit.types.detection import Detection
+
+
+EPS = 1e-7
+# Define the named tuple outside of the function.
+Node = namedtuple("Node", ["frame", "detection", "is_dummy"])
 
 
 class BaseBatchMatchingFunction:
@@ -27,7 +25,7 @@ class BaseBatchMatchingFunction:
     and returns a list of matches.
     """
 
-    def __call__(self, trackers: List[Tracklet], list_of_detections: List[List[Detection]]) -> List[List[int]]:
+    def __call__(self, trackers: list[Tracklet], list_of_detections: list[list[Detection]]) -> list[int]:
         """Calculate the matching cost between trackers and detections and performs matching.
 
         Args:
@@ -60,55 +58,11 @@ class BaseBatchMatchingFunction:
                     else:
                         valid_path.append(next_node["detection"])
         return valid_path
-        # (
-        #     start_nodes,
-        #     end_nodes,
-        #     capacities,
-        #     unit_costs,
-        #     supplies,
-        #     node_to_detection,
-        #     source_node,
-        #     sink_node,
-
-        # smcf = min_cost_flow.SimpleMinCostFlow()
-
-        # # Add arcs, capacities and costs in bulk using numpy.
-        # all_arcs = smcf.add_arcs_with_capacity_and_unit_cost(start_nodes, end_nodes, capacities, unit_costs)
-
-        # # Add supply for each nodes.
-        # smcf.set_nodes_supplies(np.arange(0, len(supplies)), supplies)
-
-        # if smcf.solve() == smcf.OPTIMAL:
-        #     _flow_paths = self.build_flow_paths(source_node, sink_node, smcf)
-        #     flow_paths = []
-        #     for _path in _flow_paths:
-        #         flow_paths.append([node_to_detection[node] for node in _path])
-        # else:
-        #     logger.debug("There was an issue with the min cost flow input.")
-        # return flow_paths
-
-    # def build_flow_paths(self, source_node, sink_node, smcf):
-    #     flow_arcs = {}
-    #     for arc in range(smcf.num_arcs()):
-    #         if smcf.flow(arc) > 0:
-    #             flow_arcs[smcf.tail(arc)] = smcf.head(arc)
-
-    #     paths = []
-    #     while source_node in flow_arcs:
-    #         path = [source_node]
-    #         while path[-1] != sink_node:
-    #             path.append(flow_arcs[path[-1]])
-    #         # Exclude the source and sink nodes from the path.
-    #         paths.append(path[1:-1])
-    #         # Remove the used path
-    #         for node in path[:-1]:
-    #             del flow_arcs[node]
-    #     return paths
 
     @abstractmethod
     def compute_cost_matrices(
-        self, trackers: List[Tracklet], list_of_detections: List[List[Detection]]
-    ) -> List[np.ndarray]:
+        self, trackers: list[Tracklet], list_of_detections: list[list[Detection]]
+    ) -> list[np.ndarray]:
         """Calculate the cost matrix between trackers and detections.
 
         Args:
@@ -121,7 +75,9 @@ class BaseBatchMatchingFunction:
         pass
 
     @abstractmethod
-    def _convert_cost_matrix_to_graph(self, cost_matricies: np.ndarray) -> tuple:
+    def _convert_cost_matrix_to_graph(
+        self, cost_matrices: list[np.ndarray], no_detection_cost: float = 1e5
+    ) -> tuple[list[int], list[int], list[int], list[int], list[int], dict[int, Node], int, int]:
         """Transforms cost matrix into graph representation for min cost flow computation.
 
         Args:

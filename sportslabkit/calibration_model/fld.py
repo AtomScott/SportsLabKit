@@ -5,7 +5,9 @@ from .base import BaseCalibrationModel
 
 
 class LineBasedCalibrator(BaseCalibrationModel):
-    def __init__(self, min_line_length=50, line_distance_threshold=50, line_thickness=15, morph_size=15, dst_points=None):
+    def __init__(
+        self, min_line_length=50, line_distance_threshold=50, line_thickness=15, morph_size=15, dst_points=None
+    ):
         """Initialize the line-based calibrator with given parameters."""
         self.min_line_length = min_line_length
         self.line_distance_threshold = line_distance_threshold
@@ -14,12 +16,7 @@ class LineBasedCalibrator(BaseCalibrationModel):
         # If destination points are not provided, default to a standard soccer pitch
         if dst_points is None:
             # Using the dimensions of a standard soccer pitch (105m x 68m)
-            self.dst_points = np.array([
-                [0, 0],
-                [105, 0],
-                [105, 68],
-                [0, 68]
-            ])
+            self.dst_points = np.array([[0, 0], [105, 0], [105, 68], [0, 68]])
 
     def _preprocess_image(self, image):
         """Convert the image to grayscale and apply thresholding and morphological operations."""
@@ -69,7 +66,7 @@ class LineBasedCalibrator(BaseCalibrationModel):
     def _arrange_points_clockwise(self, points):
         """Arrange the given points in clockwise order starting from top-left."""
         centroid = np.mean(points, axis=0)
-        angles = np.arctan2(points[:,1] - centroid[1], points[:,0] - centroid[0])
+        angles = np.arctan2(points[:, 1] - centroid[1], points[:, 0] - centroid[0])
         ordered_points = points[np.argsort(angles)]
         return ordered_points
 

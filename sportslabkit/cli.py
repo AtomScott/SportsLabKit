@@ -2,6 +2,7 @@ import os
 from glob import glob
 from typing import Optional
 
+import gdown
 import numpy as np
 from fire import Fire
 
@@ -26,9 +27,7 @@ class CLI:
         logger.error("I am error you Github copilot!")
         logger.critical("Fire in the hole!")
 
-    def download(
-        self, dataset: str = "all", output: str = "./data", quiet: bool = False
-    ):
+    def download(self, dataset: str = "all", output: str = "./data", quiet: bool = False):
         """Download data from google drive
 
         Args:

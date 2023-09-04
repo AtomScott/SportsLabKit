@@ -1,20 +1,16 @@
 from __future__ import annotations
 
-from collections import defaultdict, namedtuple
-from typing import Sequence, Tuple
+from collections import defaultdict
+from typing import DefaultDict, Sequence
 
 import networkx as nx
 import numpy as np
 
 from sportslabkit import Tracklet
 from sportslabkit.matching.base import BaseMatchingFunction
-from sportslabkit.matching.base_batch import BaseBatchMatchingFunction
+from sportslabkit.matching.base_batch import BaseBatchMatchingFunction, Node
 from sportslabkit.metrics import BaseCostMatrixMetric, IoUCMM
 from sportslabkit.types.detection import Detection
-
-
-# Define the named tuple outside of the function.
-Node = namedtuple("Node", ["frame", "detection", "is_dummy"])
 
 
 class SimpleMatchingFunction(BaseMatchingFunction):
@@ -59,14 +55,6 @@ class SimpleMatchingFunction(BaseMatchingFunction):
         return cost_matrix
 
 
-from typing import List
-
-import numpy as np
-
-from sportslabkit import Tracklet
-from sportslabkit.types.detection import Detection
-
-
 class SimpleBatchMatchingFunction(BaseBatchMatchingFunction):
     """A batch matching function that uses a simple distance metric.
 
@@ -74,8 +62,8 @@ class SimpleBatchMatchingFunction(BaseBatchMatchingFunction):
     """
 
     def compute_cost_matrices(
-        self, trackers: List[Tracklet], list_of_detections: List[List[Detection]]
-    ) -> List[np.ndarray]:
+        self, trackers: list[Tracklet], list_of_detections: list[list[Detection]]
+    ) -> list[np.ndarray]:
         """Calculate the cost matrix between trackers and detections.
 
         Args:
@@ -109,8 +97,8 @@ class SimpleBatchMatchingFunction(BaseBatchMatchingFunction):
         return cost_matrices
 
     def _convert_cost_matrix_to_graph(
-        self, cost_matrices: List[np.ndarray], no_detection_cost: float = 1e5
-    ) -> Tuple[List[int], List[int], List[int], List[int], List[int], Dict[int, Node], int, int]:
+        self, cost_matrices: list[np.ndarray], no_detection_cost: float = 1e5
+    ) -> tuple[list[int], list[int], list[int], list[int], list[int], dict[int, Node], int, int]:
         """
         Converts cost matrix to graph representation for optimization.
 
@@ -129,7 +117,7 @@ class SimpleBatchMatchingFunction(BaseBatchMatchingFunction):
             sink_node: Sink node index.
         """
         G = nx.DiGraph()
-        frame_to_nodes = defaultdict(list)  # keep track of the nodes for each frame
+        frame_to_nodes: DefaultDict[int, list[int]] = defaultdict(list)  # keep track of the nodes for each frame
 
         num_frames = len(cost_matrices)
         source_node = 0
@@ -179,92 +167,3 @@ class SimpleBatchMatchingFunction(BaseBatchMatchingFunction):
                 for node in frame_to_nodes[frame]:
                     G.add_edge(node, sink_node, capacity=1, weight=0)
         return G
-        # num_frames = len(cost_matrices)
-
-        # source_node = 0
-        # sink_node = 10**9
-        # start_nodes, end_nodes, capacities, unit_costs, supplies = [], [], [], [], []
-        # node_to_detection = {source_node: Node(-1, -1, False), sink_node: Node(-1, -1, False)}
-
-        # def add_arc(start_node, end_node, capacity, cost):
-        #     """Helper function to add an arc to the graph."""
-        #     start_nodes.append(int(start_node))
-        #     end_nodes.append(int(end_node))
-        #     capacities.append(int(capacity))
-        #     unit_costs.append(int(cost))
-        #     logger.debug(f"Adding arc from {start_node} to {end_node} with capacity {capacity} and cost {cost}")
-
-        # for frame in range(num_frames):
-        #     num_detections_curr_frame = cost_matrices[frame].shape[1] + 1  # +1 for dummy node
-
-        #     logger.debug(f"Adding {num_detections_curr_frame-1} + 1 (dummy) nodes for frame {frame}")
-
-        #     for detection_curr in range(num_detections_curr_frame):
-        #         curr_node = len(start_nodes) + 1
-        #         is_dummy_node = detection_curr + 1 == num_detections_curr_frame
-        #         node_to_detection[curr_node] = Node(frame, detection_curr, is_dummy_node)
-        #         logger.debug(f"frame: {frame}, node_num{curr_node}, is_dummy_node: {is_dummy_node} ")
-
-        #         if frame == 0:  # For the first frame, source_node -> node
-        #             cost = no_detection_cost if is_dummy_node else cost_matrices[0][0][detection_curr]
-        #             add_arc(source_node, curr_node, 1, cost)
-        #         else:
-        #             num_detections_prev_frame = cost_matrices[frame - 1].shape[1] + 1
-        #             for detection_prev in range(num_detections_prev_frame):
-        #                 is_dummy_node_prev = (detection_prev + 1) == num_detections_prev_frame
-
-        #                 no_detection = (
-        #                     is_dummy_node
-        #                     or is_dummy_node_prev
-        #                     or detection_prev >= num_detections_prev_frame
-        #                     or detection_curr >= num_detections_curr_frame
-        #                 )
-        #                 cost = (
-        #                     no_detection_cost if no_detection else cost_matrices[frame][detection_prev][detection_curr]
-        #                 )
-
-        #                 prev_node = detection_prev + (frame - 1) * num_detections_prev_frame
-        #                 curr_node = detection_curr + frame * num_detections_curr_frame
-        #                 add_arc(prev_node, curr_node, 1, cost)
-
-        #     if frame == num_frames - 1:
-        #         for detection in range(num_detections_curr_frame):
-        #             curr_node = detection + frame * num_detections_curr_frame
-        #             add_arc(curr_node, sink_node, 1, 0)
-        #             logger.debug(f"Add arc from node {curr_node} to sink node({sink_node})")
-
-        # supplies = [0] * source_node
-        # supplies.extend([1, -1])
-
-        # return start_nodes, end_nodes, capacities, unit_costs, supplies, node_to_detection, source_node, sink_node
-
-
-# %matplotlib inline
-# import matplotlib.pyplot as plt
-# def visualize_graph(G):
-#     """
-#     Function to visualize a graph with 'frame' attributes
-#     Args:
-#     G: networkx.DiGraph() object
-#     """
-#     # Ensure that the graph is a DiGraph
-#     if not isinstance(G, nx.DiGraph):
-#         raise ValueError("G must be a networkx DiGraph")
-
-#     # Get the 'frame' attribute for each node and sort nodes by this attribute
-#     frame_values = nx.get_node_attributes(G, 'frame')
-#     sorted_nodes = sorted(G.nodes(), key=lambda x: frame_values[x])
-
-#     # Create a layout for the graph, placing nodes with lower 'frame' values to the left
-#     pos = {node: (frame_values[node], i) for i, node in enumerate(sorted_nodes)}
-
-#     # Increase the figure size
-#     plt.figure(figsize=(20, 15))
-
-#     # Draw the graph with smaller nodes and thinner edges
-#     nx.draw(G, pos, with_labels=True, node_size=700, node_color='skyblue',
-#             font_weight='bold', width=0.2, alpha=0.7)
-
-#     plt.show()
-
-# visualize_graph(G)

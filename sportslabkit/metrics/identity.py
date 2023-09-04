@@ -10,9 +10,7 @@ from sportslabkit import BBoxDataFrame
 from .tracking_preprocess import to_mot_eval_format
 
 
-def identity_score(
-    bboxes_track: BBoxDataFrame, bboxes_gt: BBoxDataFrame
-) -> dict[str, Any]:
+def identity_score(bboxes_track: BBoxDataFrame, bboxes_gt: BBoxDataFrame) -> dict[str, Any]:
     """Calculates ID metrics for one sequence.
 
     Args:
@@ -67,15 +65,11 @@ def identity_score(
     tracker_id_count = np.zeros(data["num_tracker_ids"])
 
     # First loop through each timestep and accumulate global track information.
-    for t, (gt_ids_t, tracker_ids_t) in enumerate(
-        zip(data["gt_ids"], data["tracker_ids"])
-    ):
+    for t, (gt_ids_t, tracker_ids_t) in enumerate(zip(data["gt_ids"], data["tracker_ids"])):
         # Count the potential matches between ids in each timestep
         matches_mask = np.greater_equal(data["similarity_scores"][t], threshold)
         match_idx_gt, match_idx_tracker = np.nonzero(matches_mask)
-        potential_matches_count[
-            list(gt_ids_t[match_idx_gt]), list(tracker_ids_t[match_idx_tracker])
-        ] += 1
+        potential_matches_count[list(gt_ids_t[match_idx_gt]), list(tracker_ids_t[match_idx_tracker])] += 1
 
         # Calculate the total number of dets for each gt_id and tracker_id.
         gt_id_count[list(gt_ids_t)] += 1
@@ -107,13 +101,9 @@ def identity_score(
     # Calculate final ID scores
     # At First, Subtract the tracks with missing data from the entire track data of the track being tracked.
     # This is to adjust the number of FPs.
-    num_attibutes_per_bbox = (
-        5  # The number of attributes for each object in the BBoxDataframe.
-    )
+    num_attibutes_per_bbox = 5  # The number of attributes for each object in the BBoxDataframe.
     # ([bb_left, bb_top, bb_width, bb_height, conf])
-    num_lacked_tracks = int(
-        (bboxes_track == -1.0).values.sum() / num_attibutes_per_bbox
-    )
+    num_lacked_tracks = int((bboxes_track == -1.0).values.sum() / num_attibutes_per_bbox)
     res["IDFP"] = res["IDFP"] - num_lacked_tracks
     id_final_scores(res)
     return res
@@ -122,6 +112,4 @@ def identity_score(
 def id_final_scores(res):
     res["IDR"] = res["IDTP"] / np.maximum(1.0, res["IDTP"] + res["IDFN"])
     res["IDP"] = res["IDTP"] / np.maximum(1.0, res["IDTP"] + res["IDFP"])
-    res["IDF1"] = res["IDTP"] / np.maximum(
-        1.0, res["IDTP"] + 0.5 * res["IDFP"] + 0.5 * res["IDFN"]
-    )
+    res["IDF1"] = res["IDTP"] / np.maximum(1.0, res["IDTP"] + 0.5 * res["IDFP"] + 0.5 * res["IDFN"])

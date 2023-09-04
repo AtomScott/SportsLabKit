@@ -1,0 +1,22 @@
+name: PEP 257 Docstring Checks
+
+on:
+  push:
+
+jobs:
+  docstring-check:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.10'
+
+    - name: Install pydocstyle
+      run: pip install pydocstyle
+
+    - name: Check PEP 257 compliance
+      run: pydocstyle sportslabkit

@@ -1,21 +1,21 @@
 name: ❓ Question
-description: Ask a SoccerTrack question
+description: Ask a SportsLabKit question
 # title: " "
 labels: [question]
 body:
   - type: markdown
     attributes:
       value: |
-        Thank you for asking a SoccerTrack ❓ Question!
+        Thank you for asking a SportsLabKit ❓ Question!
 
   - type: checkboxes
     attributes:
       label: Search before asking
       description: >
-        Please search the [issues](https://github.com/AtomScott/SoccerTrack/issues) and [discussions](https://github.com/AtomScott/SoccerTrack/discussions) to see if a similar question already exists.
+        Please search the [issues](https://github.com/AtomScott/SportsLabKit/issues) and [discussions](https://github.com/AtomScott/SportsLabKit/discussions) to see if a similar question already exists.
       options:
         - label: >
-            I have searched the YOLOv5 [issues](https://github.com/AtomScott/SoccerTrack/issues) and [discussions](https://github.com/AtomScott/SoccerTrack/discussions) and found no similar questions.
+            I have searched the YOLOv5 [issues](https://github.com/AtomScott/SportsLabKit/issues) and [discussions](https://github.com/AtomScott/SportsLabKit/discussions) and found no similar questions.
           required: true
 
   - type: textarea

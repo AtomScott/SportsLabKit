@@ -6,13 +6,7 @@ from sportslabkit.calibration_model.fld import LineBasedCalibrator
 from sportslabkit.logger import logger
 
 
-__all__ = [
-    "BaseCalibrationModel",
-    "load",
-    "show_available_models",
-    "DummyCalibrationModel",
-    'LineBasedCalibrator'
-]
+__all__ = ["BaseCalibrationModel", "load", "show_available_models", "DummyCalibrationModel", "LineBasedCalibrator"]
 
 
 def inheritors(cls):
@@ -64,7 +58,9 @@ def load(model_name, **model_config):
             config = {k.lower(): v for k, v in model_config.items()}
             return cls(**config)
 
-    logger.warning(f"Model {model_name} not found. Available models: {[cls.__name__ for cls in inheritors(BaseCalibrationModel)]} (lowercase is allowed)")
+    logger.warning(
+        f"Model {model_name} not found. Available models: {[cls.__name__ for cls in inheritors(BaseCalibrationModel)]} (lowercase is allowed)"
+    )
 
 
 if __name__ == "__main__":

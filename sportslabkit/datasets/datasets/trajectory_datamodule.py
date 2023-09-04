@@ -10,12 +10,8 @@ from torchvision.transforms import Compose
 
 
 def single_agent_collate_fn(batch):
-    x = torch.Tensor(
-        [seq for item in batch for seq in rearrange(item[0], "L N D ->  N L D")]
-    )
-    y = torch.Tensor(
-        [seq for item in batch for seq in rearrange(item[1], "L N D ->  N L D")]
-    )
+    x = torch.Tensor([seq for item in batch for seq in rearrange(item[0], "L N D ->  N L D")])
+    y = torch.Tensor([seq for item in batch for seq in rearrange(item[1], "L N D ->  N L D")])
     # x, y = default_collate(batch)
 
     # B: batch size, L: sequence length, N: number of agents, D: dimension
@@ -26,7 +22,6 @@ def single_agent_collate_fn(batch):
 
 
 def multi_agent_collate_fn(batch, max_num_agents, dummy_value=-1000):
-
     # pad by dummy values
     x_len = batch[0][0].shape[0]
     y_len = batch[0][1].shape[0]
@@ -138,19 +133,11 @@ class TrajectoryDataModule(pl.LightningDataModule):
         test_data_dir = data_dir / "test"
 
         if stage == "fit" or stage == "both":
-            self.trainset = TrajectoryDataset(
-                train_data_dir, transform=self.transform, split=self.split
-            )
-            self.valset = TrajectoryDataset(
-                val_data_dir, transform=self.transform, split=self.split
-            )
-            self.testset = TrajectoryDataset(
-                test_data_dir, transform=self.transform, split=self.split
-            )
+            self.trainset = TrajectoryDataset(train_data_dir, transform=self.transform, split=self.split)
+            self.valset = TrajectoryDataset(val_data_dir, transform=self.transform, split=self.split)
+            self.testset = TrajectoryDataset(test_data_dir, transform=self.transform, split=self.split)
         if stage == "test" or stage == "both":
-            self.testset = TrajectoryDataset(
-                test_data_dir, transform=self.transform, split=self.split
-            )
+            self.testset = TrajectoryDataset(test_data_dir, transform=self.transform, split=self.split)
 
     def train_dataloader(self):
         collate_fn = (

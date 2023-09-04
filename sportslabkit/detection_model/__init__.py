@@ -69,7 +69,9 @@ def load(model_name, **model_config):
             config = {k.lower(): v for k, v in model_config.items()}
             return cls(**config)
 
-    logger.warning(f"Model {model_name} not found. Available models: {[cls.__name__ for cls in inheritors(BaseDetectionModel)]} (lowercase is allowed)")
+    logger.warning(
+        f"Model {model_name} not found. Available models: {[cls.__name__ for cls in inheritors(BaseDetectionModel)]} (lowercase is allowed)"
+    )
 
 
 if __name__ == "__main__":

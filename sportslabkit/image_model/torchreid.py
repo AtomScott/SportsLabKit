@@ -4,7 +4,10 @@ from dataclasses import field
 try:
     from torchreid.utils import FeatureExtractor
 except ImportError:
-    print("The torchreid module is not installed. Please install it using the following command:\n" "pip install git+https://github.com/KaiyangZhou/deep-person-reid.git")
+    print(
+        "The torchreid module is not installed. Please install it using the following command:\n"
+        "pip install git+https://github.com/KaiyangZhou/deep-person-reid.git"
+    )
 
 from sportslabkit.image_model.base import BaseImageModel
 from sportslabkit.logger import logger
@@ -61,6 +64,7 @@ def download_model(model_name):
     logger.debug(f"Model {model_name} successfully downloaded and saved to {model_save_dir}.")
     return file_path
 
+
 class BaseTorchReIDModel(BaseImageModel):
     def __init__(
         self,
@@ -71,7 +75,7 @@ class BaseTorchReIDModel(BaseImageModel):
         pixel_mean: list[float] = field(default_factory=lambda: [0.485, 0.456, 0.406]),
         pixel_std: list[float] = field(default_factory=lambda: [0.229, 0.224, 0.225]),
         pixel_norm: bool = True,
-        verbose: bool = False
+        verbose: bool = False,
     ):
         super().__init__()
         self.name = name
@@ -113,7 +117,8 @@ class BaseTorchReIDModel(BaseImageModel):
 
 
 class ShuffleNet(BaseTorchReIDModel):
-    def __init__(self,
+    def __init__(
+        self,
         name: str = "shufflenet",
         path: str = "",
         device: str = "cpu",
@@ -121,7 +126,7 @@ class ShuffleNet(BaseTorchReIDModel):
         pixel_mean: list[float] = field(default_factory=lambda: [0.485, 0.456, 0.406]),
         pixel_std: list[float] = field(default_factory=lambda: [0.229, 0.224, 0.225]),
         pixel_norm: bool = True,
-        verbose: bool = False
+        verbose: bool = False,
     ):
         super().__init__(name, path, device, image_size, pixel_mean, pixel_std, pixel_norm, verbose)
 
@@ -136,9 +141,10 @@ class MobileNetV2_x1_0(BaseTorchReIDModel):
         pixel_mean: list[float] = field(default_factory=lambda: [0.485, 0.456, 0.406]),
         pixel_std: list[float] = field(default_factory=lambda: [0.229, 0.224, 0.225]),
         pixel_norm: bool = True,
-        verbose: bool = False
+        verbose: bool = False,
     ):
         super().__init__(name, path, device, image_size, pixel_mean, pixel_std, pixel_norm, verbose)
+
 
 class MobileNetV2_x1_4(BaseTorchReIDModel):
     def __init__(
@@ -150,7 +156,7 @@ class MobileNetV2_x1_4(BaseTorchReIDModel):
         pixel_mean: list[float] = field(default_factory=lambda: [0.485, 0.456, 0.406]),
         pixel_std: list[float] = field(default_factory=lambda: [0.229, 0.224, 0.225]),
         pixel_norm: bool = True,
-        verbose: bool = False
+        verbose: bool = False,
     ):
         super().__init__(name, path, device, image_size, pixel_mean, pixel_std, pixel_norm, verbose)
 
@@ -165,7 +171,7 @@ class MLFN(BaseTorchReIDModel):
         pixel_mean: list[float] = field(default_factory=lambda: [0.485, 0.456, 0.406]),
         pixel_std: list[float] = field(default_factory=lambda: [0.229, 0.224, 0.225]),
         pixel_norm: bool = True,
-        verbose: bool = False
+        verbose: bool = False,
     ):
         super().__init__(name, path, device, image_size, pixel_mean, pixel_std, pixel_norm, verbose)
 
@@ -180,7 +186,7 @@ class OSNet_x1_0(BaseTorchReIDModel):
         pixel_mean: list[float] = field(default_factory=lambda: [0.485, 0.456, 0.406]),
         pixel_std: list[float] = field(default_factory=lambda: [0.229, 0.224, 0.225]),
         pixel_norm: bool = True,
-        verbose: bool = False
+        verbose: bool = False,
     ):
         super().__init__(name, path, device, image_size, pixel_mean, pixel_std, pixel_norm, verbose)
 
@@ -195,7 +201,7 @@ class OSNet_x0_75(BaseTorchReIDModel):
         pixel_mean: list[float] = field(default_factory=lambda: [0.485, 0.456, 0.406]),
         pixel_std: list[float] = field(default_factory=lambda: [0.229, 0.224, 0.225]),
         pixel_norm: bool = True,
-        verbose: bool = False
+        verbose: bool = False,
     ):
         super().__init__(name, path, device, image_size, pixel_mean, pixel_std, pixel_norm, verbose)
 
@@ -210,7 +216,7 @@ class OSNet_x0_5(BaseTorchReIDModel):
         pixel_mean: list[float] = field(default_factory=lambda: [0.485, 0.456, 0.406]),
         pixel_std: list[float] = field(default_factory=lambda: [0.229, 0.224, 0.225]),
         pixel_norm: bool = True,
-        verbose: bool = False
+        verbose: bool = False,
     ):
         super().__init__(name, path, device, image_size, pixel_mean, pixel_std, pixel_norm, verbose)
 
@@ -225,7 +231,7 @@ class OSNet_x0_25(BaseTorchReIDModel):
         pixel_mean: list[float] = field(default_factory=lambda: [0.485, 0.456, 0.406]),
         pixel_std: list[float] = field(default_factory=lambda: [0.229, 0.224, 0.225]),
         pixel_norm: bool = True,
-        verbose: bool = False
+        verbose: bool = False,
     ):
         super().__init__(name, path, device, image_size, pixel_mean, pixel_std, pixel_norm, verbose)
 
@@ -240,7 +246,7 @@ class OSNet_ibn_x1_0(BaseTorchReIDModel):
         pixel_mean: list[float] = field(default_factory=lambda: [0.485, 0.456, 0.406]),
         pixel_std: list[float] = field(default_factory=lambda: [0.229, 0.224, 0.225]),
         pixel_norm: bool = True,
-        verbose: bool = False
+        verbose: bool = False,
     ):
         super().__init__(name, path, device, image_size, pixel_mean, pixel_std, pixel_norm, verbose)
 
@@ -255,7 +261,7 @@ class OSNet_ain_x1_0(BaseTorchReIDModel):
         pixel_mean: list[float] = field(default_factory=lambda: [0.485, 0.456, 0.406]),
         pixel_std: list[float] = field(default_factory=lambda: [0.229, 0.224, 0.225]),
         pixel_norm: bool = True,
-        verbose: bool = False
+        verbose: bool = False,
     ):
         super().__init__(name, path, device, image_size, pixel_mean, pixel_std, pixel_norm, verbose)
 
@@ -270,7 +276,7 @@ class OSNet_ain_x0_75(BaseTorchReIDModel):
         pixel_mean: list[float] = field(default_factory=lambda: [0.485, 0.456, 0.406]),
         pixel_std: list[float] = field(default_factory=lambda: [0.229, 0.224, 0.225]),
         pixel_norm: bool = True,
-        verbose: bool = False
+        verbose: bool = False,
     ):
         super().__init__(name, path, device, image_size, pixel_mean, pixel_std, pixel_norm, verbose)
 
@@ -285,7 +291,7 @@ class OSNet_ain_x0_5(BaseTorchReIDModel):
         pixel_mean: list[float] = field(default_factory=lambda: [0.485, 0.456, 0.406]),
         pixel_std: list[float] = field(default_factory=lambda: [0.229, 0.224, 0.225]),
         pixel_norm: bool = True,
-        verbose: bool = False
+        verbose: bool = False,
     ):
         super().__init__(name, path, device, image_size, pixel_mean, pixel_std, pixel_norm, verbose)
 
@@ -300,7 +306,7 @@ class OSNet_ain_x0_25(BaseTorchReIDModel):
         pixel_mean: list[float] = field(default_factory=lambda: [0.485, 0.456, 0.406]),
         pixel_std: list[float] = field(default_factory=lambda: [0.229, 0.224, 0.225]),
         pixel_norm: bool = True,
-        verbose: bool = False
+        verbose: bool = False,
     ):
         super().__init__(name, path, device, image_size, pixel_mean, pixel_std, pixel_norm, verbose)
 
@@ -315,9 +321,10 @@ class ResNet50(BaseTorchReIDModel):
         pixel_mean: list[float] = field(default_factory=lambda: [0.485, 0.456, 0.406]),
         pixel_std: list[float] = field(default_factory=lambda: [0.229, 0.224, 0.225]),
         pixel_norm: bool = True,
-        verbose: bool = False
+        verbose: bool = False,
     ):
         super().__init__(name, path, device, image_size, pixel_mean, pixel_std, pixel_norm, verbose)
+
 
 class ResNet50_fc512(BaseTorchReIDModel):
     def __init__(
@@ -329,6 +336,6 @@ class ResNet50_fc512(BaseTorchReIDModel):
         pixel_mean: list[float] = field(default_factory=lambda: [0.485, 0.456, 0.406]),
         pixel_std: list[float] = field(default_factory=lambda: [0.229, 0.224, 0.225]),
         pixel_norm: bool = True,
-        verbose: bool = False
+        verbose: bool = False,
     ):
         super().__init__(name, path, device, image_size, pixel_mean, pixel_std, pixel_norm, verbose)
