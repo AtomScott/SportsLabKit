@@ -35,11 +35,9 @@ jobs:
       run: |
         poetry version prerelease
         NEW_VERSION=$(poetry version --short)
-        git checkout -b bump/$NEW_VERSION
-        git push origin bump/$NEW_VERSION
-        gh pr create --base develop --head bump/$NEW_VERSION --title "Bump version to $NEW_VERSION" --body "Automated version bump."
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        git add pyproject.toml
+        git commit -m "Bump version to $NEW_VERSION [skip ci]"
+        git push origin develop
 
     - name: Build and publish to Test PyPI
       run: |
