@@ -1,20 +1,16 @@
-from abc import ABC, abstractmethod
-from typing import List, Optional, Sequence, Tuple, Union
+from typing import Sequence, Union
 
 import numpy as np
 import pytorch_lightning as pl
 import torch
 import torch.nn.functional as F
-import torchmetrics
 from PIL import Image
 from torch import nn
-from torch.utils.data import DataLoader, Dataset
+from torch.utils.data import DataLoader
 from torchmetrics.functional import accuracy
 from torchvision import models, transforms
 from torchvision.datasets import ImageFolder
 
-from sportslabkit.image_model.torchreid import TorchReIDModel, show_torchreid_models
-from sportslabkit.image_model.visualization import plot_tsne
 from sportslabkit.types.detection import Detection
 
 

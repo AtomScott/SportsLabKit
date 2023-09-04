@@ -1,4 +1,5 @@
 import inspect
+
 from sportslabkit.detection_model.base import BaseDetectionModel
 from sportslabkit.detection_model.dummy import DummyDetectionModel
 from sportslabkit.detection_model.yolov8 import YOLOv8, YOLOv8l, YOLOv8m, YOLOv8n, YOLOv8s, YOLOv8x

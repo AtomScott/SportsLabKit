@@ -1,7 +1,7 @@
 import torch
+from einops import rearrange
 from torch import nn
 from torch.nn import functional as F
-from einops import rearrange
 
 
 class LSTM(nn.Module):

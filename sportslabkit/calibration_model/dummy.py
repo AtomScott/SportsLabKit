@@ -15,7 +15,7 @@ class DummyCalibrationModel(BaseCalibrationModel):
             return self.homographies
         else:
             return self.homographies[self.image_count]
-        
+
     def reset_image_count(self):
         self.image_count = 0
         logger.debug("Resetting image count")

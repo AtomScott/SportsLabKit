@@ -2,17 +2,16 @@ from __future__ import annotations
 
 import json
 from ast import literal_eval
-from typing import Any, Dict, Iterable, List, Mapping, Optional, Tuple, Type, Union
+from typing import Any, Iterable, Mapping, Optional
 
 import cv2
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from matplotlib.animation import FuncAnimation
 from mplsoccer import Pitch
 from numpy.typing import ArrayLike, NDArray
 
-from sportslabkit.dataframe.base import SoccerTrackMixin
+from sportslabkit.dataframe.base import SLKMixin
 from sportslabkit.logger import logger
 from sportslabkit.types.types import _pathlike
 
@@ -29,7 +28,7 @@ def merge_dicts(*dicts):
     return merged
 
 
-class CoordinatesDataFrame(SoccerTrackMixin, pd.DataFrame):
+class CoordinatesDataFrame(SLKMixin, pd.DataFrame):
 
     _metadata = [
         "source_keypoints",
@@ -476,7 +475,7 @@ class CoordinatesDataFrame(SoccerTrackMixin, pd.DataFrame):
 
         try:
             anim.save(save_path, **_save_kwargs)
-        except Exception as e:
+        except Exception:
             logger.error(
                 "BrokenPipeError: Saving animation failed, which might be an ffmpeg problem. Trying again with different codec."
             )

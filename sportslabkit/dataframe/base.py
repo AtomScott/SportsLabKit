@@ -3,7 +3,7 @@ from typing import Union
 from pandas._typing import FilePath, WriteBuffer
 
 
-class SoccerTrackMixin(object):
+class SLKMixin(object):
     def save_dataframe(
         self,
         path_or_buf: Union[FilePath, WriteBuffer[bytes], WriteBuffer[str]],
@@ -56,7 +56,8 @@ class SoccerTrackMixin(object):
             apply_func (function, optional): Function to apply to each group. Defaults to None.
         """
         if apply_func is None:
-            apply_func = lambda x: x
+            def apply_func(x):
+                return x
 
         for index, group in self.groupby("frame"):
             yield index, apply_func(group)
@@ -69,7 +70,8 @@ class SoccerTrackMixin(object):
             drop (bool, optional): Drop the level of the dataframe. Defaults to True.
         """
         if apply_func is None:
-            apply_func = lambda x: x
+            def apply_func(x):
+                return x
         for index, group in self.groupby(level=("TeamID", "PlayerID"), axis=1):
             if drop:
                 yield index, apply_func(group.droplevel(level=("TeamID", "PlayerID"), axis=1))
@@ -84,7 +86,8 @@ class SoccerTrackMixin(object):
             drop (bool, optional): Drop the level of the dataframe. Defaults to True.
         """
         if apply_func is None:
-            apply_func = lambda x: x
+            def apply_func(x):
+                return x
         for index, group in self.groupby(level="TeamID", axis=1):
             if drop:
                 yield index, apply_func(group.droplevel(level=("TeamID"), axis=1))
@@ -99,7 +102,8 @@ class SoccerTrackMixin(object):
             drop (bool, optional): Drop the level of the dataframe. Defaults to True.
         """
         if apply_func is None:
-            apply_func = lambda x: x
+            def apply_func(x):
+                return x
         for index, group in self.groupby(level="Attributes", axis=1):
             if drop:
                 yield index, apply_func(group.droplevel(level=("Attributes"), axis=1))

@@ -13,28 +13,29 @@ from sportslabkit.utils import make_video
 
 from ..logger import logger
 from ..utils import MovieIterator, get_fps
-from .base import SoccerTrackMixin
+from .base import SLKMixin
 from .coordinatesdataframe import CoordinatesDataFrame
 
+
 # https://clrs.cc/
-_COLOR_NAME_TO_RGB = dict(
-    navy=((0, 38, 63), (119, 193, 250)),
-    blue=((0, 120, 210), (173, 220, 252)),
-    aqua=((115, 221, 252), (0, 76, 100)),
-    teal=((15, 205, 202), (0, 0, 0)),
-    olive=((52, 153, 114), (25, 58, 45)),
-    green=((0, 204, 84), (15, 64, 31)),
-    lime=((1, 255, 127), (0, 102, 53)),
-    yellow=((255, 216, 70), (103, 87, 28)),
-    orange=((255, 125, 57), (104, 48, 19)),
-    red=((255, 47, 65), (131, 0, 17)),
-    maroon=((135, 13, 75), (239, 117, 173)),
-    fuchsia=((246, 0, 184), (103, 0, 78)),
-    purple=((179, 17, 193), (241, 167, 244)),
-    black=((24, 24, 24), (220, 220, 220)),
-    gray=((168, 168, 168), (0, 0, 0)),
-    silver=((220, 220, 220), (0, 0, 0)),
-)
+_COLOR_NAME_TO_RGB = {
+    "navy": ((0, 38, 63), (119, 193, 250)),
+    "blue": ((0, 120, 210), (173, 220, 252)),
+    "aqua": ((115, 221, 252), (0, 76, 100)),
+    "teal": ((15, 205, 202), (0, 0, 0)),
+    "olive": ((52, 153, 114), (25, 58, 45)),
+    "green": ((0, 204, 84), (15, 64, 31)),
+    "lime": ((1, 255, 127), (0, 102, 53)),
+    "yellow": ((255, 216, 70), (103, 87, 28)),
+    "orange": ((255, 125, 57), (104, 48, 19)),
+    "red": ((255, 47, 65), (131, 0, 17)),
+    "maroon": ((135, 13, 75), (239, 117, 173)),
+    "fuchsia": ((246, 0, 184), (103, 0, 78)),
+    "purple": ((179, 17, 193), (241, 167, 244)),
+    "black": ((24, 24, 24), (220, 220, 220)),
+    "gray": ((168, 168, 168), (0, 0, 0)),
+    "silver": ((220, 220, 220), (0, 0, 0)),
+}
 
 _COLOR_NAMES = list(_COLOR_NAME_TO_RGB)
 
@@ -61,7 +62,7 @@ def _rgb_to_bgr(color: tuple[int, ...]) -> list[Any]:
     return list(reversed(color))
 
 
-class BBoxDataFrame(SoccerTrackMixin, pd.DataFrame):
+class BBoxDataFrame(SLKMixin, pd.DataFrame):
     """Bounding box data frame.
 
     Args:
@@ -132,7 +133,7 @@ class BBoxDataFrame(SoccerTrackMixin, pd.DataFrame):
                 logger.debug(f"Frame {frame_idx} not found in player_df")
                 continue
 
-            attributes = player_df.loc[frame_idx, ["bb_left", "bb_top", "bb_width", "bb_height"]]
+            player_df.loc[frame_idx, ["bb_left", "bb_top", "bb_width", "bb_height"]]
 
             x1, y1, w, h = player_df.loc[frame_idx, ["bb_left", "bb_top", "bb_width", "bb_height"]].values.astype(int)
             x2, y2 = x1 + w, y1 + h
@@ -308,10 +309,10 @@ class BBoxDataFrame(SoccerTrackMixin, pd.DataFrame):
                 }
             }
         """
-        segment = dict()
+        segment = {}
         for (team_id, player_id), player_bbdf in self.iter_players():
             feature_name = f"{team_id}_{player_id}"
-            key_frames_dict = dict()
+            key_frames_dict = {}
             key_frames_dict["keyframes"] = []
             missing_bbox = 0
 
@@ -329,7 +330,7 @@ class BBoxDataFrame(SoccerTrackMixin, pd.DataFrame):
                             },
                         }
                     )
-                except ValueError as e:
+                except ValueError:
                     missing_bbox += 1
 
             if missing_bbox > 0:

@@ -1,14 +1,10 @@
 import torch
-from torch import nn
-from torch.nn import functional as F
-from einops import rearrange
-
-import torch
-from torch import nn
 import torch_geometric.nn as pyg_nn
-from torch_geometric.nn import GENConv, aggr, GENConv, DeepGCNLayer
-from torch.nn import LayerNorm, Linear, ReLU
-from torch_geometric.data import Data, Batch
+from einops import rearrange
+from torch import nn
+from torch.nn import Linear, ReLU
+from torch_geometric.data import Batch, Data
+from torch_geometric.nn import DeepGCNLayer, GENConv, aggr
 
 
 def get_norm_layer(norm_method, dim):
@@ -107,7 +103,7 @@ class GCNEncoder(nn.Module):
             edge_index = []
             edge_index0 = []
             edge_index1 = []
-            device = self.get_device()
+            self.get_device()
             for i in range(num_nodes):
                 for j in range(num_nodes):
                     edge_index0.append(i)
@@ -165,7 +161,7 @@ class MultiTargetGNN(nn.Module):
 
     def forward(self, x):
         # B: batch size, L: sequence length, N: number of agents, D: dimension
-        num_agents = x.shape[2]
+        x.shape[2]
         model_input = rearrange(x, "B L N D -> B N (L D)")
 
         out = self.gcn(model_input)

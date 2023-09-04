@@ -1,12 +1,11 @@
-import time
 import uuid
 from collections.abc import Iterable
-from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Type, Union
+from typing import Callable, Dict, Optional
 
 import numpy as np
 import pandas as pd
 from filterpy.kalman import KalmanFilter
-from motpy.core import Box, Detection, Track, Vector
+from motpy.core import Box, Detection, Vector
 from motpy.model import Model, ModelPreset
 
 from sportslabkit import BBoxDataFrame
@@ -93,7 +92,7 @@ class SingleObjectTracker:
         self.score: Optional[float] = score0
         self.feature: Optional[Vector] = None
 
-        self.class_id_counts: Dict = dict()
+        self.class_id_counts: Dict = {}
         self.class_id: Optional[int] = self.update_class_id(class_id0)
         self.states = []
 

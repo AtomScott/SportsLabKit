@@ -175,7 +175,7 @@ def hota_score(bboxes_track: BBoxDataFrame, bboxes_gt: BBoxDataFrame) -> dict[st
     # First calculate scores per gt_id/tracker_id combo and then average over the number of detections.
     for a, alpha in enumerate(array_labels):
         matches_count = matches_counts[a]
-        ass_a = matches_count / np.maximum(
+        matches_count / np.maximum(
             1, gt_id_count + tracker_id_count - matches_count
         )
 

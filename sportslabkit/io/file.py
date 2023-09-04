@@ -14,6 +14,7 @@ from omegaconf import OmegaConf
 
 from ..dataframe import BBoxDataFrame, CoordinatesDataFrame
 
+
 _pathlike = Union[str, os.PathLike]
 
 

@@ -145,10 +145,10 @@ def show_df(df, theme="dark"):
         styler.applymap(lambda x: "color: white")
         styler.set_table_styles(
             [
-                dict(
-                    selector="th",
-                    props=[("color", "white"), ("background-color", "#555555")],
-                )
+                {
+                    "selector": "th",
+                    "props": [("color", "white"), ("background-color", "#555555")],
+                }
             ]
         )
         styler.apply(lambda x: ["background: #333333" for _ in x], axis=1)

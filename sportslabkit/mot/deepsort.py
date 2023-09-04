@@ -1,9 +1,7 @@
-import sportslabkit as st
 from sportslabkit.logger import logger
 from sportslabkit.matching import MotionVisualMatchingFunction
 from sportslabkit.metrics import CosineCMM, IoUCMM
 from sportslabkit.mot.base import MultiObjectTracker
-from sportslabkit.motion_model import KalmanFilter
 
 
 class DeepSORTTracker(MultiObjectTracker):

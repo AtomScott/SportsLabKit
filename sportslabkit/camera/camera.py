@@ -2,11 +2,9 @@
 
 from __future__ import annotations
 
-from functools import cached_property
 from typing import (
     Dict,
     Generator,
-    Iterable,
     List,
     Mapping,
     Optional,
@@ -21,8 +19,8 @@ import numpy as np
 from numpy.typing import ArrayLike, NDArray
 
 from sportslabkit.camera.videoreader import VideoReader
-from sportslabkit.utils import logger, make_video, tqdm
 from sportslabkit.types.types import _pathlike
+from sportslabkit.utils import logger, make_video, tqdm
 
 
 class Camera(VideoReader):
@@ -67,7 +65,7 @@ class Camera(VideoReader):
 
         """
         if threaded:
-            logger.warning(f"Threaded video reader is buggy. Use at your own risk.")
+            logger.warning("Threaded video reader is buggy. Use at your own risk.")
         super().__init__(video_path, threaded, queue_size)
         self.label = label
 
@@ -105,9 +103,9 @@ class Camera(VideoReader):
         calibration_video_path = self.calibration_video_path
 
         if self.camera_matrix_path:
-            camera_matrix = np.load(self.camera_matrix_path)
+            np.load(self.camera_matrix_path)
         if self.distortion_coefficients_path:
-            distortion_coefficients = np.load(self.distortion_coefficients_path)
+            np.load(self.distortion_coefficients_path)
 
         if self.camera_matrix is None or self.distortion_coefficients is None:
             if calibration_video_path is not None:

@@ -1,13 +1,13 @@
 from __future__ import annotations
 
+import hashlib
 import uuid
-from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Type, Union
+from typing import Any, Dict, List, Optional
 
 import pandas as pd
 
 from sportslabkit.dataframe.bboxdataframe import BBoxDataFrame
 from sportslabkit.logger import logger
-import hashlib
 
 
 def id_to_color(id_string: str) -> str:

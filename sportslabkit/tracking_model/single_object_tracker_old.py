@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 import uuid
-from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Type, Union
+from typing import List, Optional, Union
 
 import numpy as np
 import pandas as pd
 from filterpy.kalman import KalmanFilter
-from motpy.model import Model, ModelPreset
+from motpy.model import Model
 
 from sportslabkit import BBoxDataFrame
 from sportslabkit.logger import logger

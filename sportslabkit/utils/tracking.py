@@ -1,9 +1,8 @@
 """Tracking utilities"""
 
-from copy import deepcopy
 
 import numpy as np
-from filterpy.common import Saver
+
 
 # large floating point number
 inf = 1.0e10
