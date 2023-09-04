@@ -1,8 +1,8 @@
-name: Lint and Commit
+name: Ruff check and auto-fix
 on: push
 
 jobs:
-  lint:
+  ruff-check:
     runs-on: ubuntu-latest 
     steps:
     - uses: actions/checkout@v2
