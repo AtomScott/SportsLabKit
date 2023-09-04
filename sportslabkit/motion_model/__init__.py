@@ -3,8 +3,8 @@ import inspect
 from sportslabkit.logger import logger
 from sportslabkit.motion_model.base import BaseMotionModel, BaseMotionModule
 from sportslabkit.motion_model.models import LSTM, ExponentialMovingAverage, KalmanFilter, Linear
-from sportslabkit.motion_model.multi_target import MultiTargetLinear
-from sportslabkit.motion_model.single_target import SingleTargetLinear, SingleTargetLSTM
+# from sportslabkit.motion_model.multi_target import MultiTargetLinear
+# from sportslabkit.motion_model.single_target import SingleTargetLinear, SingleTargetLSTM
 from sportslabkit.motion_model.tune import tune_motion_model
 
 
