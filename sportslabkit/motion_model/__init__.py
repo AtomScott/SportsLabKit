@@ -6,7 +6,16 @@ from sportslabkit.motion_model.models import ExponentialMovingAverage, KalmanFil
 from sportslabkit.motion_model.tune import tune_motion_model
 
 
-__all__ = ["tune_motion_model", "ExponentialMovingAverage", "KalmanFilter", "BaseMotionModule", "BaseMotionModel", "SingleTargetLinear", "SingleTargetLSTM", "MultiTargetLinear"]
+__all__ = [
+    "tune_motion_model",
+    "ExponentialMovingAverage",
+    "KalmanFilter",
+    "BaseMotionModule",
+    "BaseMotionModel",
+    "SingleTargetLinear",
+    "SingleTargetLSTM",
+    "MultiTargetLinear",
+]
 
 
 def inheritors(cls: type) -> set[type]:
@@ -55,10 +64,16 @@ def load(model_name, **model_config):
     for cls in inheritors(BaseMotionModel):
         if model_name in [cls.__name__.lower(), cls.__name__]:
             # Filtering the model_config to only include keys that match the parameters of the target class
-            filtered_config = {k.lower(): v for k, v in model_config.items() if k.lower() in inspect.signature(cls.__init__).parameters}
+            filtered_config = {
+                k.lower(): v
+                for k, v in model_config.items()
+                if k.lower() in inspect.signature(cls.__init__).parameters
+            }
             return cls(**filtered_config)
 
-    logger.warning(f"Model {model_name} not found. Available models: {[cls.__name__ for cls in inheritors(BaseMotionModel)]} (lowercase is allowed)")
+    logger.warning(
+        f"Model {model_name} not found. Available models: {[cls.__name__ for cls in inheritors(BaseMotionModel)]} (lowercase is allowed)"
+    )
 
 
 if __name__ == "__main__":

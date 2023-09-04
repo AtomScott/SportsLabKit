@@ -25,7 +25,7 @@ def is_interactive() -> bool:
     return not hasattr(main, "__file__")
 
 
-def patcher(record: Mapping[str, Any]) -> Mapping[str, Any]:
+def patcher(record: Mapping[str, Any]) -> Mapping[str, str]:
     """Customize loguru's log format.
 
     See the Loguru docs for details on `record` here, https://loguru.readthedocs.io/en/stable/api/logger.html.

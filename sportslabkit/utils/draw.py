@@ -26,15 +26,12 @@ def draw_bounding_boxes(
     image: np.ndarray,
     bboxes: np.ndarray,
     labels: Optional[List[str]] = None,
-    colors: Optional[
-        Union[List[Union[str, Tuple[int, int, int]]], str, Tuple[int, int, int]]
-    ] = None,
+    colors: Optional[Union[List[Union[str, Tuple[int, int, int]]], str, Tuple[int, int, int]]] = None,
     fill: Optional[bool] = False,
     width: int = 1,
     font: Optional[str] = None,
     font_size: Optional[int] = None,
 ) -> np.ndarray:
-
     """
     Draws bounding boxes on given image.
     The values of the input image should be uint8 between 0 and 255.
@@ -57,9 +54,7 @@ def draw_bounding_boxes(
     if not isinstance(image, np.ndarray):
         raise TypeError(f"Image must be of type np.ndarray. Got {type(image)}")
     if not isinstance(bboxes, np.ndarray):
-        raise TypeError(
-            f"Bounding boxes must be of type np.ndarray. Got {type(bboxes)}"
-        )
+        raise TypeError(f"Bounding boxes must be of type np.ndarray. Got {type(bboxes)}")
 
     num_boxes = bboxes.shape[0]
 
@@ -78,35 +73,24 @@ def draw_bounding_boxes(
         colors = _generate_color_palette(num_boxes)
     elif isinstance(colors, list):
         if len(colors) < num_boxes:
-            raise ValueError(
-                f"Number of colors ({len(colors)}) is less than number of boxes ({num_boxes}). "
-            )
+            raise ValueError(f"Number of colors ({len(colors)}) is less than number of boxes ({num_boxes}). ")
     else:  # colors specifies a single color for all boxes
         colors = [colors] * num_boxes
 
-    colors = [
-        (ImageColor.getrgb(color) if isinstance(color, str) else color)
-        for color in colors
-    ]
+    colors = [(ImageColor.getrgb(color) if isinstance(color, str) else color) for color in colors]
 
     if font is None:
         if font_size is not None:
-            logger.warning(
-                "Argument 'font_size' will be ignored since 'font' is not set."
-            )
+            logger.warning("Argument 'font_size' will be ignored since 'font' is not set.")
         txt_font = ImageFont.load_default()
     else:
         try:
             txt_font = ImageFont.truetype(font=font, size=font_size or 10)
         except OSError:
-            system_fonts = matplotlib.font_manager.findSystemFonts(
-                fontpaths=None, fontext="ttf"
-            )
+            system_fonts = matplotlib.font_manager.findSystemFonts(fontpaths=None, fontext="ttf")
             for i in range(len(system_fonts)):
                 system_fonts[i] = system_fonts[i].split("/")[-1]
-            logger.error(
-                f"Font '{font}' not found. Select from the following fonts: \n{system_fonts}"
-            )
+            logger.error(f"Font '{font}' not found. Select from the following fonts: \n{system_fonts}")
             raise OSError
 
     # Handle Grayscale images
@@ -133,9 +117,7 @@ def draw_bounding_boxes(
 
         if label is not None:
             margin = width + 1
-            draw.text(
-                (xyxy[0] + margin, xyxy[1] + margin), label, fill=color, font=txt_font
-            )
+            draw.text((xyxy[0] + margin, xyxy[1] + margin), label, fill=color, font=txt_font)
 
     return np.array(img_to_draw)
 
@@ -155,6 +137,4 @@ def draw_tracks(
 
     bboxes = np.array([t.box for t in tracks])
     labels = [t.id[:3] for t in tracks]
-    return draw_bounding_boxes(
-        img, bboxes, labels, colors, fill, width, font, font_size
-    )
+    return draw_bounding_boxes(img, bboxes, labels, colors, fill, width, font, font_size)

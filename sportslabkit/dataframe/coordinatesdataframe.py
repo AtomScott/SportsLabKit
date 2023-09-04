@@ -11,7 +11,7 @@ from matplotlib.animation import FuncAnimation
 from mplsoccer import Pitch
 from numpy.typing import ArrayLike, NDArray
 
-from sportslabkit.dataframe.base import SLKMixin
+from sportslabkit.dataframe.base import BaseSLKDataFrame
 from sportslabkit.logger import logger
 from sportslabkit.types.types import _pathlike
 
@@ -28,8 +28,7 @@ def merge_dicts(*dicts):
     return merged
 
 
-class CoordinatesDataFrame(SLKMixin, pd.DataFrame):
-
+class CoordinatesDataFrame(BaseSLKDataFrame, pd.DataFrame):
     _metadata = [
         "source_keypoints",
         "target_keypoints",
@@ -47,9 +46,7 @@ class CoordinatesDataFrame(SLKMixin, pd.DataFrame):
         Returns:
             NDArray[np.float64]: homography transformation matrix.
         """
-        H, *_ = cv2.findHomography(
-            self.source_keypoints, self.target_keypoints, cv2.RANSAC, 5.0
-        )
+        H, *_ = cv2.findHomography(self.source_keypoints, self.target_keypoints, cv2.RANSAC, 5.0)
         return H
 
     def set_keypoints(
@@ -227,9 +224,7 @@ class CoordinatesDataFrame(SLKMixin, pd.DataFrame):
         )
 
         df = df.pivot(index="frame", columns=["TeamID", "PlayerID"], values=attributes)
-        multi_index = pd.MultiIndex.from_tuples(
-            df.columns.swaplevel(0, 1).swaplevel(1, 2)
-        )
+        multi_index = pd.MultiIndex.from_tuples(df.columns.swaplevel(0, 1).swaplevel(1, 2))
         df.columns = pd.MultiIndex.from_tuples(multi_index)
         df.rename_axis(["TeamID", "PlayerID", "Attributes"], axis=1, inplace=True)
         df.sort_index(axis=1, inplace=True)
@@ -305,9 +300,7 @@ class CoordinatesDataFrame(SLKMixin, pd.DataFrame):
             away_kwargs,
         )
 
-        _save_kwargs = merge_dicts(
-            {"facecolor": "black", "pad_inches": 0.0}, save_kwargs
-        )
+        _save_kwargs = merge_dicts({"facecolor": "black", "pad_inches": 0.0}, save_kwargs)
 
         _df = self.copy()
         _df = _df[_df.index == frame_idx]
@@ -483,9 +476,7 @@ class CoordinatesDataFrame(SLKMixin, pd.DataFrame):
             try:
                 anim.save(save_path, **_save_kwargs)
             except Exception as e:
-                logger.error(
-                    "Saving animation failed again. Exiting without saving the animation."
-                )
+                logger.error("Saving animation failed again. Exiting without saving the animation.")
                 print(e)
 
     # @property

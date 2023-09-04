@@ -1,4 +1,3 @@
-
 """Defines the Callback base class and utility decorators for use with the Trainer class.
 
 The Callback class provides a dynamic way to hook into various stages of the Trainer's operations.
@@ -24,13 +23,15 @@ def with_callbacks(func):
     Returns:
         callable: The wrapped method.
     """
+
     @wraps(func)
     def wrapper(self, *args, **kwargs):
         event_name = func.__name__
-        self._invoke_callbacks(f'on_{event_name}_start')
+        self._invoke_callbacks(f"on_{event_name}_start")
         result = func(self, *args, **kwargs)
-        self._invoke_callbacks(f'on_{event_name}_end')
+        self._invoke_callbacks(f"on_{event_name}_end")
         return result
+
     return wrapper
 
 

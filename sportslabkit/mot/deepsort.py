@@ -1,8 +1,9 @@
+from typing import Optional
+
 from sportslabkit.logger import logger
 from sportslabkit.matching import MotionVisualMatchingFunction
 from sportslabkit.metrics import CosineCMM, IoUCMM
 from sportslabkit.mot.base import MultiObjectTracker
-from typing import Optional
 
 
 class DeepSORTTracker(MultiObjectTracker):
@@ -18,7 +19,7 @@ class DeepSORTTracker(MultiObjectTracker):
         detection_model=None,
         image_model=None,
         motion_model=None,
-        matching_fn: MotionVisualMatchingFunction=MotionVisualMatchingFunction(
+        matching_fn: MotionVisualMatchingFunction = MotionVisualMatchingFunction(
             motion_metric=IoUCMM(),
             motion_metric_gate=0.2,
             visual_metric=CosineCMM(),
@@ -71,7 +72,9 @@ class DeepSORTTracker(MultiObjectTracker):
         for match in matches:
             track_idx, det_idx = match[0], match[1]
             tracklet = tracklets[track_idx]
-            logger.debug(f"track_idx: {track_idx}, det_idx: {det_idx}, cost: {cost_matrix[track_idx, det_idx]}, track staleness: {tracklet.get_state('staleness')}")
+            logger.debug(
+                f"track_idx: {track_idx}, det_idx: {det_idx}, cost: {cost_matrix[track_idx, det_idx]}, track staleness: {tracklet.get_state('staleness')}"
+            )
 
             new_observation = {
                 "box": detections[det_idx].box,

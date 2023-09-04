@@ -59,8 +59,6 @@ class SimpleMatchingFunction(BaseMatchingFunction):
         return cost_matrix
 
 
-
-
 class SimpleBatchMatchingFunction(BaseBatchMatchingFunction):
     """A batch matching function that uses a simple distance metric.
 

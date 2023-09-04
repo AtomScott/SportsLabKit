@@ -1,3 +1,5 @@
+from typing import Optional
+
 import cv2
 import numpy as np
 import torch
@@ -6,18 +8,18 @@ from sportslabkit.logger import logger
 from sportslabkit.matching import MotionVisualMatchingFunction, SimpleMatchingFunction
 from sportslabkit.metrics import CosineCMM, IoUCMM
 from sportslabkit.mot.base import MultiObjectTracker
-from typing import Optional
 
 
 class TeamTracker(MultiObjectTracker):
     """TeamTrack"""
+
     def __init__(
         self,
         detection_model=None,
         image_model=None,
         motion_model=None,
         calibration_model=None,
-        first_matching_fn: MotionVisualMatchingFunction=MotionVisualMatchingFunction(
+        first_matching_fn: MotionVisualMatchingFunction = MotionVisualMatchingFunction(
             motion_metric=IoUCMM(use_pred_box=True),
             motion_metric_gate=0.2,
             visual_metric=CosineCMM(),
@@ -57,8 +59,8 @@ class TeamTracker(MultiObjectTracker):
 
     def predict_multi_tracklet_motion(self, tracklets):
         # for i, tracklet in enumerate(tracklets):
-            # x = self.tracklet_to_points(tracklet)
-            # X.append(tracklet)
+        # x = self.tracklet_to_points(tracklet)
+        # X.append(tracklet)
 
         with torch.no_grad():
             Y = self.motion_model(tracklets)
@@ -70,6 +72,7 @@ class TeamTracker(MultiObjectTracker):
         # else:
         #     x = x[:, -obs_len:]
         # X.append(x)
+
     # if self.multi_target_motion_model and len(X) > 0:
     #     X = torch.stack(X, dim=2)
     #     with torch.no_grad():
@@ -117,7 +120,6 @@ class TeamTracker(MultiObjectTracker):
             else:
                 pred_pt = self.predict_single_tracklet_motion(tracklet)
             tracklet.update_state("pred_pt", pred_pt)
-
 
         # extract features from the detections
         if len(detections) > 0:
@@ -187,7 +189,9 @@ class TeamTracker(MultiObjectTracker):
         ##############################
 
         # Second association between unassigned tracklets and low confidence detections
-        matches_second, cost_matrix_second = self.second_matching_fn(unassigned_tracklets, low_confidence_detections, True)
+        matches_second, cost_matrix_second = self.second_matching_fn(
+            unassigned_tracklets, low_confidence_detections, True
+        )
 
         # [Second] assigned tracklets: update
         for match in matches_second:

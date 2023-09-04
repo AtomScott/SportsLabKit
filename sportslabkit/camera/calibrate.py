@@ -67,9 +67,7 @@ def detect_corners(
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         gray_small = cv2.resize(gray, None, fx=1 / scale, fy=1 / scale)
 
-        ret, corners = cv2.findChessboardCorners(
-            gray_small, (num_corners_y, num_corners_x)
-        )
+        ret, corners = cv2.findChessboardCorners(gray_small, (num_corners_y, num_corners_x))
         if ret:
             corners *= scale
             corners = cv2.cornerSubPix(gray, corners, (11, 11), (-1, -1), criteria)
@@ -112,9 +110,7 @@ def select_images(imgpoints, objpoints, points_to_use: int):
     imgpoints = [imgpoints[i] for i in idxs]
 
     # select points to use
-    x_range = np.linspace(
-        0, len(imgpoints) - 1, points_to_use, endpoint=False, dtype=int
-    )
+    x_range = np.linspace(0, len(imgpoints) - 1, points_to_use, endpoint=False, dtype=int)
     objpoints = [objpoints[i] for i in x_range]
     imgpoints = [imgpoints[i] for i in x_range]
 
@@ -169,12 +165,8 @@ def calibrate_camera_fisheye(objpoints, imgpoints, dim, balance=1):
         cv2.fisheye.CALIB_RECOMPUTE_EXTRINSIC + cv2.fisheye.CALIB_FIX_SKEW,
         (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 1e-6),
     )
-    new_K = cv2.fisheye.estimateNewCameraMatrixForUndistortRectify(
-        K, D, dim, np.eye(3), balance=2
-    )
-    mapx, mapy = cv2.fisheye.initUndistortRectifyMap(
-        K, D, np.eye(3), new_K, dim, cv2.CV_32FC1
-    )
+    new_K = cv2.fisheye.estimateNewCameraMatrixForUndistortRectify(K, D, dim, np.eye(3), balance=2)
+    mapx, mapy = cv2.fisheye.initUndistortRectifyMap(K, D, np.eye(3), new_K, dim, cv2.CV_32FC1)
     return K, D, mapx, mapy
 
 
@@ -223,9 +215,7 @@ def find_intrinsic_camera_parameters(
     logger.debug(f"imgpoints used: {len(imgpoints)}")
 
     if 1 <= points_to_use <= len(imgpoints):
-        logger.info(
-            f"Too many ({len(imgpoints)}) checkerboards found. Selecting {points_to_use}."
-        )
+        logger.info(f"Too many ({len(imgpoints)}) checkerboards found. Selecting {points_to_use}.")
 
     logger.info("Computing calibration parameters...")
 

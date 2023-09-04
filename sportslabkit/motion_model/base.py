@@ -24,7 +24,6 @@ class BaseMotionModel(ABC):
         self.name = self.__class__.__name__
         self.is_multi_target = is_multi_target
 
-
     def __call__(self, tracklet: Tracklet) -> Any:
         """Call the motion model to update its state and return the prediction.
 
@@ -73,7 +72,7 @@ class BaseMotionModel(ABC):
             all_observations.append(observations)
             all_states.append(tracklet.states)
 
-        all_predictions, all_new_states =  self.predict(all_observations, all_states)
+        all_predictions, all_new_states = self.predict(all_observations, all_states)
         for i, tracklet in enumerate(tracklets):
             tracklet.update_states(all_new_states[i])
         return all_predictions

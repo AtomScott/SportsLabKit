@@ -130,7 +130,10 @@ class BaseDetectionModel(ABC):
         """
         # First the length of outputs and inputs should be equal.
         if len(outputs) != len(inputs):
-            raise ValueError("Length of outputs does not match length of inputs. " f"Got {len(outputs)} outputs and {len(inputs)} inputs.")
+            raise ValueError(
+                "Length of outputs does not match length of inputs. "
+                f"Got {len(outputs)} outputs and {len(inputs)} inputs."
+            )
 
         if isinstance(outputs[0], Detections):
             return outputs
@@ -139,7 +142,9 @@ class BaseDetectionModel(ABC):
         check_1 = not isinstance(outputs, (list, tuple)) or not isinstance(outputs[0], (list, tuple))
         check_2 = isinstance(outputs[0][0], int) or isinstance(outputs[0][0], float)
         if check_1 or check_2:
-            raise ValueError("The model's output should be a list of list of Detection objects or a compatible object.")
+            raise ValueError(
+                "The model's output should be a list of list of Detection objects or a compatible object."
+            )
 
         # Attempt to convert outputs into a list of Detections objects.
         list_of_detections = []

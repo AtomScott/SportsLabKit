@@ -55,7 +55,12 @@ class IoUCMM(BaseCostMatrixMetric):
 
     def compute_metric(self, trackers: Sequence[Tracklet], detections: Sequence[Detection]) -> np.ndarray:
         if self.use_pred_box:
-            bb1 = np.array([(t.pred_box[0], t.pred_box[1], t.pred_box[0] + t.pred_box[2], t.pred_box[1] + t.pred_box[3]) for t in trackers])
+            bb1 = np.array(
+                [
+                    (t.pred_box[0], t.pred_box[1], t.pred_box[0] + t.pred_box[2], t.pred_box[1] + t.pred_box[3])
+                    for t in trackers
+                ]
+            )
         else:
             bb1 = np.array([(t.box[0], t.box[1], t.box[0] + t.box[2], t.box[1] + t.box[3]) for t in trackers])
         bb2 = np.array([(d.box[0], d.box[1], d.box[0] + d.box[2], d.box[1] + d.box[3]) for d in detections])
@@ -72,12 +77,15 @@ class EuclideanCMM(BaseCostMatrixMetric):
 
     def compute_metric(self, trackers: Sequence[Tracklet], detections: Sequence[Detection]) -> np.ndarray:
         if self.use_pred_box:
-            centers1 = np.array([(t.pred_box[0] + t.pred_box[2] / 2, t.pred_box[1] + t.pred_box[3] / 2) for t in trackers])
+            centers1 = np.array(
+                [(t.pred_box[0] + t.pred_box[2] / 2, t.pred_box[1] + t.pred_box[3] / 2) for t in trackers]
+            )
         else:
             centers1 = np.array([(t.box[0] + t.box[2] / 2, t.box[1] + t.box[3] / 2) for t in trackers])
 
         centers2 = np.array([(d.box[0] + d.box[2] / 2, d.box[1] + d.box[3] / 2) for d in detections])
         return cdist(centers1, centers2) / self.normalizer  # keep values in [0, 1]
+
 
 # FIXME: 技術負債を返済しましょう
 class EuclideanCMM2D(BaseCostMatrixMetric):

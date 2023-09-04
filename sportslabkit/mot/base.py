@@ -68,7 +68,9 @@ class MultiObjectTracker(ABC):
         stale_tracklets = self.cleanup_tracklets(stale_tracklets)
 
         # Report tracklet status
-        logger.debug(f"assigned: {len(assigned_tracklets)}, new: {len(new_tracklets)}, unassigned: {len(non_stale_tracklets)}, stale: {len(stale_tracklets)}")
+        logger.debug(
+            f"assigned: {len(assigned_tracklets)}, new: {len(new_tracklets)}, unassigned: {len(non_stale_tracklets)}, stale: {len(stale_tracklets)}"
+        )
 
         # Update alive and dead tracklets
         self.alive_tracklets = assigned_tracklets + new_tracklets + non_stale_tracklets
@@ -89,7 +91,9 @@ class MultiObjectTracker(ABC):
         with tqdm(range(0, len(sequence) - self.window_size + 1, self.step_size), desc="Tracking Progress") as t:
             for i in t:
                 self.process_sequence_item(sequence[i : i + self.window_size].squeeze())
-                t.set_postfix_str(f"Active: {len(self.alive_tracklets)}, Dead: {len(self.dead_tracklets)}", refresh=True)
+                t.set_postfix_str(
+                    f"Active: {len(self.alive_tracklets)}, Dead: {len(self.dead_tracklets)}", refresh=True
+                )
 
     def cleanup_tracklets(self, tracklets):
         for i, _ in enumerate(tracklets):
@@ -97,6 +101,7 @@ class MultiObjectTracker(ABC):
 
         def filter_short_tracklets(tracklet):
             return len(tracklet) >= self.min_length
+
         tracklets = list(filter(filter_short_tracklets, tracklets))
         return tracklets
 
@@ -126,7 +131,9 @@ class MultiObjectTracker(ABC):
         logger.debug("Tracker initialized.")
 
     def _check_required_observations(self, target: Dict[str, Any]):
-        missing_types = [required_type for required_type in self.required_observation_types if required_type not in target]
+        missing_types = [
+            required_type for required_type in self.required_observation_types if required_type not in target
+        ]
 
         if missing_types:
             required_types_str = ", ".join(self.required_observation_types)
@@ -143,11 +150,15 @@ class MultiObjectTracker(ABC):
         if not isinstance(state, dict):
             raise ValueError("The `update` method must return a dictionary.")
 
-        missing_types = [required_type for required_type in self.required_observation_types if required_type not in state]
+        missing_types = [
+            required_type for required_type in self.required_observation_types if required_type not in state
+        ]
 
         if missing_types:
             missing_types_str = ", ".join(missing_types)
-            raise ValueError(f"The returned state from `update` is missing the following required types: {missing_types_str}.")
+            raise ValueError(
+                f"The returned state from `update` is missing the following required types: {missing_types_str}."
+            )
 
     def create_tracklet(self, state: Dict[str, Any]):
         tracklet = Tracklet(max_staleness=self.max_staleness)
@@ -211,7 +222,9 @@ class MultiObjectTracker(ABC):
                 if param_values["type"] == "categorical":
                     params[attribute][param_name] = trial.suggest_categorical(param_name, param_values["values"])
                 elif param_values["type"] == "float":
-                    params[attribute][param_name] = trial.suggest_float(param_name, param_values["low"], param_values["high"])
+                    params[attribute][param_name] = trial.suggest_float(
+                        param_name, param_values["low"], param_values["high"]
+                    )
                 elif param_values["type"] == "logfloat":
                     params[attribute][param_name] = trial.suggest_float(
                         param_name,
@@ -220,7 +233,9 @@ class MultiObjectTracker(ABC):
                         log=True,
                     )
                 elif param_values["type"] == "int":
-                    params[attribute][param_name] = trial.suggest_int(param_name, param_values["low"], param_values["high"])
+                    params[attribute][param_name] = trial.suggest_int(
+                        param_name, param_values["low"], param_values["high"]
+                    )
                 else:
                     raise ValueError(f"Unknown parameter type: {param_values['type']}")
         return params
@@ -242,7 +257,10 @@ class MultiObjectTracker(ABC):
                         logger.debug(f"Setting {param_name} to {param_value} for {attribute}")
                     else:
                         __dict__ = attr_obj.__dict__
-                        raise TypeError(f"Cannot set {param_name=} on {attribute=}, as it is immutable or not in {list(__dict__.keys())}")
+                        raise TypeError(
+                            f"Cannot set {param_name=} on {attribute=}, as it is immutable or not in {list(__dict__.keys())}"
+                        )
+
     def tune_hparams(
         self,
         frames_list,
@@ -310,7 +328,7 @@ class MultiObjectTracker(ABC):
         if pruner is None:
             pruner = optuna.pruners.MedianPruner()
 
-        self.trial_params = [] # Used to store the parameters for each trial
+        self.trial_params = []  # Used to store the parameters for each trial
         study = optuna.create_study(direction="maximize", sampler=sampler, pruner=pruner)
         study.optimize(objective, n_trials=n_trials)
 

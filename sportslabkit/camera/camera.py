@@ -206,7 +206,6 @@ class Camera(VideoReader):
         # TODO: implement this
         raise NotImplementedError
 
-
     def undistort_points(self, points: ArrayLike) -> NDArray[np.float64]:
         """Undistort points with the camera matrix and distortion coefficients.
 
@@ -307,6 +306,7 @@ class Camera(VideoReader):
 
         H, *_ = cv.findHomography(self.source_keypoints, self.target_keypoints, cv.RANSAC, 5.0)
         return H
+
 
 def read_pitch_keypoints(xmlfile: str, annot_type: str) -> Tuple[NDArray[np.float64], NDArray[np.float64]]:
     """Read pitch keypoints from xml file.

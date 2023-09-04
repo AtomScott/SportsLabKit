@@ -94,7 +94,9 @@ class Detections:
             for box in self.preds[:, :4]:
                 f.write(",".join(map(str, box)) + "\n")
 
-    def crop(self, save: bool = True, save_dir: Union[str, Path] = "runs/detect/exp", exist_ok: bool = False) -> List[Image.Image]:
+    def crop(
+        self, save: bool = True, save_dir: Union[str, Path] = "runs/detect/exp", exist_ok: bool = False
+    ) -> List[Image.Image]:
         save_dir = increment_path(save_dir, exist_ok, mkdir=True) if save else None
         images = []
         for box in self.preds[:, :4]:

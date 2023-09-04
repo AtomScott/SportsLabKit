@@ -1,9 +1,9 @@
 import pandas as pd
 
-from .base import SLKMixin
+from .base import BaseSLKDataFrame
 
 
-class GPSDataFrame(SLKMixin, pd.DataFrame):
+class GPSDataFrame(BaseSLKDataFrame, pd.DataFrame):
     @property
     def _constructor(self):
         return GPSDataFrame

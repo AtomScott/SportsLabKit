@@ -60,9 +60,7 @@ def to_mot_eval_format(
     pred_bbdf = pred_bbdf.reindex(range(min_frame, max_frame + 1))
     gt_bbdf = gt_bbdf.reindex(range(min_frame, max_frame + 1))
 
-    assert pred_bbdf.index.equals(
-        gt_bbdf.index
-    ), f"Index mismatch: {pred_bbdf.index} != {gt_bbdf.index}"
+    assert pred_bbdf.index.equals(gt_bbdf.index), f"Index mismatch: {pred_bbdf.index} != {gt_bbdf.index}"
 
     gt_ids, gt_dets = gt_bbdf.preprocess_for_mot_eval()
     pred_ids, pred_dets = pred_bbdf.preprocess_for_mot_eval()
@@ -101,16 +99,11 @@ def to_mot_eval_format(
         data["num_timesteps"] = 0
         return data
 
-    tracker_dets_xyxy = [
-        [convert_to_x1y1x2y2(bbox) for bbox in frame_dets] for frame_dets in pred_dets
-    ]
-    gt_dets_xyxy = [
-        [convert_to_x1y1x2y2(bbox) for bbox in frame_dets] for frame_dets in gt_dets
-    ]
+    tracker_dets_xyxy = [[convert_to_x1y1x2y2(bbox) for bbox in frame_dets] for frame_dets in pred_dets]
+    gt_dets_xyxy = [[convert_to_x1y1x2y2(bbox) for bbox in frame_dets] for frame_dets in gt_dets]
 
     sim_score_list = []
     for i in range(len(gt_ids)):
-
         if len(gt_ids[i]) == 0 or len(pred_ids[i]) == 0:
             sim_score_list.append(np.array([[]]))
         else:

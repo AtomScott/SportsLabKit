@@ -26,6 +26,7 @@ from sportslabkit.logger import logger, tqdm
 
 OmegaConf.register_new_resolver("now", lambda x: datetime.now().strftime(x), replace=True)
 
+
 class HiddenPrints:
     def __enter__(self):
         self._original_stdout = sys.stdout

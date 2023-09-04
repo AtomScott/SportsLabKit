@@ -478,7 +478,9 @@ def map_score(
     classes = sorted(class_list)
     for class_id in classes:
         bboxes_det_per_class = [
-            detection_per_class for detection_per_class in bboxes_det if detection_per_class[CLASS_ID_INDEX] == class_id
+            detection_per_class
+            for detection_per_class in bboxes_det
+            if detection_per_class[CLASS_ID_INDEX] == class_id
         ]
         bboxes_gt_per_class = [
             groundTruth_per_class

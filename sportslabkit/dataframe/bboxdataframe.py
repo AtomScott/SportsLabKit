@@ -13,7 +13,7 @@ from sportslabkit.utils import make_video
 
 from ..logger import logger
 from ..utils import MovieIterator, get_fps
-from .base import SLKMixin
+from .base import BaseSLKDataFrame
 from .coordinatesdataframe import CoordinatesDataFrame
 
 
@@ -62,7 +62,7 @@ def _rgb_to_bgr(color: tuple[int, ...]) -> list[Any]:
     return list(reversed(color))
 
 
-class BBoxDataFrame(SLKMixin, pd.DataFrame):
+class BBoxDataFrame(BaseSLKDataFrame):
     """Bounding box data frame.
 
     Args:
@@ -455,7 +455,12 @@ class BBoxDataFrame(SLKMixin, pd.DataFrame):
         long_df["x"] = pitch_pts[0, :, 0]
         long_df["y"] = pitch_pts[0, :, 1]
 
-        codf = CoordinatesDataFrame(long_df[["x", "y"]].unstack(level=["TeamID", "PlayerID"]).reorder_levels([1, 2, 0], axis=1).sort_index(axis=1))
+        codf = CoordinatesDataFrame(
+            long_df[["x", "y"]]
+            .unstack(level=["TeamID", "PlayerID"])
+            .reorder_levels([1, 2, 0], axis=1)
+            .sort_index(axis=1)
+        )
         return codf
 
     def preprocess_for_mot_eval(self):
@@ -490,7 +495,10 @@ class BBoxDataFrame(SLKMixin, pd.DataFrame):
 
         ids = [list_of_bboxes[:, OBJECT_ID_INDEX].astype("int64") for list_of_bboxes in list_of_list_of_bboxes]
 
-        dets = [list_of_bboxes[:, [X_INDEX, Y_INDEX, W_INDEX, H_INDEX]].astype("int64") for list_of_bboxes in list_of_list_of_bboxes]
+        dets = [
+            list_of_bboxes[:, [X_INDEX, Y_INDEX, W_INDEX, H_INDEX]].astype("int64")
+            for list_of_bboxes in list_of_list_of_bboxes
+        ]
 
         start_frame = self.index.min()
         end_frame = self.index.max()
