@@ -22,6 +22,7 @@ from PIL import Image
 from vidgear.gears import WriteGear
 
 from sportslabkit.logger import logger, tqdm
+from sportslabkit.types.types import _pathlike
 
 
 OmegaConf.register_new_resolver("now", lambda x: datetime.now().strftime(x), replace=True)
@@ -195,7 +196,7 @@ def get_fps(path):
 
 def make_video(
     frames: Iterable[NDArray[np.uint8]],
-    outpath: str,
+    outpath: _pathlike,
     vcodec: str = "libx264",
     pix_fmt: str = "yuv420p",
     preset: str = "medium",

@@ -81,7 +81,7 @@ class BaseMatchingFunction(ABC):
 
     def __call__(
         self, trackers: Sequence[Tracklet], detections: Sequence[Detection], return_cost_matrix: bool = False
-    ) -> np.ndarray:
+    ) -> np.ndarray | tuple[np.ndarray, np.ndarray]:
         """Calculate the matching cost between trackers and detections.
 
         Args:

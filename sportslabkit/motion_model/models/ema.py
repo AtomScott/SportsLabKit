@@ -32,7 +32,9 @@ class ExponentialMovingAverage(BaseMotionModel):
         self._value = None
 
     def predict(
-        self, observations: dict[str, Any], states: dict[str, float | np.ndarray[Any, Any]] = ...,
+        self,
+        observations: dict[str, Any],
+        states: dict[str, float | np.ndarray[Any, Any]] = ...,
     ) -> tuple[np.ndarray[Any, Any], dict[str, float | np.ndarray[Any, Any]]]:
         gamma = self.gamma
 
