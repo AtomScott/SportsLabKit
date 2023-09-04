@@ -38,7 +38,9 @@ jobs:
         git checkout -b bump/$NEW_VERSION
         git push origin bump/$NEW_VERSION
         gh pr create --base develop --head bump/$NEW_VERSION --title "Bump version to $NEW_VERSION" --body "Automated version bump."
-    
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
     - name: Build and publish to Test PyPI
       run: |
         poetry build
