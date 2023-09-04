@@ -10,7 +10,7 @@
         :hidden:
         :glob:
 
-        01_get_started/installation.rst
+        notebooks/01_get_started/installation.ipynb
         notebooks/01_get_started/introduction_to_sportslabkit.ipynb
 
 ..  toctree::
