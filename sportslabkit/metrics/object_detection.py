@@ -142,11 +142,11 @@ def iou_score(bbox_det: list[int], bbox_gt: list[int]) -> float:
 
 
 def iou_scores(
-    bbox_dets: Union[list[int], List[list[int]]],
-    bbox_gts: Union[list[int], List[list[int]]],
+    bbox_dets: list[int] | list[list[int]],
+    bbox_gts: list[int] | list[list[int]],
     xywh: bool = False,
     average: bool = True,
-) -> List[float]:
+) -> list[float]:
     if isinstance(bbox_dets[0], int):
         bbox_dets = [bbox_dets]
         bbox_gts = [bbox_gts]
