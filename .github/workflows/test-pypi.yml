@@ -1,0 +1,53 @@
+name: Bump pre-release and publish to Test PyPI on develop update
+
+on:
+  push:
+    branches:
+      - develop
+    paths-ignore:
+      - 'pyproject.toml'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+
+    - name: Install poetry
+      run: pip install poetry
+
+    - name: Configure Git
+      run: |
+        git config user.name "GitHub Actions"
+        git config user.email "github-actions@github.com"
+
+    - name: Configure Test PyPI and Token
+      run: |
+        poetry config repositories.test-pypi https://test.pypi.org/legacy/
+        poetry config pypi-token.test-pypi ${{ secrets.TEST_PYPI_API_TOKEN }}
+
+    - name: Bump package version and push change
+      run: |
+        poetry version prerelease
+        NEW_VERSION=$(poetry version --short)
+        git add pyproject.toml
+        git commit -m "Bump version to $NEW_VERSION [skip ci]"
+        git push origin develop
+
+    - name: Build and publish to Test PyPI
+      run: |
+        poetry build
+        poetry publish --repository test-pypi
+
+    - name: Sync with GitHub release tag
+      run: |
+        NEW_VERSION=$(poetry version --short)
+        git tag $NEW_VERSION
+        git push origin $NEW_VERSION
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

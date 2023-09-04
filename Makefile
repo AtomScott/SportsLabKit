@@ -1,92 +1,65 @@
-.PHONY: clean data format lint requirements sync_data_to_s3 sync_data_from_s3 show-d
+.ONESHELL:
+.PHONY: clean data lint requirements tests create_environment install_develop develop_tests full_develop_test 
 
 #################################################################################
 # GLOBALS                                                                       #
 #################################################################################
 
-PROJECT_DIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
-BUCKET = [OPTIONAL] your-bucket-for-syncing-data (do not include 's3://')
-PROFILE = default
-PROJECT_NAME = soccertrack
-PYTHON_INTERPRETER = python3
-
-ifeq (,$(shell which conda))
-HAS_CONDA=False
-else
-HAS_CONDA=True
-endif
+PROJECT_NAME = sportslabkit
+SHELL=/bin/bash
+CONDA_ACTIVATE=source $$(conda info --base)/etc/profile.d/conda.sh ; conda activate $(PROJECT_NAME)_dev_env
 
 #################################################################################
 # COMMANDS                                                                      #
 #################################################################################
-
-## Install Python Dependencies
-requirements: test_environment
-	$(PYTHON_INTERPRETER) -m pip install -U pip setuptools wheel
-	$(PYTHON_INTERPRETER) -m pip install -r requirements.txt
-
-## Make Dataset
-data: requirements
-	$(PYTHON_INTERPRETER) src/data/make_dataset.py data/raw data/processed
 
 ## Delete all compiled Python files
 clean:
 	find . -type f -name "*.py[co]" -delete
 	find . -type d -name "__pycache__" -delete
 
+## Lint using ruff
+ruff:
+	$(CONDA_ACTIVATE) && \
+	ruff check $(i)
 
-## format python source code
-format:
-	$(PYTHON_INTERPRETER) -m black src/
-	$(PYTHON_INTERPRETER) -m isort src/
+## Type check using mypy
+mypy:
+	$(CONDA_ACTIVATE) && \
+	mypy $(i)
 
-## Lint using flake8
-lint:
-	flake8 src
+## Check docstrings with pep257
+docstring:
+	$(CONDA_ACTIVATE) && \
+	pep257 $(i)
 
-## Upload Data to S3
-sync_data_to_s3:
-ifeq (default,$(PROFILE))
-	aws s3 sync data/ s3://$(BUCKET)/data/
-else
-	aws s3 sync data/ s3://$(BUCKET)/data/ --profile $(PROFILE)
-endif
+## Run all checks
+all_checks: lint mypy docstring
 
-## Download Data from S3
-sync_data_from_s3:
-ifeq (default,$(PROFILE))
-	aws s3 sync s3://$(BUCKET)/data/ data/
-else
-	aws s3 sync s3://$(BUCKET)/data/ data/ --profile $(PROFILE)
-endif
+## Run tests using pytest
+tests:
+	$(CONDA_ACTIVATE) && pytest --cov=./ --cov-report xml tests
 
-## Set up python interpreter environment
+## Create a conda environment for development
 create_environment:
-ifeq (True,$(HAS_CONDA))
-		@echo ">>> Detected conda, creating conda environment."
-ifeq (3,$(findstring 3,$(PYTHON_INTERPRETER)))
-	conda create --name $(PROJECT_NAME) python=3
-else
-	conda create --name $(PROJECT_NAME) python=2.7
-endif
-		@echo ">>> New conda env created. Activate with:\nsource activate $(PROJECT_NAME)"
-else
-	$(PYTHON_INTERPRETER) -m pip install -q virtualenv virtualenvwrapper
-	@echo ">>> Installing virtualenvwrapper if not already installed.\nMake sure the following lines are in shell startup file\n\
-	export WORKON_HOME=$$HOME/.virtualenvs\nexport PROJECT_HOME=$$HOME/Devel\nsource /usr/local/bin/virtualenvwrapper.sh\n"
-	@bash -c "source `which virtualenvwrapper.sh`;mkvirtualenv $(PROJECT_NAME) --python=$(PYTHON_INTERPRETER)"
-	@echo ">>> New virtualenv created. Activate with:\nworkon $(PROJECT_NAME)"
-endif
+	conda env create --file dev_environment.yaml --name $(PROJECT_NAME)_dev_env
+	$(CONDA_ACTIVATE) && poetry install
 
-## Test python environment is setup correctly
-test_environment:
-	$(PYTHON_INTERPRETER) test_environment.py
+## Update conda environment for development
+update_environment:
+	conda env update --file dev_environment.yaml --name $(PROJECT_NAME)_dev_env
+	$(CONDA_ACTIVATE) && poetry install
 
+## Install package from develop branch
+install_develop:
+	$(CONDA_ACTIVATE) && pip install git+https://github.com/atomscott/sportslabkit.git@develop#egg=sportslabkit --upgrade
 
-#################################################################################
-# PROJECT RULES                                                                 #
-#################################################################################
+## Run tests on develop branch
+develop_tests: install_develop
+	$(CONDA_ACTIVATE) && python -m pytest --cov=./ --cov-report xml tests
 
+## Full test cycle on develop branch
+full_develop_test: create_environment install_develop develop_tests
 
 
 #################################################################################
@@ -149,25 +122,3 @@ help:
 		printf "\n"; \
 	}' \
 	| more $(shell test $(shell uname) = Darwin && echo '--no-init --raw-control-chars')
-
-#################################################################################
-# Docker                                                     #
-#################################################################################
-
-.PHONY: docker
-docker:
-	docker build -t atomscott/soccertrack:latest . --no-cache
-	docker run -t atomscott/soccertrack:latest echo "atomscott/soccertrack done"
-
-.PHONY: docker-push
-docker-push:
-	docker login
-	docker push atomscott/soccertrack:latest
-
-
-#################################################################################
-# Singularity                                                     #
-#################################################################################
-.PHONY: singularity-pull
-singularity-pull:
-	singularity pull docker://atomscott/soccertrack:latest
