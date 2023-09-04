@@ -6,7 +6,10 @@ import numpy as np
 try:
     from ultralytics import YOLO
 except ImportError:
-    print("The ultralytics module is not installed. Please install it using the following command:\n" "pip install ultralytics")
+    print(
+        "The ultralytics module is not installed. Please install it using the following command:\n"
+        "pip install ultralytics"
+    )
 
 from sportslabkit.detection_model.base import BaseDetectionModel
 
@@ -138,4 +141,6 @@ class YOLOv8x(YOLOv8):
         verbose: bool = False,
         augment: bool = False,
     ):
-        super().__init__(model, agnostic_nms, multi_label, classes, max_det, amp, imgsz, conf, iou, device, verbose, augment)
+        super().__init__(
+            model, agnostic_nms, multi_label, classes, max_det, amp, imgsz, conf, iou, device, verbose, augment
+        )

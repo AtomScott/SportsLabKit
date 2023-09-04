@@ -1,9 +1,10 @@
 from typing import Union
 
+from pandas import DataFrame
 from pandas._typing import FilePath, WriteBuffer
 
 
-class SLKMixin(object):
+class BaseSLKDataFrame(DataFrame):
     def save_dataframe(
         self,
         path_or_buf: Union[FilePath, WriteBuffer[bytes], WriteBuffer[str]],
@@ -56,6 +57,7 @@ class SLKMixin(object):
             apply_func (function, optional): Function to apply to each group. Defaults to None.
         """
         if apply_func is None:
+
             def apply_func(x):
                 return x
 
@@ -70,8 +72,10 @@ class SLKMixin(object):
             drop (bool, optional): Drop the level of the dataframe. Defaults to True.
         """
         if apply_func is None:
+
             def apply_func(x):
                 return x
+
         for index, group in self.groupby(level=("TeamID", "PlayerID"), axis=1):
             if drop:
                 yield index, apply_func(group.droplevel(level=("TeamID", "PlayerID"), axis=1))
@@ -86,8 +90,10 @@ class SLKMixin(object):
             drop (bool, optional): Drop the level of the dataframe. Defaults to True.
         """
         if apply_func is None:
+
             def apply_func(x):
                 return x
+
         for index, group in self.groupby(level="TeamID", axis=1):
             if drop:
                 yield index, apply_func(group.droplevel(level=("TeamID"), axis=1))
@@ -102,8 +108,10 @@ class SLKMixin(object):
             drop (bool, optional): Drop the level of the dataframe. Defaults to True.
         """
         if apply_func is None:
+
             def apply_func(x):
                 return x
+
         for index, group in self.groupby(level="Attributes", axis=1):
             if drop:
                 yield index, apply_func(group.droplevel(level=("Attributes"), axis=1))

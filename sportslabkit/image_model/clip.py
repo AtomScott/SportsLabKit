@@ -14,7 +14,12 @@ from sportslabkit.image_model.base import BaseImageModel
 
 
 class BaseCLIP(BaseImageModel):
-    def __init__(self, name: str = "RN50", device: str = "cpu", image_size: tuple[int, int] = (224, 224),):
+    def __init__(
+        self,
+        name: str = "RN50",
+        device: str = "cpu",
+        image_size: tuple[int, int] = (224, 224),
+    ):
         """
         Initializes the base image embedding model.
 
@@ -58,7 +63,6 @@ class CLIP_RN50(BaseCLIP):
         image_size: tuple[int, int] = (224, 224),
     ):
         super().__init__(name, device, image_size)
-
 
 
 class CLIP_RN101(BaseCLIP):

@@ -45,7 +45,7 @@ follow_imports = "skip"
 strict_optional = true
 
 [tool.pep257]
-ignore = ["D101", "D105", "D200", "D202", "D411", "D213", "D413", "D406", "D407"]
+ignore = ["D100", "D101", "D105", "D200", "D202", "D411", "D213", "D413", "D406", "D407"]
 add_ignore = ["D102", "D103"]
 
 [tool.pytest.ini_options]
@@ -101,14 +101,16 @@ gdown = "^4.7.1"
 
 [tool.poetry.group.dev.dependencies]
 python-semantic-release = "^8.0.6"
+mypy = "^1.5.1"
 ruff = "^0.0.287"
 papermill = "^2.4.0"
 pytest-xdist = "^3.3.1"
-mypy = "^0.960"
 pytest = "^7.1.2"
 jupyter = "^1.0.0"
 ipywidgets = "^8.0.4"
+no-implicit-optional = "^1.4"
 pip = "*"
+black = "^23.7.0"
 
 [tool.poetry.group.extras.dependencies]
 clip = {git = "https://github.com/openai/CLIP.git"}

@@ -1,3 +1,5 @@
+from typing import Optional
+
 from sportslabkit.logger import logger
 from sportslabkit.matching import SimpleMatchingFunction
 from sportslabkit.metrics import IoUCMM
@@ -16,9 +18,9 @@ class SORTTracker(MultiObjectTracker):
         self,
         detection_model,
         motion_model,
-        matching_fn: SimpleMatchingFunction = SimpleMatchingFunction(metric = IoUCMM(use_pred_box=True), gate=1.0),
+        matching_fn: SimpleMatchingFunction = SimpleMatchingFunction(metric=IoUCMM(use_pred_box=True), gate=1.0),
         window_size: int = 1,
-        step_size: int = None,
+        step_size: Optional[int] = None,
         max_staleness: int = 5,
         min_length: int = 5,
     ):
@@ -66,7 +68,9 @@ class SORTTracker(MultiObjectTracker):
         for match in matches:
             track_idx, det_idx = match[0], match[1]
             tracklet = tracklets[track_idx]
-            logger.debug(f"track_idx: {track_idx}, det_idx: {det_idx}, cost: {cost_matrix[track_idx, det_idx]}, track staleness: {tracklet.get_state('staleness')}")
+            logger.debug(
+                f"track_idx: {track_idx}, det_idx: {det_idx}, cost: {cost_matrix[track_idx, det_idx]}, track staleness: {tracklet.get_state('staleness')}"
+            )
 
             new_observation = {
                 "box": detections[det_idx].box,

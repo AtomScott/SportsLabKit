@@ -1,11 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Tuple, Type, Union
 
-import matplotlib.pyplot as plt
 import numpy as np
-import pytorch_lightning as pl
-import torch
-from torchmetrics.functional import mean_squared_error
 
 from sportslabkit import Tracklet
 
@@ -27,7 +23,6 @@ class BaseMotionModel(ABC):
         self.input_is_batched = False  # initialize the input_is_batched attribute
         self.name = self.__class__.__name__
         self.is_multi_target = is_multi_target
-
 
     def __call__(self, tracklet: Tracklet) -> Any:
         """Call the motion model to update its state and return the prediction.
@@ -77,17 +72,10 @@ class BaseMotionModel(ABC):
             all_observations.append(observations)
             all_states.append(tracklet.states)
 
-        all_predictions, all_new_states =  self.predict(all_observations, all_states)
+        all_predictions, all_new_states = self.predict(all_observations, all_states)
         for i, tracklet in enumerate(tracklets):
             tracklet.update_states(all_new_states[i])
         return all_predictions
-    # def update(self, observations: Dict[str, Any], states: Dict[str, Any]) -> None:
-    #     """Update the motion model's internal state.
-
-    #     Args:
-    #         observations (Dict[str, Any]): The observations to update the motion model with.
-    #         states (Dict[str, Any]): The states to update the motion model with.
-    #     """
 
     @abstractmethod
     def predict(
@@ -145,126 +133,3 @@ class BaseMotionModel(ABC):
         for state in self.required_state_types:
             if state not in tracklet._states:
                 tracklet.register_state_type(state)
-
-
-class BaseMotionModule(pl.LightningModule):
-    def __init__(self, model, learning_rate=1e-3, roll_out_steps=10, single_agent=False):
-        super().__init__()
-        self.model = model
-
-        self.learning_rate = learning_rate
-        self.roll_out_steps = roll_out_steps
-        self.single_agent = single_agent
-
-    def forward(self, x):
-        return self.model(x)
-
-    def roll_out(self, x, n_steps=None, y_gt=None):
-        n_steps = n_steps or self.roll_out_steps
-        return self.model.roll_out(x, n_steps, y_gt=y_gt)
-
-    def compute_loss(self, y_gt, y_pred):
-        mse = mean_squared_error(y_pred, y_gt)
-        rmse = torch.sqrt(mse)
-        return rmse
-
-    def compute_eval_metrics(self, y_gt, y_pred):
-        # calculate the mean absolute error at first step, 10%, 50% and 100% of the trajectory
-        total_steps = self.roll_out_steps
-        eval_steps = [
-            0,
-            int(0.1 * total_steps),
-            int(0.5 * total_steps),
-            total_steps - 1,
-        ]
-        eval_step_names = ["first_step", "10pct", "50pct", "100pct"]
-        eval_metrics = {}
-        for step, name in zip(eval_steps, eval_step_names):
-            rmse = torch.sqrt(mean_squared_error(y_pred[:, step], y_gt[:, step]))
-            eval_metrics[f"rmse_{name}"] = rmse
-        return eval_metrics
-
-    def training_step(self, batch, batch_idx):
-        x, y = batch
-        # use ground truth to roll out (teacher forcing)
-        y_pred = self.roll_out(x, y_gt=y)
-        loss = self.compute_loss(y_gt=y, y_pred=y_pred)
-        return loss
-
-    def validation_step(self, batch, batch_idx):
-        x, y = batch
-        y_pred = self.roll_out(x)
-        loss = self.compute_loss(y_gt=y, y_pred=y_pred)
-        self.log("val_loss", loss, prog_bar=True)
-        if batch_idx == 0:
-            x = x.detach().cpu().numpy()
-            y = y.detach().cpu().numpy()
-            y_pred = y_pred.detach().cpu().numpy()
-
-            # plot a trajectory from the first batch
-            self.plot_trajectory(x[0], y[0], y_pred[0])
-
-            # plot a histogram of the displacements
-            y_displacements = y[:, 1:] - y[:, :-1]
-            y_pred_displacements = y_pred[:, 1:] - y_pred[:, :-1]
-
-            y_displacements_x = y_displacements[:, :, 0].flatten()
-            y_displacements_y = y_displacements[:, :, 1].flatten()
-
-            y_pred_displacements_x = y_pred_displacements[:, :, 0].flatten()
-            y_pred_displacements_y = y_pred_displacements[:, :, 1].flatten()
-            self.plot_histogram(y_displacements_x, y_pred_displacements_x, "x")
-            self.plot_histogram(y_displacements_y, y_pred_displacements_y, "y")
-
-    def test_step(self, batch, batch_idx):
-        x, y = batch
-        y_pred = self.roll_out(x)
-        eval_metrics = self.compute_eval_metrics(y_gt=y, y_pred=y_pred)
-
-        for name, value in eval_metrics.items():
-            self.log(name, value, prog_bar=False)
-
-    def plot_trajectory(self, x, y, y_pred):
-        current_epoch = self.current_epoch
-        title = f"Trajectory at epoch {current_epoch}"
-        plt.figure(figsize=(10, 10))
-
-        if self.single_agent:
-            plt.scatter(x[:, 0], x[:, 1], label="input")
-            plt.scatter(y[:, 0], y[:, 1], label="ground truth")
-            plt.scatter(y_pred[:, 0], y_pred[:, 1], label="prediction")
-        else:
-            plt.scatter(x[:, :, 0], x[:, :, 1], label="input")
-            plt.scatter(y[:, :, 0], y[:, :, 1], label="ground truth")
-            plt.scatter(y_pred[:, :, 0], y_pred[:, :, 1], label="prediction")
-        plt.title(title)
-        plt.legend()
-        self.logger.experiment.add_figure("trajectory", plt.gcf(), current_epoch)
-        plt.close("all")
-
-    def plot_histogram(self, y_displacements, y_pred_displacements, tag):
-        current_epoch = self.current_epoch
-
-        bins = np.linspace(-1, 1, 300)
-        title = f"{tag} displacements at epoch {current_epoch}"
-        plt.figure(figsize=(10, 10))
-        plt.hist(y_displacements, label="ground truth", bins=bins)
-        plt.hist(y_pred_displacements, label="prediction", bins=bins)
-        plt.title(title)
-        plt.legend()
-        self.logger.experiment.add_figure("displacements", plt.gcf(), current_epoch)
-        plt.close("all")
-
-    def configure_optimizers(self):
-        optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate)
-        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode="min", factor=0.3, patience=10, min_lr=1e-6)
-        monitor = "val_loss"  # Specify the metric to monitor
-        return {"optimizer": optimizer, "lr_scheduler": scheduler, "monitor": monitor}
-
-    @property
-    def required_observation_types(self):
-        return []
-
-    @property
-    def required_state_types(self):
-        return ["pitch_coordinates"]

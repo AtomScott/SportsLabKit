@@ -1,3 +1,5 @@
+from typing import Optional
+
 from sportslabkit.logger import logger
 from sportslabkit.matching import MotionVisualMatchingFunction, SimpleMatchingFunction
 from sportslabkit.metrics import CosineCMM, IoUCMM
@@ -12,7 +14,7 @@ class BYTETracker(MultiObjectTracker):
         detection_model=None,
         image_model=None,
         motion_model=None,
-        first_matching_fn: MotionVisualMatchingFunction=MotionVisualMatchingFunction(
+        first_matching_fn: MotionVisualMatchingFunction = MotionVisualMatchingFunction(
             motion_metric=IoUCMM(use_pred_box=True),
             motion_metric_gate=0.2,
             visual_metric=CosineCMM(),
@@ -25,7 +27,7 @@ class BYTETracker(MultiObjectTracker):
         ),
         detection_score_threshold=0.6,
         window_size: int = 1,
-        step_size: int = None,
+        step_size: Optional[int] = None,
         max_staleness: int = 5,
         min_length: int = 5,
     ):
@@ -121,7 +123,9 @@ class BYTETracker(MultiObjectTracker):
         ##############################
 
         # Second association between unassigned tracklets and low confidence detections
-        matches_second, cost_matrix_second = self.second_matching_fn(unassigned_tracklets, low_confidence_detections, True)
+        matches_second, cost_matrix_second = self.second_matching_fn(
+            unassigned_tracklets, low_confidence_detections, True
+        )
 
         # [Second] assigned tracklets: update
         for match in matches_second:

@@ -10,7 +10,6 @@ from typing import (
     Optional,
     Sequence,
     Tuple,
-    Union,
 )
 from xml.etree import ElementTree
 
@@ -18,9 +17,10 @@ import cv2 as cv
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
 
+from sportslabkit.camera.calibrate import find_intrinsic_camera_parameters
 from sportslabkit.camera.videoreader import VideoReader
 from sportslabkit.types.types import _pathlike
-from sportslabkit.utils import logger, make_video, tqdm
+from sportslabkit.utils import logger
 
 
 class Camera(VideoReader):
@@ -166,37 +166,13 @@ class Camera(VideoReader):
             NDArray: frame of video.
         """
         frames = []
-        for frame in cam:
+        for frame in self:
             frames.append(frame)
             if len(frames) == batch_size:
                 yield np.stack(frames)
                 frames = []
         if len(frames) > 0:
             yield np.stack(frames)
-
-    # def movie_iterator(
-    #     self, calibrate: bool = True, crop: bool = True
-    # ) -> Generator[NDArray, None, None]:
-    #     """Create a movie iterator.
-
-    #     Args:
-    #         calibrate (bool, optional): Option to calibrate frames. Defaults to False.
-
-    #     Yields:
-    #         Generator[NDArray]: frames of video.
-
-    #     """
-    #     if not calibrate:
-    #         for i, frame in enumerate(self.iter_frames()):
-    #             yield frame
-
-    #     for i, frame in enumerate(self.iter_frames()):
-    #         frame = self.undistort_image(frame)
-    #         if crop:
-    #             x1, y1, x2, y2 = self.roi
-    #             yield frame[y1:y2, x1:x2]
-    #         else:
-    #             yield frame
 
     def video2pitch(self, pts: ArrayLike) -> NDArray[np.float64]:
         """Convert image coordinates to pitch coordinates.
@@ -229,96 +205,6 @@ class Camera(VideoReader):
         """
         # TODO: implement this
         raise NotImplementedError
-
-    # def save_calibrated_video(
-    #     self,
-    #     save_path: str,
-    #     plot_pitch_keypoints: bool = True,
-    #     crop: bool = True,
-    #     **kwargs,
-    # ) -> None:
-    #     """Save a video with undistorted frames.
-
-    #     Args:
-    #         save_path (str): path to save video.
-
-    #     Note:
-    #         See utils.make_video for available kwargs.
-
-    #     """
-    #     movie_iterator = (
-    #         self.undistort_image(frame) for frame in
-    #     )
-    #     make_video(movie_iterator, outpath=save_path, **kwargs)
-
-    #     if not calibrate:
-    #         for i, frame in enumerate(self.iter_frames()):
-    #             yield frame
-
-    #     for i, frame in enumerate(self.iter_frames()):
-    #         frame = self.undistort_image(frame)
-    #         if crop:
-    #             x1, y1, x2, y2 = self.roi
-    #             yield frame[y1:y2, x1:x2]
-    #         else:
-    #             yield frame
-
-    def visualize_candidate_detections(
-        self,
-        candidate_detections: Dict[int, List],
-        save_path: str,
-        plot_pitch_keypoints: bool = True,
-        calibrate: bool = True,
-        filter_range: bool = True,
-        frames: Union[int, str] = "all",
-        crop: bool = False,
-        **kwargs,
-    ) -> None:
-        """Visualize candidate detections.
-
-        Args:
-            candidate_detections (Dict[int, List[CandidateDetection]]): dictionary of candidate detections.
-            save_path (str): path to save video.
-            plot_pitch_keypoints (bool): Option to plot pitch keypoints. Defaults to False.
-            calibrate (bool): Option to calibrate frames. Defaults to True.
-
-        Note:
-            kwargs are passed to `make_video`, so it is recommended that you refere to the documentation for `make_video`.
-        """
-        movie_iterator = self.movie_iterator(calibrate=calibrate, crop=crop)
-
-        output_frames = []
-        for i, frame in tqdm(enumerate(movie_iterator), level="DEBUG", desc="Sorting frames"):
-            if isinstance(frames, int):
-                if i > frames:
-                    break
-            if i not in candidate_detections:
-                continue
-
-            for candidate_detection in candidate_detections[i]:
-                if filter_range:
-                    if not candidate_detection.in_range:
-                        continue
-                if self.label != candidate_detection.camera.label:
-                    continue
-                x1, y1, x2, y2 = list(
-                    map(
-                        int,
-                        candidate_detection.get_absolute_bounding_box(BBFormat.XYX2Y2),
-                    )
-                )
-
-                cv.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
-
-            if plot_pitch_keypoints:
-                for pitch_keypoint in self.source_keypoints:
-                    cv.circle(frame, pitch_keypoint.astype(int), 1, (0, 0, 255), -1)
-            output_frames.append(frame)
-
-        if len(output_frames) == 0:
-            logger.error("No frames to save, exiting")
-        else:
-            make_video(output_frames, save_path, **kwargs)
 
     def undistort_points(self, points: ArrayLike) -> NDArray[np.float64]:
         """Undistort points with the camera matrix and distortion coefficients.
@@ -420,39 +306,6 @@ class Camera(VideoReader):
 
         H, *_ = cv.findHomography(self.source_keypoints, self.target_keypoints, cv.RANSAC, 5.0)
         return H
-
-    # @property
-    # def roi(self) -> Tuple[int, int, int, int]:
-    #     if self.keypoint_map is None:
-    #         return 0, 0, self.w, self.h
-    #     elif self.calibration_method == "zhang":
-    #         dim = (self.w, self.h)
-    #         K = self.camera_matrix
-    #         D = self.distortion_coefficients
-    #         _, (x1, y1, w, h) = cv.getOptimalNewCameraMatrix(K, D, dim, 1, dim)
-    #         return x1, y1, x1 + w, y1 + h
-    #     else:
-    #         keypoint_map = self.keypoint_map
-    #         source_keypoints = self.source_keypoints
-
-    #         _cx = sum(self.x_range) / 2
-    #         _cy = sum(self.y_range) / 2
-
-    #         if (_cx, _cy) in keypoint_map:
-    #             cx, cy = keypoint_map[(_cx, _cy)]
-    #         else:
-    #             cx, cy = self.pitch2video((_cx, _cy))
-    #         width = source_keypoints[:, 0].max() - source_keypoints[:, 0].min()
-    #         height = source_keypoints[:, 1].max() - source_keypoints[:, 1].min()
-
-    #         width *= 1.5
-    #         height = width * (9 / 16)  # use 16:9 aspect ratio
-
-    #         x1 = cx - width / 2
-    #         y1 = cy - height / 2
-    #         x2 = cx + width / 2
-    #         y2 = cy + height / 2
-    #         return int(x1), int(y1), int(x2), int(y2)
 
 
 def read_pitch_keypoints(xmlfile: str, annot_type: str) -> Tuple[NDArray[np.float64], NDArray[np.float64]]:

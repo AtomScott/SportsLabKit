@@ -114,7 +114,7 @@ def simulate_moving_object(
             box_size,
         ]
 
-        det = Detection(box=noisy_box, score=score, class_id=class_id)
+        det: Detection = Detection(box=noisy_box, score=score, class_id=class_id)
         detections.append(det)
 
         ground_truth_positions.append(box)
@@ -130,8 +130,8 @@ def simulate_moving_objects(
     box_size: int = 25,
     frame_drop_rate: float = 0.1,
 ):
-    all_detections = [[] for _ in range(num_frames)]
-    all_gt_positions = [[] for _ in range(num_frames)]
+    all_detections: list[list[Detection]] = [[] for _ in range(num_frames)]
+    all_gt_positions: list[list[list[int]]] = [[] for _ in range(num_frames)]
 
     for obj in range(num_objects):
         # randomly sample the object x and y coordinates

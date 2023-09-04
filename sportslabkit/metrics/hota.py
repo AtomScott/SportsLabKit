@@ -73,9 +73,7 @@ def hota_score(bboxes_track: BBoxDataFrame, bboxes_gt: BBoxDataFrame) -> dict[st
         return res
 
     if data["num_gt_dets"] == 0:
-        res["HOTA_FP"] = data["num_tracker_dets"] * np.ones(
-            (len(array_labels)), dtype=float
-        )
+        res["HOTA_FP"] = data["num_tracker_dets"] * np.ones((len(array_labels)), dtype=float)
         res["LocA"] = np.ones((len(array_labels)), dtype=float)
         res["LocA(0)"] = 1.0
         # Calculate final scores
@@ -91,22 +89,15 @@ def hota_score(bboxes_track: BBoxDataFrame, bboxes_gt: BBoxDataFrame) -> dict[st
     for t, (gt_ids_t, tracker_ids_t, gt_det_t, tracker_det_t) in enumerate(
         zip(data["gt_ids"], data["tracker_ids"], data["gt_dets"], data["tracker_dets"])
     ):
-
         # Count the potential matches between ids in each timestep
         # These are normalised, weighted by the match similarity.
         similarity = data["similarity_scores"][t]
-        sim_iou_denom = (
-            similarity.sum(0)[np.newaxis, :]
-            + similarity.sum(1)[:, np.newaxis]
-            - similarity
-        )
+        sim_iou_denom = similarity.sum(0)[np.newaxis, :] + similarity.sum(1)[:, np.newaxis] - similarity
 
         if similarity.size:
             sim_iou = np.zeros_like(similarity)
             sim_iou_mask = sim_iou_denom > 0 + np.finfo("float").eps
-            sim_iou[sim_iou_mask] = (
-                similarity[sim_iou_mask] / sim_iou_denom[sim_iou_mask]
-            )
+            sim_iou[sim_iou_mask] = similarity[sim_iou_mask] / sim_iou_denom[sim_iou_mask]
 
             potential_matches_count[
                 # Use list to allow for empty arrays
@@ -115,24 +106,16 @@ def hota_score(bboxes_track: BBoxDataFrame, bboxes_gt: BBoxDataFrame) -> dict[st
             ] += sim_iou
 
         # Calculate the total number of dets for each gt_id and tracker_id.
-        count = np.array(
-            [[0 if row[0] == -1 else 1 for _, row in enumerate(gt_det_t)]]
-        ).T
+        count = np.array([[0 if row[0] == -1 else 1 for _, row in enumerate(gt_det_t)]]).T
         gt_id_count[list(gt_ids_t)] += list(count)
-        tracker_id_count[0, list(tracker_ids_t)] += [
-            0 if row[0] == -1 else 1 for _, row in enumerate(tracker_det_t)
-        ]
+        tracker_id_count[0, list(tracker_ids_t)] += [0 if row[0] == -1 else 1 for _, row in enumerate(tracker_det_t)]
 
     # Calculate overall jaccard alignment score (before unique matching) between IDs
-    global_alignment_score = potential_matches_count / (
-        gt_id_count + tracker_id_count - potential_matches_count
-    )
+    global_alignment_score = potential_matches_count / (gt_id_count + tracker_id_count - potential_matches_count)
     matches_counts = [np.zeros_like(potential_matches_count) for _ in array_labels]
 
     # Calculate scores for each timestep
-    for t, (gt_ids_t, tracker_ids_t) in enumerate(
-        zip(data["gt_ids"], data["tracker_ids"])
-    ):
+    for t, (gt_ids_t, tracker_ids_t) in enumerate(zip(data["gt_ids"], data["tracker_ids"])):
         # Deal with the case that there are no gt_det/tracker_det in a timestep.
         if len(gt_ids_t) == 0:
             for a, alpha in enumerate(array_labels):
@@ -145,20 +128,13 @@ def hota_score(bboxes_track: BBoxDataFrame, bboxes_gt: BBoxDataFrame) -> dict[st
 
         # Get matching scores between pairs of dets for optimizing HOTA
         similarity = data["similarity_scores"][t]
-        score_mat = (
-            global_alignment_score[
-                gt_ids_t[:, np.newaxis], tracker_ids_t[np.newaxis, :]
-            ]
-            * similarity
-        )
+        score_mat = global_alignment_score[gt_ids_t[:, np.newaxis], tracker_ids_t[np.newaxis, :]] * similarity
         # Hungarian algorithm to find best matches
         match_rows, match_cols = linear_sum_assignment(-score_mat)
 
         # Calculate and accumulate basic statistics
         for a, alpha in enumerate(array_labels):
-            actually_matched_mask = (
-                similarity[match_rows, match_cols] >= alpha - np.finfo("float").eps
-            )
+            actually_matched_mask = similarity[match_rows, match_cols] >= alpha - np.finfo("float").eps
             alpha_match_rows = match_rows[actually_matched_mask]
             alpha_match_cols = match_cols[actually_matched_mask]
             num_matches = len(alpha_match_rows)
@@ -167,26 +143,18 @@ def hota_score(bboxes_track: BBoxDataFrame, bboxes_gt: BBoxDataFrame) -> dict[st
             res["HOTA_FP"][a] += len(tracker_ids_t) - num_matches
             if num_matches > 0:
                 res["LocA"][a] += sum(similarity[alpha_match_rows, alpha_match_cols])
-                matches_counts[a][
-                    gt_ids_t[alpha_match_rows], tracker_ids_t[alpha_match_cols]
-                ] += 1
+                matches_counts[a][gt_ids_t[alpha_match_rows], tracker_ids_t[alpha_match_cols]] += 1
 
     # Calculate association scores (AssA, AssRe, AssPr) for the alpha value.
     # First calculate scores per gt_id/tracker_id combo and then average over the number of detections.
     for a, alpha in enumerate(array_labels):
         matches_count = matches_counts[a]
-        matches_count / np.maximum(
-            1, gt_id_count + tracker_id_count - matches_count
-        )
+        matches_count / np.maximum(1, gt_id_count + tracker_id_count - matches_count)
 
         ass_re = matches_count / np.maximum(1, gt_id_count)
-        res["AssRe"][a] = np.sum(matches_count * ass_re) / np.maximum(
-            1, res["HOTA_TP"][a]
-        )
+        res["AssRe"][a] = np.sum(matches_count * ass_re) / np.maximum(1, res["HOTA_TP"][a])
         ass_pr = matches_count / np.maximum(1, tracker_id_count)
-        res["AssPr"][a] = np.sum(matches_count * ass_pr) / np.maximum(
-            1, res["HOTA_TP"][a]
-        )
+        res["AssPr"][a] = np.sum(matches_count * ass_pr) / np.maximum(1, res["HOTA_TP"][a])
         res["AssA"][a] = (res["AssRe"][a] * res["AssPr"][a]) / np.maximum(
             1e-10,
             (res["AssRe"][a] + res["AssPr"][a]) - (res["AssRe"][a] * res["AssPr"][a]),
@@ -195,20 +163,14 @@ def hota_score(bboxes_track: BBoxDataFrame, bboxes_gt: BBoxDataFrame) -> dict[st
     # Calculate scores for each alpha value
     # At First, Subtract the tracks with missing data from the entire track data of the track being tracked.
     # This is to adjust the number of FPs.
-    num_attibutes_per_bbox = (
-        5  # The number of attributes for each object in the BBoxDataframe.
-    )
+    num_attibutes_per_bbox = 5  # The number of attributes for each object in the BBoxDataframe.
     # ([bb_left, bb_top, bb_width, bb_height, conf])
-    num_lacked_tracks = int(
-        (bboxes_track == -1.0).values.sum() / num_attibutes_per_bbox
-    )
+    num_lacked_tracks = int((bboxes_track == -1.0).values.sum() / num_attibutes_per_bbox)
     res["HOTA_FP"] = res["HOTA_FP"] - num_lacked_tracks
     res["LocA"] = np.maximum(1e-10, res["LocA"]) / np.maximum(1e-10, res["HOTA_TP"])
     res["DetRe"] = res["HOTA_TP"] / np.maximum(1, res["HOTA_TP"] + res["HOTA_FN"])
     res["DetPr"] = res["HOTA_TP"] / np.maximum(1, res["HOTA_TP"] + res["HOTA_FP"])
-    res["DetA"] = res["HOTA_TP"] / np.maximum(
-        1, res["HOTA_TP"] + res["HOTA_FN"] + res["HOTA_FP"]
-    )
+    res["DetA"] = res["HOTA_TP"] / np.maximum(1, res["HOTA_TP"] + res["HOTA_FN"] + res["HOTA_FP"])
     res["HOTA"] = np.sqrt(res["DetA"] * res["AssA"])
     res["RHOTA"] = np.sqrt(res["DetRe"] * res["AssA"])
     res["HOTA(0)"] = np.sqrt(res["DetA"] * res["AssA"])[0]

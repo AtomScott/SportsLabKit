@@ -111,12 +111,8 @@ def load_gpsports(
     )
 
     # Change single column to multi-column
-    gpsports_dataframe = CoordinatesDataFrame(
-        raw_df.values, index=raw_df.index, columns=idx
-    )
-    gpsports_dataframe.index = gpsports_dataframe.index.map(
-        lambda x: x.time()
-    )  # remove date
+    gpsports_dataframe = CoordinatesDataFrame(raw_df.values, index=raw_df.index, columns=idx)
+    gpsports_dataframe.index = gpsports_dataframe.index.map(lambda x: x.time())  # remove date
     return gpsports_dataframe
 
 
@@ -151,9 +147,7 @@ def load_statsports(
     )
 
     # change multicolumn
-    statsports_dataframe = CoordinatesDataFrame(
-        raw_df.values, index=raw_df.index, columns=idx
-    )
+    statsports_dataframe = CoordinatesDataFrame(raw_df.values, index=raw_df.index, columns=idx)
     statsports_dataframe.index = statsports_dataframe.index.map(lambda x: x.time())
 
     return statsports_dataframe
@@ -260,9 +254,7 @@ def load_codf(
 
 def load_gps(
     filenames: Union[
-        Sequence[
-            _pathlike,
-        ],
+        Sequence[_pathlike,],
         _pathlike,
     ],
     playerids: Union[Sequence[int], int] = (),
@@ -291,9 +283,7 @@ def load_gps(
         teamids = [teamids]
 
     df_list = []
-    for i, (filename, playerid, teamid) in enumerate(
-        zip_longest(filenames, playerids, teamids)
-    ):
+    for i, (filename, playerid, teamid) in enumerate(zip_longest(filenames, playerids, teamids)):
         playerid = playerid if playerid is not None else i
         gps_format = infer_gps_format(filename)
         dataframe = get_gps_loader(gps_format)(filename, playerid, teamid)
@@ -302,9 +292,7 @@ def load_gps(
         playerid += 1  # TODO: これではyamlから読み込むことができない
 
     merged_dataframe = df_list[0].join(df_list[1 : len(df_list)])  # これができるのは知らなかった
-    merged_dataframe = (
-        merged_dataframe.sort_index().interpolate()
-    )  # 暗黙的にinterpolateするのが正解なのか？
+    merged_dataframe = merged_dataframe.sort_index().interpolate()  # 暗黙的にinterpolateするのが正解なのか？
 
     merged_dataframe = df_list[0].join(df_list[1 : len(df_list)])
     merged_dataframe = merged_dataframe.sort_index().interpolate()
@@ -392,9 +380,7 @@ def load_labelbox(filename: _pathlike) -> CoordinatesDataFrame:
         df_list.append(bbox_df)
 
     merged_dataframe = df_list[0].join(df_list[1 : len(df_list)])  # これができるのは知らなかった
-    merged_dataframe = (
-        merged_dataframe.sort_index().interpolate()
-    )  # 暗黙的にinterpolateするのが正解なのか？
+    merged_dataframe = merged_dataframe.sort_index().interpolate()  # 暗黙的にinterpolateするのが正解なのか？
 
     return merged_dataframe
 
@@ -414,9 +400,7 @@ def load_mot(filename: _pathlike) -> CoordinatesDataFrame:
         Lat(float): GPSの緯度
         Lon(float): GPSの経度
     """
-    groups = pd.read_csv(filename, usecols=[0, 1, 2, 3, 4, 5], index_col=0).groupby(
-        "id"
-    )
+    groups = pd.read_csv(filename, usecols=[0, 1, 2, 3, 4, 5], index_col=0).groupby("id")
 
     teamid = 0
     # playerid = 0
@@ -441,9 +425,7 @@ def load_mot(filename: _pathlike) -> CoordinatesDataFrame:
         df_list.append(bbox_df)
 
     merged_dataframe = df_list[0].join(df_list[1 : len(df_list)])  # これができるのは知らなかった
-    merged_dataframe = (
-        merged_dataframe.sort_index().interpolate()
-    )  # 暗黙的にinterpolateするのが正解なのか？
+    merged_dataframe = merged_dataframe.sort_index().interpolate()  # 暗黙的にinterpolateするのが正解なのか？
 
     merged_dataframe = df_list[0].join(df_list[1 : len(df_list)])
     merged_dataframe = merged_dataframe.sort_index().interpolate()
@@ -572,9 +554,7 @@ def load_bbox(filename: _pathlike) -> BBoxDataFrame:
     return df
 
 
-def load_df(
-    filename: _pathlike, df_type: str = "bbox"
-) -> Union[BBoxDataFrame, CoordinatesDataFrame]:
+def load_df(filename: _pathlike, df_type: str = "bbox") -> Union[BBoxDataFrame, CoordinatesDataFrame]:
     """Loads either a BBoxDataFrame or a CoordinatesDataFrame from a file.
 
     Args:
@@ -589,9 +569,7 @@ def load_df(
     elif df_type == "coordinates":
         df = load_codf(filename)
     else:
-        raise ValueError(
-            f"Unknown dataframe type {df_type}, must be 'bbox' or 'coordinates'"
-        )
+        raise ValueError(f"Unknown dataframe type {df_type}, must be 'bbox' or 'coordinates'")
 
     return df
 

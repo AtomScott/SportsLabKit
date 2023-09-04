@@ -19,7 +19,7 @@ clean:
 	find . -type d -name "__pycache__" -delete
 
 ## Lint using ruff
-lint:
+ruff:
 	$(CONDA_ACTIVATE) && \
 	ruff check $(i)
 
@@ -32,7 +32,7 @@ mypy:
 docstring:
 	$(CONDA_ACTIVATE) && \
 	pep257 $(i)
-po
+
 ## Run all checks
 all_checks: lint mypy docstring
 

@@ -1,20 +1,21 @@
-from typing import Dict, Tuple, Union
+from typing import Any
 
 import numpy as np
 from filterpy.kalman import predict, update
+from numpy import ndarray
 
 from sportslabkit.motion_model.base import BaseMotionModel
 
 
 class KalmanFilter(BaseMotionModel):
-    hparam_search_space = {
+    hparam_search_space: dict[str, dict[str, Any]] = {
         "dt": {"type": "categorical", "values": [10, 2, 1, 1 / 30, 1 / 60, 1 / 120]},
         "process_noise": {"type": "logfloat", "low": 1e-6, "high": 1e2},
         "measurement_noise": {"type": "logfloat", "low": 1e-3, "high": 1e2},
         "confidence_scaler": {"type": "logfloat", "low": 1e-3, "high": 100},
     }
-    required_observation_types = ["box", "score"]
-    required_state_types = ["x", "P", "F", "H", "R", "Q"]
+    required_observation_types: list[str] = ["box", "score"]
+    required_state_types: list[str] = ["x", "P", "F", "H", "R", "Q"]
 
     def __init__(
         self,
@@ -28,9 +29,8 @@ class KalmanFilter(BaseMotionModel):
         self.process_noise = process_noise
         self.measurement_noise = measurement_noise
         self.confidence_scaler = confidence_scaler
-        # self._initialize_kalman_filter()
 
-    def get_initial_kalman_filter_states(self, box: np.ndarray) -> Dict[str, np.ndarray]:
+    def get_initial_kalman_filter_states(self, box: np.ndarray) -> dict[str, np.ndarray]:
         return {
             "x": np.array([box[0], box[1], box[2], box[3], 0, 0, 0, 0]),
             "P": np.eye(8),
@@ -87,15 +87,15 @@ class KalmanFilter(BaseMotionModel):
 
     def predict(
         self,
-        observations: Union[float, np.ndarray],
-        states: Union[float, np.ndarray, None],
-    ) -> Tuple[Union[float, np.ndarray, None], Union[float, np.ndarray]]:
+        observations: dict[str, [float | ndarray]],
+        states: dict[str, float | ndarray] = None,
+    ) -> tuple[ndarray, dict[str, float | ndarray]]:
         boxes = np.array(observations.get("box", None))
         scores = np.array(observations.get("score", 1))
 
-        new_states = states.copy()
+        new_states = states.copy() if states else {}
 
-        if new_states["x"] is None:
+        if new_states.get("x") is None:
             # Initialize Kalman filter states
             new_states.update(self.get_initial_kalman_filter_states(boxes[-1]))
 

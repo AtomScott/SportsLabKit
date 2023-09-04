@@ -38,7 +38,7 @@ class VideoReader:
         self.threaded = threaded
 
         self.stopped = False
-        self.q = Queue(maxsize=queue_size)
+        self.q: Queue = Queue(maxsize=queue_size)
 
         if threaded:
             t = threading.Thread(target=self.read_thread)
@@ -48,9 +48,7 @@ class VideoReader:
     def __del__(self):
         try:
             self._vr.release()
-        except (
-            AttributeError
-        ):  # if file does not exist this will be raised since _vr does not exist
+        except AttributeError:  # if file does not exist this will be raised since _vr does not exist
             pass
 
     def __len__(self):
