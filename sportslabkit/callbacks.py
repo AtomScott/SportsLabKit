@@ -10,11 +10,11 @@ Example:
             print("Training is starting")
 """
 
-from sklearn.pipeline import Pipeline
-from scipy import stats
-import numpy as np
-from sportslabkit.mot.base import MultiObjectTracker
 from functools import wraps
+
+from scipy import stats
+
+from sportslabkit.mot.base import MultiObjectTracker
 
 
 def with_callbacks(func):
