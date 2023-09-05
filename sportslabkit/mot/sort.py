@@ -23,6 +23,7 @@ class SORTTracker(MultiObjectTracker):
         step_size: Optional[int] = None,
         max_staleness: int = 5,
         min_length: int = 5,
+        callbacks=None,
     ):
         """
         Initializes the SORT Tracker.
@@ -38,6 +39,7 @@ class SORTTracker(MultiObjectTracker):
             step_size=step_size,
             max_staleness=max_staleness,
             min_length=min_length,
+            callbacks=callbacks,
         )
 
         self.detection_model = detection_model
