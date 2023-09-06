@@ -45,7 +45,7 @@ follow_imports = "skip"
 strict_optional = true
 
 [tool.pep257]
-ignore = ["D100", "D101", "D105", "D200", "D202", "D411", "D213", "D413", "D406", "D407"]
+ignore = ["D100", "D101", "D105", "D200", "D202", "D203", "D411", "D213", "D413", "D406", "D407"]
 add_ignore = ["D102", "D103"]
 
 [tool.pytest.ini_options]
