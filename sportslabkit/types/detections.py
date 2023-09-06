@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -18,20 +18,20 @@ class Detections:
 
     def __init__(
         self,
-        preds: Union[List[Dict], List[List], List[Detection]],
-        im: Union[str, Path, Image.Image, np.ndarray],
-        times: Tuple[float, float, float] = (0, 0, 0),
-        names: Optional[List[str]] = None,
+        preds: list[dict] | list[list] | list[Detection],
+        im: str | Path | Image.Image | np.ndarray,
+        times: tuple[float, float, float] = (0, 0, 0),
+        names: list[str] | None = None,
     ):
         self.im = self._process_im(im)
         self.preds = self._process_preds(preds)
         self.names = names
         self.times = times
 
-    def _process_im(self, im: Union[str, Path, Image.Image, np.ndarray]) -> np.ndarray:
+    def _process_im(self, im: str | Path | Image.Image | np.ndarray) -> np.ndarray:
         return read_image(im)
 
-    def _process_pred(self, pred: Union[Dict, List, Detection]) -> np.ndarray:
+    def _process_pred(self, pred: dict | list | Detection) -> np.ndarray:
         # process predictions
         if isinstance(pred, dict):
             if len(pred.keys()) != 6:
@@ -69,7 +69,7 @@ class Detections:
         else:
             raise TypeError(f"Unsupported prediction type: {type(pred)}")
 
-    def _process_preds(self, preds: List[Any]) -> np.ndarray:
+    def _process_preds(self, preds: list[Any]) -> np.ndarray:
         _processed_preds = []
         for pred in preds:
             _processed_preds.append(self._process_pred(pred))
@@ -85,18 +85,18 @@ class Detections:
         draw_im = draw_bounding_boxes(im, boxes, labels, **kwargs)
         return Image.fromarray(draw_im)
 
-    def save_image(self, path: Union[str, Path], **kwargs):
+    def save_image(self, path: str | Path, **kwargs):
         image = self.show(**kwargs)
         image.save(path)
 
-    def save_boxes(self, path: Union[str, Path]):
+    def save_boxes(self, path: str | Path):
         with open(path, "w") as f:
             for box in self.preds[:, :4]:
                 f.write(",".join(map(str, box)) + "\n")
 
     def crop(
-        self, save: bool = True, save_dir: Union[str, Path] = "runs/detect/exp", exist_ok: bool = False
-    ) -> List[Image.Image]:
+        self, save: bool = True, save_dir: str | Path = "runs/detect/exp", exist_ok: bool = False
+    ) -> list[Image.Image]:
         save_dir = increment_path(save_dir, exist_ok, mkdir=True) if save else None
         images = []
         for box in self.preds[:, :4]:

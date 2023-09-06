@@ -1,5 +1,3 @@
-from typing import List, Optional, Tuple, Union
-
 import matplotlib
 import numpy as np
 from PIL import Image, ImageColor, ImageDraw, ImageFont
@@ -25,12 +23,12 @@ def _generate_color_palette(n: int) -> np.ndarray:
 def draw_bounding_boxes(
     image: np.ndarray,
     bboxes: np.ndarray,
-    labels: Optional[List[str]] = None,
-    colors: Optional[Union[List[Union[str, Tuple[int, int, int]]], str, Tuple[int, int, int]]] = None,
-    fill: Optional[bool] = False,
+    labels: list[str] | None = None,
+    colors: list[str | tuple[int, int, int]] | str | tuple[int, int, int] | None = None,
+    fill: bool | None = False,
     width: int = 1,
-    font: Optional[str] = None,
-    font_size: Optional[int] = None,
+    font: str | None = None,
+    font_size: int | None = None,
 ) -> np.ndarray:
     """
     Draws bounding boxes on given image.
@@ -63,7 +61,7 @@ def draw_bounding_boxes(
         return image
 
     if labels is None:
-        labels: Union[List[str], List[None]] = [None] * num_boxes  # type: ignore[no-redef]
+        labels: list[str] | list[None] = [None] * num_boxes  # type: ignore[no-redef]
     elif len(labels) != num_boxes:
         raise ValueError(
             f"Number of boxes ({num_boxes}) and labels ({len(labels)}) mismatch. Please specify labels for each box."
@@ -125,10 +123,10 @@ def draw_bounding_boxes(
 def draw_tracks(
     img,
     tracks,
-    fill: Optional[bool] = False,
+    fill: bool | None = False,
     width: int = 1,
-    font: Optional[str] = None,
-    font_size: Optional[int] = None,
+    font: str | None = None,
+    font_size: int | None = None,
 ):
     colors = []
     for track in tracks:

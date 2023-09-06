@@ -1,5 +1,4 @@
 """Detection utilities."""
-from typing import Optional
 
 import numpy as np
 from podm.bounding_box import BoundingBox
@@ -11,10 +10,10 @@ class CandidateDetection(BoundingBox):
     def __init__(
         self,
         camera: Camera,
-        frame_idx: Optional[int] = None,
-        detection_id: Optional[int] = None,
-        detection_confidence: Optional[float] = None,
-        from_bbox: Optional[BoundingBox] = None,
+        frame_idx: int | None = None,
+        detection_id: int | None = None,
+        detection_confidence: float | None = None,
+        from_bbox: BoundingBox | None = None,
     ):
         """Creates a new candidate detection.
 

@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Iterable, Union
+from collections.abc import Iterable
+from typing import Any
 
 import numpy as np
 import optuna
@@ -31,14 +32,14 @@ class SingleObjectTracker(ABC):
         # Hook that subclasses can override
         pass
 
-    def update_tracklet_observations(self, states: Dict[str, Any]):
+    def update_tracklet_observations(self, states: dict[str, Any]):
         self.check_required_types(states)
         for required_type in self.required_keys:
             self.tracklet.update_observation(required_type, states[required_type])
         self.tracklet.increment_counter()
 
     @abstractmethod
-    def update(self, current_frame: Any) -> Dict[str, Any]:
+    def update(self, current_frame: Any) -> dict[str, Any]:
         pass
 
     def process_sequence_item(self, sequence: Any):
@@ -53,7 +54,7 @@ class SingleObjectTracker(ABC):
             self.update_tracklet_observations(updated_state)
             self.frame_count += 1
 
-    def track(self, sequence: Union[Iterable[Any], np.ndarray]) -> Tracklet:
+    def track(self, sequence: Iterable[Any] | np.ndarray) -> Tracklet:
         if not isinstance(sequence, (Iterable, np.ndarray)):
             raise ValueError("Input 'sequence' must be an iterable or numpy array of frames/batches")
 
@@ -85,7 +86,7 @@ class SingleObjectTracker(ABC):
         self.post_initialize(**self.post_init_args)
         logger.debug("Tracker initialized.")
 
-    def check_required_types(self, target: Dict[str, Any]):
+    def check_required_types(self, target: dict[str, Any]):
         missing_types = [required_type for required_type in self.required_keys if required_type not in target]
 
         if missing_types:
@@ -99,7 +100,7 @@ class SingleObjectTracker(ABC):
                 f"Current types in 'target': {current_types_str}"
             )
 
-    def check_updated_state(self, state: Dict[str, Any]):
+    def check_updated_state(self, state: dict[str, Any]):
         if not isinstance(state, dict):
             raise ValueError("The `update` method must return a dictionary.")
 
