@@ -518,7 +518,10 @@ def fetch_or_cache_model(
         str: The path to the downloaded or cached file.
     """
     hashed_url = hashlib.sha256(url.encode()).hexdigest()
+    if Path(url).exists():
+        return url
     if dst is None:
+        CACHE_DIR.mkdir(parents=True, exist_ok=True)
         dst = CACHE_DIR / f"{Path(url).name}_{hashed_url}"
 
     # Check if the file exists in the cache
