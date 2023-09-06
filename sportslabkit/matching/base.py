@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Sequence, Tuple
+from collections.abc import Sequence
 
 import numpy as np
 from scipy.optimize import linear_sum_assignment
@@ -23,7 +23,7 @@ EPS = 1e-7
 
 def linear_sum_assignment_with_inf(
     cost_matrix: np.ndarray,
-) -> Tuple[np.ndarray, np.ndarray]:
+) -> tuple[np.ndarray, np.ndarray]:
     """Solve the linear sum assignment problem with inf values.
 
     Args:

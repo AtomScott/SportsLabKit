@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import platform
 from pathlib import Path
-from typing import Any, Optional, Union
+from typing import Any, Union
 
 from sportslabkit.logger import inspect, logger
 
@@ -30,8 +30,8 @@ class KaggleDownloader:
 
     def download(
         self,
-        file_name: Optional[str] = None,
-        path: Optional[_pathlike] = _module_path,
+        file_name: str | None = None,
+        path: _pathlike | None = _module_path,
         force: bool = False,
         quiet: bool = False,
         unzip: bool = True,

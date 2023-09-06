@@ -2,7 +2,8 @@ from __future__ import annotations
 
 import json
 from ast import literal_eval
-from typing import Any, Iterable, Mapping, Optional
+from collections.abc import Iterable, Mapping
+from typing import Any
 
 import cv2
 import numpy as np
@@ -51,10 +52,10 @@ class CoordinatesDataFrame(BaseSLKDataFrame, pd.DataFrame):
 
     def set_keypoints(
         self,
-        source_keypoints: Optional[ArrayLike] = None,
-        target_keypoints: Optional[ArrayLike] = None,
-        mapping: Optional[Mapping] = None,
-        mapping_file: Optional[_pathlike] = None,
+        source_keypoints: ArrayLike | None = None,
+        target_keypoints: ArrayLike | None = None,
+        mapping: Mapping | None = None,
+        mapping_file: _pathlike | None = None,
     ) -> None:
         """Set the keypoints for the homography transformation. Make sure that
         the target keypoints are the pitch coordinates. Also each keypoint must
@@ -66,7 +67,7 @@ class CoordinatesDataFrame(BaseSLKDataFrame, pd.DataFrame):
         """
 
         if mapping_file is not None:
-            with open(mapping_file, "r") as f:
+            with open(mapping_file) as f:
                 mapping = json.load(f)
         if mapping is not None:
             target_keypoints, source_keypoints = [], []
@@ -101,9 +102,9 @@ class CoordinatesDataFrame(BaseSLKDataFrame, pd.DataFrame):
     @staticmethod
     def from_numpy(
         arr: np.ndarray,
-        team_ids: Optional[Iterable[str]] = None,
-        player_ids: Optional[Iterable[int]] = None,
-        attributes: Optional[Iterable[str]] = ("x", "y"),
+        team_ids: Iterable[str] | None = None,
+        player_ids: Iterable[int] | None = None,
+        attributes: Iterable[str] | None = ("x", "y"),
         auto_fix_columns: bool = True,
     ):
         """Create a CoordinatesDataFrame from a numpy array of either shape (L, N, 2) or (L, N * 2) where L is the number of frames, N is the number of players and 2 is the number of coordinates (x, y).
@@ -181,7 +182,7 @@ class CoordinatesDataFrame(BaseSLKDataFrame, pd.DataFrame):
         return CoordinatesDataFrame(df)
 
     @staticmethod
-    def from_dict(d: dict, attributes: Optional[Iterable[str]] = ("x", "y")):
+    def from_dict(d: dict, attributes: Iterable[str] | None = ("x", "y")):
         """Create a CoordinatesDataFrame from a nested dictionary contating the coordinates of the players and the ball.
 
         The input dictionary should be of the form:
@@ -234,15 +235,15 @@ class CoordinatesDataFrame(BaseSLKDataFrame, pd.DataFrame):
     def visualize_frame(
         self,
         frame_idx: int,
-        save_path: Optional[_pathlike] = None,
+        save_path: _pathlike | None = None,
         ball_key: str = "ball",
         home_key: str = "0",
         away_key: str = "1",
-        marker_kwargs: Optional[dict[str, Any]] = None,
-        ball_kwargs: Optional[dict[str, Any]] = None,
-        home_kwargs: Optional[dict[str, Any]] = None,
-        away_kwargs: Optional[dict[str, Any]] = None,
-        save_kwargs: Optional[dict[str, Any]] = None,
+        marker_kwargs: dict[str, Any] | None = None,
+        ball_kwargs: dict[str, Any] | None = None,
+        home_kwargs: dict[str, Any] | None = None,
+        away_kwargs: dict[str, Any] | None = None,
+        save_kwargs: dict[str, Any] | None = None,
     ):
         """Visualize a single frame.
 
@@ -344,11 +345,11 @@ class CoordinatesDataFrame(BaseSLKDataFrame, pd.DataFrame):
         ball_key: str = "ball",
         home_key: str = "0",
         away_key: str = "1",
-        marker_kwargs: Optional[dict[str, Any]] = None,
-        ball_kwargs: Optional[dict[str, Any]] = None,
-        home_kwargs: Optional[dict[str, Any]] = None,
-        away_kwargs: Optional[dict[str, Any]] = None,
-        save_kwargs: Optional[dict[str, Any]] = None,
+        marker_kwargs: dict[str, Any] | None = None,
+        ball_kwargs: dict[str, Any] | None = None,
+        home_kwargs: dict[str, Any] | None = None,
+        away_kwargs: dict[str, Any] | None = None,
+        save_kwargs: dict[str, Any] | None = None,
     ):
         """Visualize multiple frames using matplotlib.animation.FuncAnimation.
 

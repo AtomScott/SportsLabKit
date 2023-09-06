@@ -202,6 +202,7 @@ def find_intrinsic_camera_parameters(
 
     # Support multiple video files
     from sportslabkit.camera import Camera
+
     camera = Camera(media_path)
 
     # Find corners in each video
@@ -260,6 +261,7 @@ def calibrate_video_from_mappings(
         stab = Stabilizer()
 
         from sportslabkit.camera import Camera
+
         camera = Camera(media_path)
         for frame in camera:
             stab_frame = stab.stabilize(frame)

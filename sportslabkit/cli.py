@@ -1,6 +1,5 @@
 import os
 from glob import glob
-from typing import Optional
 
 import gdown
 import numpy as np
@@ -87,7 +86,7 @@ class CLI:
         npzfile: str,
         output: str,
         calibration_method: str = "zhang",
-        keypoint_xml: Optional[str] = None,
+        keypoint_xml: str | None = None,
         **kwargs,
     ):
         """Calibrate a video using precomputed calibration parameters
@@ -138,7 +137,7 @@ class CLI:
         scale: int = 1,
         pts: int = 50,
         calibration_method: str = "zhang",
-        keypoint_xml: Optional[str] = None,
+        keypoint_xml: str | None = None,
     ):
         """Calibrate video from input
 

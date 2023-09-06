@@ -5,9 +5,10 @@ import os
 import sys
 from ast import literal_eval
 from collections import deque
+from collections.abc import Iterable
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Iterable, Optional, Union
+from typing import Any
 
 import cv2
 import cv2 as cv
@@ -200,15 +201,15 @@ def make_video(
     vcodec: str = "libx264",
     pix_fmt: str = "yuv420p",
     preset: str = "medium",
-    crf: Optional[int] = None,
-    ss: Optional[int] = None,
-    t: Optional[int] = None,
-    c: Optional[str] = None,
-    height: Optional[int] = -1,
-    width: Optional[int] = -1,
-    input_framerate: Optional[int] = None,
+    crf: int | None = None,
+    ss: int | None = None,
+    t: int | None = None,
+    c: str | None = None,
+    height: int | None = -1,
+    width: int | None = -1,
+    input_framerate: int | None = None,
     logging: bool = False,
-    custom_ffmpeg: Optional[str] = None,
+    custom_ffmpeg: str | None = None,
 ) -> None:
     """Make video from a list of opencv format frames.
 
@@ -433,7 +434,7 @@ def save_response_content(response, destination):
                 f.write(chunk)
 
 
-def increment_path(path: Union[str, Path], exist_ok: bool = False, mkdir: bool = False) -> Path:
+def increment_path(path: str | Path, exist_ok: bool = False, mkdir: bool = False) -> Path:
     """Increments a path (appends a suffix) if it already exists.
 
     Args:
@@ -472,7 +473,7 @@ def load_keypoints(keypoint_json):
         source_keypoints (np.ndarray): Source keypoints.
         target_keypoints (np.ndarray): Target keypoints.
     """
-    with open(keypoint_json, "r") as f:
+    with open(keypoint_json) as f:
         data = json.load(f)
 
     source_keypoints = []

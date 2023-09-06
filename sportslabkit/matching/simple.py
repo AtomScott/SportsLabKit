@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 from collections import defaultdict
-from typing import DefaultDict, Sequence
+from collections.abc import Sequence
+from typing import DefaultDict
 
 import networkx as nx
 import numpy as np
