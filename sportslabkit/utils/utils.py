@@ -1,14 +1,20 @@
 """Genereal utils."""
+import errno
+import hashlib
 import itertools
 import json
 import os
+import shutil
 import sys
+import tempfile
+import uuid
 from ast import literal_eval
 from collections import deque
 from collections.abc import Iterable
 from datetime import datetime
 from pathlib import Path
 from typing import Any
+from urllib.request import Request, urlopen
 
 import cv2
 import cv2 as cv
@@ -22,6 +28,7 @@ from omegaconf import OmegaConf
 from PIL import Image
 from vidgear.gears import WriteGear
 
+from sportslabkit.constants import CACHE_DIR
 from sportslabkit.logger import logger, tqdm
 from sportslabkit.types.types import PathLike
 
@@ -463,8 +470,7 @@ def increment_path(path: str | Path, exist_ok: bool = False, mkdir: bool = False
 
 
 def load_keypoints(keypoint_json):
-    """
-    Loads source and target keypoints from a JSON file.
+    """Loads source and target keypoints from a JSON file.
 
     Args:
         keypoint_json (str): Path to JSON file containing keypoints.
@@ -488,6 +494,88 @@ def load_keypoints(keypoint_json):
     source_keypoints = np.array(source_keypoints)
     target_keypoints = np.array(target_keypoints)
     return source_keypoints, target_keypoints
+
+
+def fetch_or_cache_model(
+    url: str, dst: PathLike | None = None, hash_prefix: str | None = None, progress: bool = True
+) -> None:
+    """Fetches a model from a URL or uses a cached version if it exists.
+
+    Fetches a model from a URL or uses a cached version if it exists. If the destination path (`dst`) is not provided, the file is saved in a default cache directory with a name
+    derived from the URL and a hash of the URL to avoid collisions.
+
+    Args:
+        url (str): URL of the object to download.
+        dst (Union[PathLike, None], optional): Full path where the object will be saved.
+            If None, saves in the default cache directory with a hashed filename.
+            E.g., "~/.cache/sportslabkit/model.joblib_abc123hash"
+        hash_prefix (Optional[str], optional): If not None, the SHA256 of the downloaded file should start with ``hash_prefix``.
+            Default: None
+        progress (bool, optional): Whether or not to display a progress bar to stderr.
+            Default: True
+
+    Returns:
+        str: The path to the downloaded or cached file.
+    """
+    hashed_url = hashlib.sha256(url.encode()).hexdigest()
+    if dst is None:
+        dst = CACHE_DIR / f"{Path(url).name}_{hashed_url}"
+
+    # Check if the file exists in the cache
+    if os.path.exists(dst):
+        return str(dst)
+
+    # Create a temporary directory
+    for seq in range(tempfile.TMP_MAX):
+        tmp_dst = str(dst) + "." + uuid.uuid4().hex + ".partial"
+        try:
+            f = open(tmp_dst, "w+b")
+        except FileExistsError:
+            continue
+        break
+    else:
+        raise FileExistsError(errno.EEXIST, "No usable temporary file name found")
+
+    try:
+        # Download the file
+        req = Request(url, headers={"User-Agent": "sportslabkit"})
+        u = urlopen(req)
+        meta = u.info()
+        file_size = int(meta.get_all("Content-Length")[0]) if meta.get_all("Content-Length") else None
+
+        if hash_prefix is not None:
+            sha256 = hashlib.sha256()
+
+        with tqdm(
+            total=file_size,
+            disable=not progress,
+            desc=f"Downloading file to {dst}",
+            unit="B",
+            unit_scale=True,
+            unit_divisor=1024,
+        ) as pbar:
+            while True:
+                buffer = u.read(8192)
+                if len(buffer) == 0:
+                    break
+                f.write(buffer)
+                if hash_prefix is not None:
+                    sha256.update(buffer)
+                pbar.update(len(buffer))
+
+        if hash_prefix is not None:
+            digest = sha256.hexdigest()
+            if digest[: len(hash_prefix)] != hash_prefix:
+                raise RuntimeError(f'Invalid hash value (expected "{hash_prefix}", got "{digest}")')
+
+        shutil.move(f.name, dst)
+
+    finally:
+        f.close()
+        if os.path.exists(f.name):
+            os.remove(f.name)
+
+    return str(dst)
 
 
 # Due to memory consumption concerns, the function below has been replaced by the function that uses vidgear above.
