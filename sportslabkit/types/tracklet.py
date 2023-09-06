@@ -6,6 +6,7 @@ from typing import Any
 
 import pandas as pd
 
+from sportslabkit.dataframe.bboxdataframe import BBoxDataFrame
 from sportslabkit.logger import logger
 
 
@@ -297,8 +298,6 @@ class Tracklet:
             [[team_id], [player_id], box_df.columns],
             names=["TeamID", "PlayerID", "Attributes"],
         )
-
-        from sportslabkit.dataframe.bboxdataframe import BBoxDataFrame
 
         bbdf = BBoxDataFrame(box_df.values, index=df.index, columns=idx)
         return bbdf
