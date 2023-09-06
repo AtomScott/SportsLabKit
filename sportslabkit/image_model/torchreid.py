@@ -9,16 +9,16 @@ except ImportError:
         "pip install git+https://github.com/KaiyangZhou/deep-person-reid.git"
     )
 
+from sportslabkit.constants import CACHE_DIR
 from sportslabkit.image_model.base import BaseImageModel
 from sportslabkit.logger import logger
 from sportslabkit.utils import (
     HiddenPrints,
     download_file_from_google_drive,
-    get_git_root,
 )
 
 
-model_save_dir = get_git_root() / "models" / "torchreid"
+model_save_dir = CACHE_DIR / "sportslabkit" / "models" / "torchreid"
 
 model_dict = {
     "shufflenet": "https://drive.google.com/file/d/1RFnYcHK1TM-yt3yLsNecaKCoFO4Yb6a-/view?usp=sharing",
