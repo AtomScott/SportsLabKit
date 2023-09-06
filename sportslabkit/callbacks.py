@@ -13,8 +13,8 @@ Example:
 from functools import wraps
 
 from scipy import stats
-from sportslabkit.logger import logger
 
+from sportslabkit.logger import logger
 from sportslabkit.types import Vector
 from sportslabkit.vector_model import BaseVectorModel
 
@@ -58,7 +58,7 @@ class TeamClassificationCallback(Callback):
     def __init__(self, vector_model: BaseVectorModel):
         """
         Initialize TeamClassificationCallback.
-        
+
         Args:
             vector_model (BaseVectorModel): A trained object responsible for classifying teams.
                             This object is generally loaded from a pickle file that
@@ -73,7 +73,7 @@ class TeamClassificationCallback(Callback):
                 - Example: If you're using an SVM-based classifier saved using pickle, this `predict`
                         method would take a feature vector and output the corresponding team IDs
                         (either 0 or 1 in a 2-class problem).
-        
+
         Note:
             The `vector_model` is expected to be a serialized object (e.g., pickle file)
             conforming to the above `predict` method specifications. It's commonly generated
