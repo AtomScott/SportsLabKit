@@ -3,17 +3,50 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from collections.abc import Iterable
 from typing import Any
+from functools import wraps
 
 import numpy as np
 import optuna
 import pandas as pd
 
 from sportslabkit import Tracklet
-from sportslabkit.callbacks import Callback, with_callbacks
 from sportslabkit.detection_model.dummy import DummyDetectionModel
 from sportslabkit.logger import logger, tqdm
 from sportslabkit.metrics import hota_score
 
+def with_callbacks(func):
+    """Decorator for wrapping methods that require callback invocations.
+
+    Args:
+        func (callable): The method to wrap.
+
+    Returns:
+        callable: The wrapped method.
+    """
+
+    @wraps(func)
+    def wrapper(self, *args, **kwargs):
+        event_name = func.__name__
+        self._invoke_callbacks(f"on_{event_name}_start")
+        result = func(self, *args, **kwargs)
+        self._invoke_callbacks(f"on_{event_name}_end")
+        return result
+
+    return wrapper
+
+
+class Callback:
+    """Base class for creating new callbacks.
+
+    This class defines the basic structure of a callback and allows for dynamic method creation
+    for handling different events in the Trainer's lifecycle.
+
+    Methods:
+        __getattr__(name: str) -> callable:
+            Returns a dynamically created method based on the given name.
+    """
+
+    pass
 
 class MultiObjectTracker(ABC):
     def __init__(self, window_size=1, step_size=None, max_staleness=5, min_length=5, callbacks=None):
