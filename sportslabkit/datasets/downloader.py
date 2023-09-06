@@ -7,7 +7,7 @@ from typing import Any, Union
 from sportslabkit.logger import inspect, logger
 
 
-_pathlike = Union[str, Path]
+PathLike = Union[str, Path]
 _module_path = Path(__file__).parent
 
 
@@ -31,7 +31,7 @@ class KaggleDownloader:
     def download(
         self,
         file_name: str | None = None,
-        path: _pathlike | None = _module_path,
+        path: PathLike | None = _module_path,
         force: bool = False,
         quiet: bool = False,
         unzip: bool = True,
@@ -40,7 +40,7 @@ class KaggleDownloader:
 
         Args:
             file_name (Optional[str], optional): Name of the file to download. If None, downloads all data. Defaults to None.
-            path (Optional[_pathlike], optional): Path to download the data to. If None, downloads to soccertrack/datasets/data. Defaults to None.
+            path (Optional[PathLike], optional): Path to download the data to. If None, downloads to soccertrack/datasets/data. Defaults to None.
             force (bool, optional): If True, overwrites the existing file. Defaults to False.
             quiet (bool, optional): If True, suppresses the output. Defaults to True.
             unzip (bool, optional): If True, unzips the file. Defaults to True.

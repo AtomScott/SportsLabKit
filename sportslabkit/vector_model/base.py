@@ -1,11 +1,10 @@
 from abc import ABC, abstractmethod
-from typing import Any, Union
+from typing import Any
 
 import numpy as np
 import torch
 
-
-Vector = Union[np.ndarray, list[Any], torch.Tensor]
+from sportslabkit.types import Vector
 
 
 class BaseVectorModel(ABC):

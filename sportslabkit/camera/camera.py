@@ -11,14 +11,14 @@ from numpy.typing import ArrayLike, NDArray
 
 from sportslabkit.camera.calibrate import find_intrinsic_camera_parameters
 from sportslabkit.camera.videoreader import VideoReader
-from sportslabkit.types.types import _pathlike
+from sportslabkit.types.types import PathLike
 from sportslabkit.utils import logger
 
 
 class Camera(VideoReader):
     def __init__(
         self,
-        video_path: _pathlike,
+        video_path: PathLike,
         threaded: bool = False,
         queue_size: int = 10,
         keypoint_xml: str | None = None,
