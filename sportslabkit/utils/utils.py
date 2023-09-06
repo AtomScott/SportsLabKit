@@ -1,24 +1,25 @@
 """Genereal utils."""
-import errno
 import hashlib
 import itertools
 import json
 import os
+import re
 import shutil
 import sys
 import tempfile
-import uuid
 from ast import literal_eval
 from collections import deque
 from collections.abc import Iterable
 from datetime import datetime
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlparse
 from urllib.request import Request, urlopen
 
 import cv2
 import cv2 as cv
 import dateutil.parser
+import gdown
 import git
 import numpy as np
 import requests
@@ -28,7 +29,6 @@ from omegaconf import OmegaConf
 from PIL import Image
 from vidgear.gears import WriteGear
 
-from sportslabkit.constants import CACHE_DIR
 from sportslabkit.logger import logger, tqdm
 from sportslabkit.types.types import PathLike
 
@@ -410,7 +410,7 @@ def get_git_root():
 
 
 def download_file_from_google_drive(id, destination):
-    URL = "https://docs.google.com/uc?export=download"
+    URL = "https://docs.google.com/uc?export=download&confirm=1"
 
     session = requests.Session()
 
@@ -420,7 +420,7 @@ def download_file_from_google_drive(id, destination):
     if token:
         params = {"id": id, "confirm": token}
         response = session.get(URL, params=params, stream=True)
-
+    print(URL, id)
     save_response_content(response, destination)
 
 
@@ -495,52 +495,67 @@ def load_keypoints(keypoint_json):
     target_keypoints = np.array(target_keypoints)
     return source_keypoints, target_keypoints
 
+def sanitize_url_name(url: str) -> str:
+    """Sanitize the URL to create a safe filename for caching.
+
+    Args:
+        url (str): The URL to sanitize.
+
+    Returns:
+        str: A sanitized version of the URL suitable for use as a filename.
+    """
+    parsed_url = urlparse(url)
+    filename = Path(parsed_url.path).name
+
+    # Remove any character that isn't a word character, whitespace, or dash
+    sanitized_name = re.sub(r'[^\w\s-]', '', filename).strip().replace(' ', '_')
+
+    return sanitized_name
+
 
 def fetch_or_cache_model(
-    url: str, dst: PathLike | None = None, hash_prefix: str | None = None, progress: bool = True
-) -> None:
+    url: str,
+    dst: PathLike | None = None,
+    hash_prefix: str | None = None,
+    progress: bool = True
+) -> str:
     """Fetches a model from a URL or uses a cached version if it exists.
-
-    Fetches a model from a URL or uses a cached version if it exists. If the destination path (`dst`) is not provided, the file is saved in a default cache directory with a name
-    derived from the URL and a hash of the URL to avoid collisions.
 
     Args:
         url (str): URL of the object to download.
-        dst (Union[PathLike, None], optional): Full path where the object will be saved.
-            If None, saves in the default cache directory with a hashed filename.
-            E.g., "~/.cache/sportslabkit/model.joblib_abc123hash"
-        hash_prefix (Optional[str], optional): If not None, the SHA256 of the downloaded file should start with ``hash_prefix``.
-            Default: None
-        progress (bool, optional): Whether or not to display a progress bar to stderr.
-            Default: True
+        dst (PathLike | None, optional): Full path where object will be saved. Defaults to None.
+        hash_prefix (str | None, optional): Hash prefix to validate downloaded file. Defaults to None.
+        progress (bool, optional): Whether to show download progress. Defaults to True.
 
     Returns:
         str: The path to the downloaded or cached file.
     """
+    CACHE_DIR = Path("~/.cache/sportslabkit").expanduser()
     hashed_url = hashlib.sha256(url.encode()).hexdigest()
+
     if Path(url).exists():
         return url
+
     if dst is None:
         CACHE_DIR.mkdir(parents=True, exist_ok=True)
-        dst = CACHE_DIR / f"{Path(url).name}_{hashed_url}"
+        dst = CACHE_DIR / f"{sanitize_url_name(url)}_{hashed_url}"
 
-    # Check if the file exists in the cache
     if os.path.exists(dst):
         return str(dst)
 
+    if url.startswith("https://drive.google.com"):
+        if os.path.exists(dst):
+            return str(dst)
+        gdown.download(str(url), str(dst), quiet=False, fuzzy=True)
+        assert os.path.exists(dst)
+        return str(dst)
+
+
     # Create a temporary directory
-    for seq in range(tempfile.TMP_MAX):
-        tmp_dst = str(dst) + "." + uuid.uuid4().hex + ".partial"
-        try:
-            f = open(tmp_dst, "w+b")
-        except FileExistsError:
-            continue
-        break
-    else:
-        raise FileExistsError(errno.EEXIST, "No usable temporary file name found")
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".partial") as f:
+        tmp_dst = f.name
 
     try:
-        # Download the file
         req = Request(url, headers={"User-Agent": "sportslabkit"})
         u = urlopen(req)
         meta = u.info()
@@ -557,26 +572,26 @@ def fetch_or_cache_model(
             unit_scale=True,
             unit_divisor=1024,
         ) as pbar:
-            while True:
-                buffer = u.read(8192)
-                if len(buffer) == 0:
-                    break
-                f.write(buffer)
-                if hash_prefix is not None:
-                    sha256.update(buffer)
-                pbar.update(len(buffer))
+            with open(tmp_dst, "wb") as f:
+                while True:
+                    buffer = u.read(8192)
+                    if len(buffer) == 0:
+                        break
+                    f.write(buffer)
+                    if hash_prefix is not None:
+                        sha256.update(buffer)
+                    pbar.update(len(buffer))
 
         if hash_prefix is not None:
             digest = sha256.hexdigest()
             if digest[: len(hash_prefix)] != hash_prefix:
                 raise RuntimeError(f'Invalid hash value (expected "{hash_prefix}", got "{digest}")')
 
-        shutil.move(f.name, dst)
+        shutil.move(tmp_dst, dst)
 
     finally:
-        f.close()
-        if os.path.exists(f.name):
-            os.remove(f.name)
+        if os.path.exists(tmp_dst):
+            os.remove(tmp_dst)
 
     return str(dst)
 
