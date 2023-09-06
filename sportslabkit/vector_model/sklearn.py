@@ -19,6 +19,15 @@ class SklearnVectorModel(BaseVectorModel):
     Attributes:
         model (Pipeline | None): The loaded scikit-learn pipeline model. None if the model is not loaded.
     """
+    def __init__(
+        self,
+        model_path: str = "",
+        input_vector_size: int | None = None, 
+        output_vector_size: int | None = None) -> None:
+        super().__init__(input_vector_size, output_vector_size)
+        self.model_path = model_path
+        self.load(model_path)
+        
 
     def forward(self, inputs: Vector, **kwargs: Any) -> Vector:
         """
@@ -41,7 +50,7 @@ class SklearnVectorModel(BaseVectorModel):
         if self.model is None:
             raise ValueError("The model is as empty as a politician's promise. Load it first.")
 
-        return self.model.predict([inputs], **kwargs)[0]
+        return self.model.predict(inputs, **kwargs)[0]
 
     def _load_model(self, path: str) -> None:
         """
