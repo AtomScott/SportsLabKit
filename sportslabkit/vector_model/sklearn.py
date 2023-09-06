@@ -4,6 +4,7 @@ from joblib import load
 from sklearn.pipeline import Pipeline
 
 from sportslabkit.types import Vector
+from sportslabkit.utils import fetch_or_cache_model
 from sportslabkit.vector_model.base import BaseVectorModel
 
 
@@ -56,7 +57,8 @@ class SklearnVectorModel(BaseVectorModel):
         Raises:
             TypeError: If the loaded model is not a scikit-learn pipeline.
         """
-        self.model = load(path)
+        actual_path = fetch_or_cache_model(path)
+        self.model = load(actual_path)
 
         if not isinstance(self.model, Pipeline):
             raise TypeError(f"Oops, you loaded something that's not a pipeline. Got a {type(self.model)} instead.")
