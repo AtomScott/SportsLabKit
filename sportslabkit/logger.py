@@ -2,7 +2,8 @@
 
 import os
 import sys
-from typing import Any, Iterable, Mapping
+from collections.abc import Iterable, Mapping
+from typing import Any
 
 import __main__ as main
 from loguru import logger

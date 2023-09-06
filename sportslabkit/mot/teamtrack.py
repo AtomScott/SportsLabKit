@@ -1,5 +1,3 @@
-from typing import Optional
-
 import cv2
 import numpy as np
 import torch
@@ -32,7 +30,7 @@ class TeamTracker(MultiObjectTracker):
         ),
         detection_score_threshold=0.6,
         window_size: int = 1,
-        step_size: Optional[int] = None,
+        step_size: int | None = None,
         max_staleness: int = 5,
         min_length: int = 5,
         callbacks=None,

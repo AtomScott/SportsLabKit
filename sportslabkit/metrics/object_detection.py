@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import sys
-from typing import Any, Optional
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -73,7 +73,7 @@ def _getIntersectionArea(boxA: list[int], boxB: list[int]) -> int:
     return intersection_area
 
 
-def _getUnionAreas(boxA: list[int], boxB: list[int], interArea: Optional[float] = None) -> float:
+def _getUnionAreas(boxA: list[int], boxB: list[int], interArea: float | None = None) -> float:
     area_A = _getArea(boxA)
     area_B = _getArea(boxB)
     if interArea is None:

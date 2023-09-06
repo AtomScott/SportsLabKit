@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 import uuid
+from collections.abc import Iterable
 from hashlib import md5
 from pathlib import Path
-from typing import Any, Iterable, Optional, Type
+from typing import Any
 
 import cv2
 import numpy as np
@@ -92,7 +93,7 @@ class BBoxDataFrame(BaseSLKDataFrame):
     """
 
     @property
-    def _constructor(self: pd.DataFrame) -> Type[BBoxDataFrame]:
+    def _constructor(self: pd.DataFrame) -> type[BBoxDataFrame]:
         """Return the constructor for the DataFrame.
 
         Args:
@@ -179,11 +180,11 @@ class BBoxDataFrame(BaseSLKDataFrame):
 
     def to_yolov5_format(
         self,
-        mapping: Optional[dict[dict[Any, Any], dict[Any, Any]]] = None,
+        mapping: dict[dict[Any, Any], dict[Any, Any]] | None = None,
         na_class: int = 0,
-        h: Optional[int] = None,
-        w: Optional[int] = None,
-        save_dir: Optional[str] = None,
+        h: int | None = None,
+        w: int | None = None,
+        save_dir: str | None = None,
     ):
         """Convert a dataframe to the YOLOv5 format.
 
@@ -369,7 +370,7 @@ class BBoxDataFrame(BaseSLKDataFrame):
 
     def to_list_of_tuples_format(
         self,
-        mapping: Optional[dict[dict[Any, Any], dict[Any, Any]]] = None,
+        mapping: dict[dict[Any, Any], dict[Any, Any]] | None = None,
         na_class: int | str = "player",
     ):
         """Convert a dataframe to a list of tuples.
@@ -517,7 +518,8 @@ class BBoxDataFrame(BaseSLKDataFrame):
     @staticmethod
     def from_dict(
         d: dict,
-        attributes: Optional[Iterable[str]] = (
+        attributes: Iterable[str]
+        | None = (
             "bb_left",
             "bb_top",
             "bb_width",
@@ -582,8 +584,8 @@ def add_bbox_to_frame(
     top: int,
     right: int,
     bottom: int,
-    label: Optional[str] = None,
-    color: Optional[str] = None,
+    label: str | None = None,
+    color: str | None = None,
 ) -> np.ndarray:
     """Add bounding box and label to image.
 
@@ -664,7 +666,7 @@ def add_bbox_to_frame(
         cv2.putText(
             image,
             text=label,
-            org=(label_left, int((label_bottom))),
+            org=(label_left, int(label_bottom)),
             fontFace=fontface,
             fontScale=fontscale,
             color=(0, 0, 0),
@@ -706,7 +708,7 @@ def add_frame_id_to_frame(image: np.ndarray, frame_id: int) -> np.ndarray:
     cv2.putText(
         image,
         text=label,
-        org=(label_left, int((label_bottom))),
+        org=(label_left, int(label_bottom)),
         fontFace=fontface,
         fontScale=fontscale,
         color=(0, 0, 0),

@@ -1,5 +1,5 @@
 .ONESHELL:
-.PHONY: clean data lint requirements tests create_environment install_develop develop_tests full_develop_test 
+.PHONY: clean data lint requirements tests create_environment install_develop develop_tests full_develop_test pyupgrade autofix all_checks ruff mypy docstring help
 
 #################################################################################
 # GLOBALS                                                                       #
@@ -28,10 +28,22 @@ mypy:
 	$(CONDA_ACTIVATE) && \
 	mypy $(i)
 
+## Upgrade code to Python 3.10
+pyupgrade:
+	$(CONDA_ACTIVATE) && \
+	pyupgrade --py310-plus $(i)	
+
 ## Check docstrings with pep257
 docstring:
 	$(CONDA_ACTIVATE) && \
 	pep257 $(i)
+
+## Run auto-fix
+autofix:
+	$(CONDA_ACTIVATE) && \
+	find $(i) -name '*.py' -exec pyupgrade --py310-plus {} \; && \
+	ruff check --fix $(i) && \
+	black $(i)
 
 ## Run all checks
 all_checks: lint mypy docstring

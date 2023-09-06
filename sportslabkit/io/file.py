@@ -3,9 +3,10 @@ from __future__ import annotations
 import csv
 import os
 from ast import literal_eval
+from collections.abc import Callable, Mapping, Sequence
 from itertools import zip_longest
 from pathlib import Path
-from typing import Any, Callable, Mapping, Optional, Sequence, Union
+from typing import Any, Union
 
 import dateutil.parser
 import numpy as np
@@ -82,8 +83,8 @@ def infer_metadata_from_filename(filename: _pathlike) -> Mapping[str, int]:
 
 def load_gpsports(
     filename: _pathlike,
-    playerid: Optional[int] = None,
-    teamid: Optional[int] = None,
+    playerid: int | None = None,
+    teamid: int | None = None,
 ) -> CoordinatesDataFrame:
     """Load CoordinatesDataFrame from GPSPORTS file.
 
@@ -118,8 +119,8 @@ def load_gpsports(
 
 def load_statsports(
     filename: _pathlike,
-    playerid: Optional[int] = None,
-    teamid: Optional[int] = None,
+    playerid: int | None = None,
+    teamid: int | None = None,
 ) -> CoordinatesDataFrame:
     """Load CoordinatesDataFrame from STATSPORTS file.
 
@@ -155,8 +156,8 @@ def load_statsports(
 
 def load_soccertrack_coordinates(
     filename: _pathlike,
-    playerid: Optional[int] = None,
-    teamid: Optional[int] = None,
+    playerid: int | None = None,
+    teamid: int | None = None,
 ) -> CoordinatesDataFrame:
     """Load CoordinatesDataFrame from soccertrack coordinates file.
 
@@ -167,7 +168,7 @@ def load_soccertrack_coordinates(
         soccertrack_coordinates_dataframe(CoordinatesDataFrame): DataFrame of soccertrack coordinates file.
     """
     attrs = {}
-    with open(filename, "r", encoding="utf-8") as f:
+    with open(filename, encoding="utf-8") as f:
         for line in f:
             if line.startswith("#"):
                 k, v = line[1:].strip().split(":")
@@ -226,9 +227,9 @@ def get_gps_loader(
 
 def load_codf(
     filename: _pathlike,
-    format: Optional[str] = None,
-    playerid: Optional[int] = None,
-    teamid: Optional[int] = None,
+    format: str | None = None,
+    playerid: int | None = None,
+    teamid: int | None = None,
 ) -> CoordinatesDataFrame:
     """Load CoordinatesDataFrame from file.
 
@@ -253,12 +254,9 @@ def load_codf(
 
 
 def load_gps(
-    filenames: Union[
-        Sequence[_pathlike,],
-        _pathlike,
-    ],
-    playerids: Union[Sequence[int], int] = (),
-    teamids: Union[Sequence[int], int] = (),
+    filenames: (Sequence[_pathlike,] | _pathlike),
+    playerids: Sequence[int] | int = (),
+    teamids: Sequence[int] | int = (),
 ) -> CoordinatesDataFrame:
     """Load GPS data from multiple files.
 
@@ -444,7 +442,7 @@ def load_soccertrack_bbox(
         df (pd.DataFrame): Dataframe loaded from the file.
     """
     attrs = {}
-    with open(filename, "r", encoding="utf-8") as f:
+    with open(filename, encoding="utf-8") as f:
         for line in f:
             if line.startswith("#"):
                 k, v = line[1:].strip().split(":")
@@ -480,7 +478,7 @@ def is_mot(filename: _pathlike) -> bool:
         is_mot(bool): True if the file is MOT format.
     """
     try:
-        with open(filename, "r", encoding="utf-8") as f:
+        with open(filename, encoding="utf-8") as f:
             reader = csv.reader(f)
             first_line = next(reader)
 
@@ -554,7 +552,7 @@ def load_bbox(filename: _pathlike) -> BBoxDataFrame:
     return df
 
 
-def load_df(filename: _pathlike, df_type: str = "bbox") -> Union[BBoxDataFrame, CoordinatesDataFrame]:
+def load_df(filename: _pathlike, df_type: str = "bbox") -> BBoxDataFrame | CoordinatesDataFrame:
     """Loads either a BBoxDataFrame or a CoordinatesDataFrame from a file.
 
     Args:

@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import Optional
-
 import numpy as np
 
 from sportslabkit.types.types import Box, Vector
@@ -36,9 +34,9 @@ class Detection:
     def __init__(
         self,
         box: Box,
-        score: Optional[float] = None,
-        class_id: Optional[int] = None,
-        feature: Optional[Vector] = None,
+        score: float | None = None,
+        class_id: int | None = None,
+        feature: Vector | None = None,
     ):
         box = np.array(box).squeeze()
         if box.shape != (4,):
@@ -61,27 +59,27 @@ class Detection:
         self._box = value
 
     @property
-    def score(self) -> Optional[float]:
+    def score(self) -> float | None:
         return self._score
 
     @score.setter
-    def score(self, value: Optional[float]):
+    def score(self, value: float | None):
         self._score = value
 
     @property
-    def class_id(self) -> Optional[int]:
+    def class_id(self) -> int | None:
         return self._class_id
 
     @class_id.setter
-    def class_id(self, value: Optional[int]):
+    def class_id(self, value: int | None):
         self._class_id = value
 
     @property
-    def feature(self) -> Optional[Vector]:
+    def feature(self) -> Vector | None:
         return self._feature
 
     @feature.setter
-    def feature(self, value: Optional[Vector]):
+    def feature(self, value: Vector | None):
         self._feature = value
 
     def __repr__(self):
