@@ -12,8 +12,8 @@ Example:
 
 
 from scipy import stats
-from sportslabkit.logger import logger
 
+from sportslabkit.logger import logger
 from sportslabkit.types import Vector
 from sportslabkit.vector_model import BaseVectorModel
 from sportslabkit.mot.base import MultiObjectTracker, Callback
