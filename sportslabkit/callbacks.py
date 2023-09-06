@@ -55,7 +55,6 @@ class Callback:
     pass
 
 
-
 class TeamClassificationCallback(Callback):
     def __init__(self, vector_model: BaseVectorModel):
         """Initialize TeamClassificationCallback.
@@ -84,4 +83,3 @@ class TeamClassificationCallback(Callback):
             # Assuming you want the most frequent prediction as the final team ID
             most_frequent_team_id = stats.mode(predicted_team_id).mode[0]
             tracklet.team_id = most_frequent_team_id
-
