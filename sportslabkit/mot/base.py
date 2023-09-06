@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from collections.abc import Iterable
-from typing import Any
 from functools import wraps
+from typing import Any
 
 import numpy as np
 import optuna
@@ -13,6 +13,7 @@ from sportslabkit import Tracklet
 from sportslabkit.detection_model.dummy import DummyDetectionModel
 from sportslabkit.logger import logger, tqdm
 from sportslabkit.metrics import hota_score
+
 
 def with_callbacks(func):
     """Decorator for wrapping methods that require callback invocations.

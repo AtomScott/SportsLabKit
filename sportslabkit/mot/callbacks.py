@@ -14,9 +14,9 @@ Example:
 from scipy import stats
 
 from sportslabkit.logger import logger
+from sportslabkit.mot.base import Callback, MultiObjectTracker
 from sportslabkit.types import Vector
 from sportslabkit.vector_model import BaseVectorModel
-from sportslabkit.mot.base import MultiObjectTracker, Callback
 
 
 class TeamClassificationCallback(Callback):
