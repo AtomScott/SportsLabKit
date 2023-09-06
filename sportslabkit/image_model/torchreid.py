@@ -16,8 +16,9 @@ from sportslabkit.utils import (
     download_file_from_google_drive,
 )
 
+from sportslabkit.constants import CACHE_DIR
 
-model_save_dir = "~/.cache" / "sportslabkit" / "models" / "torchreid"
+model_save_dir = CACHE_DIR / "sportslabkit" / "models" / "torchreid"
 
 model_dict = {
     "shufflenet": "https://drive.google.com/file/d/1RFnYcHK1TM-yt3yLsNecaKCoFO4Yb6a-/view?usp=sharing",
