@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from sportslabkit.types.types import Box, Vector
+from sportslabkit.types.types import Rect, Vector
 
 
 class Detection:
@@ -33,14 +33,18 @@ class Detection:
 
     def __init__(
         self,
-        box: Box,
+        box: Rect | np.ndarray,
         score: float | None = None,
         class_id: int | None = None,
         feature: Vector | None = None,
     ):
-        box = np.array(box).squeeze()
-        if box.shape != (4,):
-            raise ValueError(f"box should have the shape (4, ), but got {box.shape}")
+        if isinstance(box, list):
+            if len(box) != 4:
+                raise ValueError(f"A list box should have exactly 4 elements, but got {len(box)}")
+            box = Rect(*box)
+
+        elif not isinstance(box, Rect):
+            raise TypeError(f"Expected box to be of type Rect or List, got {type(box)}")
 
         self._box = box
         self._score = score
@@ -48,11 +52,11 @@ class Detection:
         self._feature = feature
 
     @property
-    def box(self) -> Box:
+    def box(self) -> Rect:
         return self._box
 
     @box.setter
-    def box(self, value: Box):
+    def box(self, value: Rect):
         value = np.array(value).squeeze()
         if value.shape != (4,):
             raise ValueError(f"box should have the shape (4, ), but got {value.shape}")
@@ -95,3 +99,39 @@ class Detection:
             and self._class_id == other.class_id
             and np.array_equal(self._feature, other.feature)
         )
+
+
+# @dataclass
+# class NEWDetection:
+#     rect: Rect
+#     class_id: int
+#     class_name: str
+#     confidence: float
+#     tracker_id: int | None = None
+
+#     @classmethod
+#     def from_results(cls, pred: np.ndarray, names: dict[int, str]) -> list[NEWDetection]:
+#         result = []
+#         for x_min, y_min, x_max, y_max, confidence, class_id in pred:
+#             class_id=int(class_id)
+#             result.append(NEWDetection(
+#                 rect=Rect(
+#                     x=float(x_min),
+#                     y=float(y_min),
+#                     width=float(x_max - x_min),
+#                     height=float(y_max - y_min)
+#                 ),
+#                 class_id=class_id,
+#                 class_name=names[class_id],
+#                 confidence=float(confidence)
+#             ))
+#         return result
+
+
+# def filter_detections_by_class(detections: list[Detection], class_name: str) -> list[Detection]:
+#     return [
+#         detection
+#         for detection
+#         in detections
+#         if detection.class_name == class_name
+#     ]
