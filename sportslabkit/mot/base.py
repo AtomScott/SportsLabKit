@@ -32,8 +32,7 @@ class MultiObjectTracker(ABC):
                     raise ValueError("All callbacks must be instances of Callback class.")
 
     def _invoke_callbacks(self, method_name):
-        """
-        Invokes the appropriate methods on all callback objects.
+        """Invokes the appropriate methods on all callback objects.
 
         Args:
             method_name (str): The name of the method to invoke on the callback objects.
