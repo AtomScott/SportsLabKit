@@ -9,6 +9,7 @@ except ImportError:
         "pip install git+https://github.com/KaiyangZhou/deep-person-reid.git"
     )
 
+from sportslabkit.constants import CACHE_DIR
 from sportslabkit.image_model.base import BaseImageModel
 from sportslabkit.logger import logger
 from sportslabkit.utils import (
@@ -16,7 +17,6 @@ from sportslabkit.utils import (
     download_file_from_google_drive,
 )
 
-from sportslabkit.constants import CACHE_DIR
 
 model_save_dir = CACHE_DIR / "sportslabkit" / "models" / "torchreid"
 
