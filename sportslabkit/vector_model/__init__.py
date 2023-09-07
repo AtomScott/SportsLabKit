@@ -14,20 +14,10 @@ from torchmetrics.functional import accuracy
 from torchvision import models, transforms
 from torchvision.datasets import ImageFolder
 
-from sportslabkit.image_model.base import BaseImageModel
-from sportslabkit.image_model.clip import CLIP_RN50
-from sportslabkit.image_model.torchreid import ShuffleNet
-from sportslabkit.image_model.visualization import plot_tsne
+from sportslabkit.vector_model.base import BaseVectorModel
+from sportslabkit.vector_model.sklearn import SklearnVectorModel
 from sportslabkit.logger import logger
 from sportslabkit.types.detection import Detection
-
-
-__all__ = [
-    "ShuffleNet",
-    "CLIP_RN50",
-    "plot_tsne",
-    "show_torchreid_models",
-]
 
 
 def inheritors(cls):
@@ -57,7 +47,7 @@ def show_available_models():
 
     The models are subclasses of BaseDetectionModel. The names are printed as a list to the console.
     """
-    return sorted([cls.__name__ for cls in inheritors(BaseImageModel)])
+    return sorted([cls.__name__ for cls in inheritors(BaseVectorModel)])
 
 
 def load(model_name, **model_config):
@@ -72,10 +62,10 @@ def load(model_name, **model_config):
     Returns:
         BaseDetectionModel: An instance of the requested model, or None if no match was found.
     """
-    for cls in inheritors(BaseImageModel):
+    for cls in inheritors(BaseVectorModel):
         if model_name in [cls.__name__.lower(), cls.__name__]:
             config = {k.lower(): v for k, v in model_config.items()}
             return cls(**config)
     logger.warning(
-        f"Model {model_name} not found. Available models: {[cls.__name__ for cls in inheritors(BaseImageModel)]} (lowercase is allowed)"
+        f"Model {model_name} not found. Available models: {[cls.__name__ for cls in inheritors(BaseVectorModel)]} (lowercase is allowed)"
     )

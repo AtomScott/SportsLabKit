@@ -28,12 +28,14 @@ class DeepSORTTracker(MultiObjectTracker):
         step_size: int | None = None,
         max_staleness: int = 5,
         min_length: int = 5,
+        callbacks=None,
     ):
         super().__init__(
             window_size=window_size,
             step_size=step_size,
             max_staleness=max_staleness,
             min_length=min_length,
+            callbacks=callbacks,
         )
         self.detection_model = detection_model
         self.image_model = image_model

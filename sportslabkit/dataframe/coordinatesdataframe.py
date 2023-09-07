@@ -14,7 +14,7 @@ from numpy.typing import ArrayLike, NDArray
 
 from sportslabkit.dataframe.base import BaseSLKDataFrame
 from sportslabkit.logger import logger
-from sportslabkit.types.types import _pathlike
+from sportslabkit.types.types import PathLike
 
 
 def merge_dicts(*dicts):
@@ -55,7 +55,7 @@ class CoordinatesDataFrame(BaseSLKDataFrame, pd.DataFrame):
         source_keypoints: ArrayLike | None = None,
         target_keypoints: ArrayLike | None = None,
         mapping: Mapping | None = None,
-        mapping_file: _pathlike | None = None,
+        mapping_file: PathLike | None = None,
     ) -> None:
         """Set the keypoints for the homography transformation. Make sure that
         the target keypoints are the pitch coordinates. Also each keypoint must
@@ -235,7 +235,7 @@ class CoordinatesDataFrame(BaseSLKDataFrame, pd.DataFrame):
     def visualize_frame(
         self,
         frame_idx: int,
-        save_path: _pathlike | None = None,
+        save_path: PathLike | None = None,
         ball_key: str = "ball",
         home_key: str = "0",
         away_key: str = "1",
@@ -341,7 +341,7 @@ class CoordinatesDataFrame(BaseSLKDataFrame, pd.DataFrame):
 
     def visualize_frames(
         self,
-        save_path: _pathlike,
+        save_path: PathLike,
         ball_key: str = "ball",
         home_key: str = "0",
         away_key: str = "1",

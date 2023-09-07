@@ -1,18 +1,25 @@
 """Genereal utils."""
+import hashlib
 import itertools
 import json
 import os
+import re
+import shutil
 import sys
+import tempfile
 from ast import literal_eval
 from collections import deque
 from collections.abc import Iterable
 from datetime import datetime
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlparse
+from urllib.request import Request, urlopen
 
 import cv2
 import cv2 as cv
 import dateutil.parser
+import gdown
 import git
 import numpy as np
 import requests
@@ -23,7 +30,7 @@ from PIL import Image
 from vidgear.gears import WriteGear
 
 from sportslabkit.logger import logger, tqdm
-from sportslabkit.types.types import _pathlike
+from sportslabkit.types.types import PathLike
 
 
 OmegaConf.register_new_resolver("now", lambda x: datetime.now().strftime(x), replace=True)
@@ -197,7 +204,7 @@ def get_fps(path):
 
 def make_video(
     frames: Iterable[NDArray[np.uint8]],
-    outpath: _pathlike,
+    outpath: PathLike,
     vcodec: str = "libx264",
     pix_fmt: str = "yuv420p",
     preset: str = "medium",
@@ -403,7 +410,7 @@ def get_git_root():
 
 
 def download_file_from_google_drive(id, destination):
-    URL = "https://docs.google.com/uc?export=download"
+    URL = "https://docs.google.com/uc?export=download&confirm=1"
 
     session = requests.Session()
 
@@ -413,7 +420,7 @@ def download_file_from_google_drive(id, destination):
     if token:
         params = {"id": id, "confirm": token}
         response = session.get(URL, params=params, stream=True)
-
+    print(URL, id)
     save_response_content(response, destination)
 
 
@@ -463,8 +470,7 @@ def increment_path(path: str | Path, exist_ok: bool = False, mkdir: bool = False
 
 
 def load_keypoints(keypoint_json):
-    """
-    Loads source and target keypoints from a JSON file.
+    """Loads source and target keypoints from a JSON file.
 
     Args:
         keypoint_json (str): Path to JSON file containing keypoints.
@@ -488,6 +494,106 @@ def load_keypoints(keypoint_json):
     source_keypoints = np.array(source_keypoints)
     target_keypoints = np.array(target_keypoints)
     return source_keypoints, target_keypoints
+
+def sanitize_url_name(url: str) -> str:
+    """Sanitize the URL to create a safe filename for caching.
+
+    Args:
+        url (str): The URL to sanitize.
+
+    Returns:
+        str: A sanitized version of the URL suitable for use as a filename.
+    """
+    parsed_url = urlparse(url)
+    filename = Path(parsed_url.path).name
+
+    # Remove any character that isn't a word character, whitespace, or dash
+    sanitized_name = re.sub(r'[^\w\s-]', '', filename).strip().replace(' ', '_')
+
+    return sanitized_name
+
+
+def fetch_or_cache_model(
+    url: str,
+    dst: PathLike | None = None,
+    hash_prefix: str | None = None,
+    progress: bool = True
+) -> str:
+    """Fetches a model from a URL or uses a cached version if it exists.
+
+    Args:
+        url (str): URL of the object to download.
+        dst (PathLike | None, optional): Full path where object will be saved. Defaults to None.
+        hash_prefix (str | None, optional): Hash prefix to validate downloaded file. Defaults to None.
+        progress (bool, optional): Whether to show download progress. Defaults to True.
+
+    Returns:
+        str: The path to the downloaded or cached file.
+    """
+    CACHE_DIR = Path("~/.cache/sportslabkit").expanduser()
+    hashed_url = hashlib.sha256(url.encode()).hexdigest()
+
+    if Path(url).exists():
+        return url
+
+    if dst is None:
+        CACHE_DIR.mkdir(parents=True, exist_ok=True)
+        dst = CACHE_DIR / f"{sanitize_url_name(url)}_{hashed_url}"
+
+    if os.path.exists(dst):
+        return str(dst)
+
+    if url.startswith("https://drive.google.com"):
+        if os.path.exists(dst):
+            return str(dst)
+        gdown.download(str(url), str(dst), quiet=False, fuzzy=True)
+        assert os.path.exists(dst)
+        return str(dst)
+
+
+    # Create a temporary directory
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".partial") as f:
+        tmp_dst = f.name
+
+    try:
+        req = Request(url, headers={"User-Agent": "sportslabkit"})
+        u = urlopen(req)
+        meta = u.info()
+        file_size = int(meta.get_all("Content-Length")[0]) if meta.get_all("Content-Length") else None
+
+        if hash_prefix is not None:
+            sha256 = hashlib.sha256()
+
+        with tqdm(
+            total=file_size,
+            disable=not progress,
+            desc=f"Downloading file to {dst}",
+            unit="B",
+            unit_scale=True,
+            unit_divisor=1024,
+        ) as pbar:
+            with open(tmp_dst, "wb") as f:
+                while True:
+                    buffer = u.read(8192)
+                    if len(buffer) == 0:
+                        break
+                    f.write(buffer)
+                    if hash_prefix is not None:
+                        sha256.update(buffer)
+                    pbar.update(len(buffer))
+
+        if hash_prefix is not None:
+            digest = sha256.hexdigest()
+            if digest[: len(hash_prefix)] != hash_prefix:
+                raise RuntimeError(f'Invalid hash value (expected "{hash_prefix}", got "{digest}")')
+
+        shutil.move(tmp_dst, dst)
+
+    finally:
+        if os.path.exists(tmp_dst):
+            os.remove(tmp_dst)
+
+    return str(dst)
 
 
 # Due to memory consumption concerns, the function below has been replaced by the function that uses vidgear above.

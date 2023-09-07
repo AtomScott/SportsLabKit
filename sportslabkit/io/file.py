@@ -16,7 +16,7 @@ from omegaconf import OmegaConf
 from ..dataframe import BBoxDataFrame, CoordinatesDataFrame
 
 
-_pathlike = Union[str, os.PathLike]
+PathLike = Union[str, os.PathLike]
 
 
 def auto_string_parser(value: str) -> Any:
@@ -55,7 +55,7 @@ def auto_string_parser(value: str) -> Any:
     return value
 
 
-def infer_metadata_from_filename(filename: _pathlike) -> Mapping[str, int]:
+def infer_metadata_from_filename(filename: PathLike) -> Mapping[str, int]:
     """Try to infer metadata from filename.
 
     Args:
@@ -82,7 +82,7 @@ def infer_metadata_from_filename(filename: _pathlike) -> Mapping[str, int]:
 
 
 def load_gpsports(
-    filename: _pathlike,
+    filename: PathLike,
     playerid: int | None = None,
     teamid: int | None = None,
 ) -> CoordinatesDataFrame:
@@ -118,7 +118,7 @@ def load_gpsports(
 
 
 def load_statsports(
-    filename: _pathlike,
+    filename: PathLike,
     playerid: int | None = None,
     teamid: int | None = None,
 ) -> CoordinatesDataFrame:
@@ -155,7 +155,7 @@ def load_statsports(
 
 
 def load_soccertrack_coordinates(
-    filename: _pathlike,
+    filename: PathLike,
     playerid: int | None = None,
     teamid: int | None = None,
 ) -> CoordinatesDataFrame:
@@ -182,11 +182,11 @@ def load_soccertrack_coordinates(
     return df
 
 
-def is_soccertrack_coordinates(filename: _pathlike) -> bool:
+def is_soccertrack_coordinates(filename: PathLike) -> bool:
     return True
 
 
-def infer_gps_format(filename: _pathlike) -> str:
+def infer_gps_format(filename: PathLike) -> str:
     """Try to infer GPS format from filename.
 
     Args:
@@ -206,14 +206,14 @@ def infer_gps_format(filename: _pathlike) -> str:
 
 def get_gps_loader(
     format: str,
-) -> Callable[[_pathlike, int, int], CoordinatesDataFrame]:
+) -> Callable[[PathLike, int, int], CoordinatesDataFrame]:
     """Get GPS loader function for a given format.
 
     Args:
         format (str): GPS format.
 
     Returns:
-        Callable[[_pathlike, int, int], CoordinatesDataFrame]: GPS loader function.
+        Callable[[PathLike, int, int], CoordinatesDataFrame]: GPS loader function.
     """
     format = format.lower()
     if format == "gpsports":
@@ -226,7 +226,7 @@ def get_gps_loader(
 
 
 def load_codf(
-    filename: _pathlike,
+    filename: PathLike,
     format: str | None = None,
     playerid: int | None = None,
     teamid: int | None = None,
@@ -254,7 +254,7 @@ def load_codf(
 
 
 def load_gps(
-    filenames: (Sequence[_pathlike,] | _pathlike),
+    filenames: (Sequence[PathLike,] | PathLike),
     playerids: Sequence[int] | int = (),
     teamids: Sequence[int] | int = (),
 ) -> CoordinatesDataFrame:
@@ -319,7 +319,7 @@ def load_gps_from_yaml(yaml_path: str) -> CoordinatesDataFrame:
     return load_gps(filepaths, playerids, teamids)
 
 
-def load_labelbox(filename: _pathlike) -> CoordinatesDataFrame:
+def load_labelbox(filename: PathLike) -> CoordinatesDataFrame:
     """Load labelbox format file to CoordinatesDataFrame.
 
     Args:
@@ -383,7 +383,7 @@ def load_labelbox(filename: _pathlike) -> CoordinatesDataFrame:
     return merged_dataframe
 
 
-def load_mot(filename: _pathlike) -> CoordinatesDataFrame:
+def load_mot(filename: PathLike) -> CoordinatesDataFrame:
     """Load MOT format file to CoordinatesDataFrame.
 
     Args:
@@ -432,12 +432,12 @@ def load_mot(filename: _pathlike) -> CoordinatesDataFrame:
 
 
 def load_soccertrack_bbox(
-    filename: _pathlike,
+    filename: PathLike,
 ) -> pd.DataFrame:
     """Load a dataframe from a file.
 
     Args:
-        filename (_pathlike): Path to load the dataframe.
+        filename (PathLike): Path to load the dataframe.
     Returns:
         df (pd.DataFrame): Dataframe loaded from the file.
     """
@@ -468,11 +468,11 @@ def load_soccertrack_bbox(
     return df
 
 
-def is_mot(filename: _pathlike) -> bool:
+def is_mot(filename: PathLike) -> bool:
     """Return True if the file is MOT format.
 
     Args:
-        filename(_pathlike): Path to file.
+        filename(PathLike): Path to file.
 
     Returns:
         is_mot(bool): True if the file is MOT format.
@@ -494,11 +494,11 @@ def is_mot(filename: _pathlike) -> bool:
         return False
 
 
-def infer_bbox_format(filename: _pathlike) -> str:
+def infer_bbox_format(filename: PathLike) -> str:
     """Try to infer the format of a given bounding box file.
 
     Args:
-        filename(_pathlike): Path to bounding box file.
+        filename(PathLike): Path to bounding box file.
 
     Returns:
         format(str): Inferred format of the bounding box file.
@@ -516,14 +516,14 @@ def infer_bbox_format(filename: _pathlike) -> str:
 
 def get_bbox_loader(
     format: str,
-) -> Callable[[_pathlike], BBoxDataFrame]:
+) -> Callable[[PathLike], BBoxDataFrame]:
     """Returns a function that loads the corresponding bbox format.
 
     Args:
         format(str): bbox format to load.
 
     Returns:
-        bbox_loader(Callable[[_pathlike], BBoxDataFrame]): Function that loads the corresponding bbox format.
+        bbox_loader(Callable[[PathLike], BBoxDataFrame]): Function that loads the corresponding bbox format.
     """
     format = format.lower()
     if format == "mot":
@@ -535,11 +535,11 @@ def get_bbox_loader(
     raise ValueError(f"Unknown format {format}")
 
 
-def load_bbox(filename: _pathlike) -> BBoxDataFrame:
+def load_bbox(filename: PathLike) -> BBoxDataFrame:
     """Load a BBoxDataFrame from a file.
 
     Args:
-        filename(_pathlike): Path to bounding box file.
+        filename(PathLike): Path to bounding box file.
 
     Returns:
         bbox(BBoxDataFrame): BBoxDataFrame loaded from the file.
@@ -552,7 +552,7 @@ def load_bbox(filename: _pathlike) -> BBoxDataFrame:
     return df
 
 
-def load_df(filename: _pathlike, df_type: str = "bbox") -> BBoxDataFrame | CoordinatesDataFrame:
+def load_df(filename: PathLike, df_type: str = "bbox") -> BBoxDataFrame | CoordinatesDataFrame:
     """Loads either a BBoxDataFrame or a CoordinatesDataFrame from a file.
 
     Args:
@@ -572,7 +572,7 @@ def load_df(filename: _pathlike, df_type: str = "bbox") -> BBoxDataFrame | Coord
     return df
 
 
-# def load_bboxes_from_yaml(yaml_path: _pathlike) -> BBoxDataFrame:
+# def load_bboxes_from_yaml(yaml_path: PathLike) -> BBoxDataFrame:
 #     """
 #     Args:
 #         yaml_path(str): Path to yaml file.
