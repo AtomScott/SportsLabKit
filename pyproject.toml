@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "sportslabkit"
-version = "0.3.1a2"
+version = "0.3.1a3"
 description = "A Python package for sports analytics."
 readme = "README.md"
 authors = ["Atom Scott <atom.james.scott@gmail.com>"]
