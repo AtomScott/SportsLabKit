@@ -50,7 +50,7 @@ class SklearnVectorModel(BaseVectorModel):
         if self.model is None:
             raise ValueError("The model is as empty as a politician's promise. Load it first.")
 
-        return self.model.predict(inputs, **kwargs)[0]
+        return self.model.predict(inputs, **kwargs)
 
     def _load_model(self, path: str) -> None:
         """
