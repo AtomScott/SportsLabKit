@@ -2,7 +2,6 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import numpy as np
-import torch
 
 
 # Box is of shape (1,2xdim), e.g. for dim=2 [xmin, ymin, width, height] format is accepted
@@ -122,7 +121,8 @@ class Color:
 # Vector is of shape (1, N)
 Vector = np.ndarray
 
-_pathlike = str | Path
+PathLike = str | Path
+_pathlike = str | Path # Planned to be deprecated
 
 # numpy/opencv image alias
 NpImage = np.ndarray

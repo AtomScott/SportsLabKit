@@ -9,9 +9,8 @@ import cv2
 import numpy as np
 import pandas as pd
 
-from sportslabkit.types import _COLOR_NAMES, Rect
 from sportslabkit.utils import make_video
-from sportslabkit.visualization import add_bbox_to_frame, add_frame_id_to_frame
+from sportslabkit.viz.visualizers import BaseVisualizer, SimpleVisualizer
 
 from ..logger import logger
 from ..utils import MovieIterator, get_fps
@@ -87,7 +86,7 @@ class BBoxDataFrame(BaseSLKDataFrame):
         self,
         frame_idx: int,
         frame: np.ndarray,
-        visualizer:'Visualizer' | None = None,
+        visualizer:BaseVisualizer | None = None,
     ) -> np.ndarray:
         """Visualize the bounding box of the specified frame.
 
@@ -95,50 +94,21 @@ class BBoxDataFrame(BaseSLKDataFrame):
             self (BBoxDataFrame): BBoxDataFrame object.
             frame_idx (int): Frame ID.
             frame (np.ndarray): Frame image.
+            visualizer (BaseVisualizer, optional): Visualizer object. If None, SimpleVisualizer is used. Defaults to None.
+
         Returns:
-            frame(np.ndarray): Frame image with bounding box.
+            np.ndarray: Frame image with bounding box if frame_idx is in the index, otherwise returns the original frame image.
         """
 
         if visualizer is None:
-            visualizer = DefaultVisualizer(self)
-
-        frame_df = self.loc[self.index == frame_idx]
-        drawn_frame = visualizer.draw_bbdf(frame_df, frame)
-        return drawn_frame
+            visualizer = SimpleVisualizer()
 
         if frame_idx not in self.index:
             return frame
+
         frame_df = self.loc[self.index == frame_idx]
-
-        for (team_id, player_id), player_df in frame_df.iter_players():
-            if player_df.isnull().any(axis=None):
-                logger.debug(f"NaN value found at frame {frame_idx}, team {team_id}, player {player_id}. Skipping...")
-                continue
-
-            logger.debug(f"Visualizing frame {frame_idx}, team {team_id}, player {player_id}")
-            if frame_idx not in player_df.index:
-                logger.debug(f"Frame {frame_idx} not found in player_df")
-                continue
-
-            player_df.loc[frame_idx, ["bb_left", "bb_top", "bb_width", "bb_height"]]
-
-            x1, y1, w, h = player_df.loc[frame_idx, ["bb_left", "bb_top", "bb_width", "bb_height"]].values.astype(int)
-            Rect(x1, y1, w, h)
-
-
-
-            x2, y2 = x1 + w, y1 + h
-
-            label = f"{team_id}_{player_id}"
-            player_id_int = sum([int(x) for x in str(hash(player_id))[1:]])
-            color = _COLOR_NAMES[hash(player_id_int) % len(_COLOR_NAMES)]
-
-            logger.debug(f"x1: {x1}, y1: {y1}, x2: {x2}, y2: {y2}, label: {label}, color: {color}")
-            frame = add_bbox_to_frame(frame, x1, y1, x2, y2, label, color)
-
-        if draw_frame_id:
-            frame = add_frame_id_to_frame(frame, frame_idx)
-        return frame
+        drawn_frame = visualizer.draw_frame(frame_df, frame)
+        return drawn_frame
 
     def visualize_frames(self, video_path: str, save_path: str, **kwargs) -> None:
         """Visualize bounding boxes on a video.
