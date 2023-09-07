@@ -21,8 +21,7 @@ from sportslabkit.vector_model import BaseVectorModel
 
 class TeamClassificationCallback(Callback):
     def __init__(self, vector_model: BaseVectorModel):
-        """
-        Initialize TeamClassificationCallback.
+        """Initialize TeamClassificationCallback.
 
         Args:
             vector_model (BaseVectorModel): A trained object responsible for classifying teams.
@@ -48,7 +47,8 @@ class TeamClassificationCallback(Callback):
         self.vector_model = vector_model
 
     def on_track_sequence_end(self, tracker: MultiObjectTracker) -> None:
-        """
+        """Call the `vector_model.predict` method on each tracklet to classify it into a team ID.
+
         Method called at the end of a track sequence. During this phase, team classification
         is performed on each tracklet using the `vector_model.predict`.
 
@@ -73,5 +73,5 @@ class TeamClassificationCallback(Callback):
             predicted_team_id = self.vector_model(tracklet_features)
 
             # Assuming you want the most frequent prediction as the final team ID
-            most_frequent_team_id = stats.mode(predicted_team_id).mode
+            most_frequent_team_id = stats.mode(predicted_team_id, axis=0, keepdims=False).mode
             tracklet.team_id = most_frequent_team_id
