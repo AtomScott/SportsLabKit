@@ -1,5 +1,3 @@
-from typing import Optional
-
 import numpy as np
 
 
@@ -31,7 +29,7 @@ class YOLOv8(BaseDetectionModel):
         model: str = "",
         agnostic_nms: bool = False,
         multi_label: bool = False,
-        classes: Optional[list[str]] = None,
+        classes: list[str] | None = None,
         max_det: int = 1000,
         amp: bool = False,
         imgsz: int = 640,
@@ -131,7 +129,7 @@ class YOLOv8x(YOLOv8):
         model: str = "yolov8x",
         agnostic_nms: bool = False,
         multi_label: bool = False,
-        classes: Optional[list[str]] = None,
+        classes: list[str] | None = None,
         max_det: int = 1000,
         amp: bool = False,
         imgsz: int = 640,

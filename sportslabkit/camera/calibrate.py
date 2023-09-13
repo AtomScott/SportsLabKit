@@ -7,7 +7,7 @@ from sklearn.decomposition import PCA
 from vidgear.gears.stabilizer import Stabilizer
 
 from sportslabkit.logger import logger, tqdm
-from sportslabkit.types.types import _pathlike
+from sportslabkit.types.types import PathLike
 from sportslabkit.utils import make_video
 
 
@@ -170,10 +170,10 @@ def calibrate_camera_fisheye(objpoints, imgpoints, dim, balance=1):
 
 
 def find_intrinsic_camera_parameters(
-    media_path: _pathlike,
+    media_path: PathLike,
     fps: int = 1,
     scale: int = 4,
-    save_path: _pathlike | None = None,
+    save_path: PathLike | None = None,
     draw_on_save: bool = False,
     points_to_use: int = 50,
     calibration_method: str = "zhang",
@@ -202,6 +202,7 @@ def find_intrinsic_camera_parameters(
 
     # Support multiple video files
     from sportslabkit.camera import Camera
+
     camera = Camera(media_path)
 
     # Find corners in each video
@@ -236,10 +237,10 @@ def find_intrinsic_camera_parameters(
 
 
 def calibrate_video_from_mappings(
-    media_path: _pathlike,
+    media_path: PathLike,
     mapx: NDArray,
     mapy: NDArray,
-    save_path: _pathlike,
+    save_path: PathLike,
     stabilize: bool = True,
 ):
     """
@@ -260,6 +261,7 @@ def calibrate_video_from_mappings(
         stab = Stabilizer()
 
         from sportslabkit.camera import Camera
+
         camera = Camera(media_path)
         for frame in camera:
             stab_frame = stab.stabilize(frame)

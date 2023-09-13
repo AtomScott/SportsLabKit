@@ -33,7 +33,7 @@ for d, path in _available_files.items():
 available = list(_available_dir.keys()) + list(_available_files.keys())
 
 
-def get_path(dataset: Optional[str] = None) -> str:
+def get_path(dataset: str | None = None) -> str:
     """Get the path to the data file.
 
     Args:

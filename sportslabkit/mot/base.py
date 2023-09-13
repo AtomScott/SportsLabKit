@@ -1,18 +1,53 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Iterable, List, Tuple, Union
+from collections.abc import Iterable
+from functools import wraps
+from typing import Any
 
 import numpy as np
 import optuna
 import pandas as pd
 
 from sportslabkit import Tracklet
-from sportslabkit.callbacks import Callback, with_callbacks
 from sportslabkit.detection_model.dummy import DummyDetectionModel
 from sportslabkit.logger import logger, tqdm
 from sportslabkit.metrics import hota_score
 
+
+def with_callbacks(func):
+    """Decorator for wrapping methods that require callback invocations.
+
+    Args:
+        func (callable): The method to wrap.
+
+    Returns:
+        callable: The wrapped method.
+    """
+
+    @wraps(func)
+    def wrapper(self, *args, **kwargs):
+        event_name = func.__name__
+        self._invoke_callbacks(f"on_{event_name}_start")
+        result = func(self, *args, **kwargs)
+        self._invoke_callbacks(f"on_{event_name}_end")
+        return result
+
+    return wrapper
+
+
+class Callback:
+    """Base class for creating new callbacks.
+
+    This class defines the basic structure of a callback and allows for dynamic method creation
+    for handling different events in the Trainer's lifecycle.
+
+    Methods:
+        __getattr__(name: str) -> callable:
+            Returns a dynamically created method based on the given name.
+    """
+
+    pass
 
 class MultiObjectTracker(ABC):
     def __init__(self, window_size=1, step_size=None, max_staleness=5, min_length=5, callbacks=None):
@@ -42,14 +77,14 @@ class MultiObjectTracker(ABC):
             if method:
                 method(self)
 
-    def update_tracklet(self, tracklet: Tracklet, states: Dict[str, Any]):
+    def update_tracklet(self, tracklet: Tracklet, states: dict[str, Any]):
         self._check_required_observations(states)
         tracklet.update_observations(states, self.frame_count)
         tracklet.increment_counter()
         return tracklet
 
     @abstractmethod
-    def update(self, current_frame: Any, trackelts: List[Tracklet]) -> Tuple[List[Tracklet], List[Dict[str, Any]]]:
+    def update(self, current_frame: Any, trackelts: list[Tracklet]) -> tuple[list[Tracklet], list[dict[str, Any]]]:
         pass
 
     def process_sequence_item(self, sequence: Any):
@@ -76,7 +111,7 @@ class MultiObjectTracker(ABC):
         self.alive_tracklets = assigned_tracklets + new_tracklets + non_stale_tracklets
         self.dead_tracklets += stale_tracklets
 
-    def track(self, sequence: Union[Iterable[Any], np.ndarray]) -> Tracklet:
+    def track(self, sequence: Iterable[Any] | np.ndarray) -> Tracklet:
         if not isinstance(sequence, (Iterable, np.ndarray)):
             raise ValueError("Input 'sequence' must be an iterable or numpy array of frames/batches")
         self.reset()
@@ -130,7 +165,7 @@ class MultiObjectTracker(ABC):
         self.frame_count = 0
         logger.debug("Tracker initialized.")
 
-    def _check_required_observations(self, target: Dict[str, Any]):
+    def _check_required_observations(self, target: dict[str, Any]):
         missing_types = [
             required_type for required_type in self.required_observation_types if required_type not in target
         ]
@@ -146,7 +181,7 @@ class MultiObjectTracker(ABC):
                 f"Current types in 'target': {current_types_str}"
             )
 
-    def check_updated_state(self, state: Dict[str, Any]):
+    def check_updated_state(self, state: dict[str, Any]):
         if not isinstance(state, dict):
             raise ValueError("The `update` method must return a dictionary.")
 
@@ -160,7 +195,7 @@ class MultiObjectTracker(ABC):
                 f"The returned state from `update` is missing the following required types: {missing_types_str}."
             )
 
-    def create_tracklet(self, state: Dict[str, Any]):
+    def create_tracklet(self, state: dict[str, Any]):
         tracklet = Tracklet(max_staleness=self.max_staleness)
         for required_type in self.required_observation_types:
             tracklet.register_observation_type(required_type)

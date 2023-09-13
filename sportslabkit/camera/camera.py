@@ -2,15 +2,7 @@
 
 from __future__ import annotations
 
-from typing import (
-    Dict,
-    Generator,
-    List,
-    Mapping,
-    Optional,
-    Sequence,
-    Tuple,
-)
+from collections.abc import Generator, Mapping, Sequence
 from xml.etree import ElementTree
 
 import cv2 as cv
@@ -19,24 +11,24 @@ from numpy.typing import ArrayLike, NDArray
 
 from sportslabkit.camera.calibrate import find_intrinsic_camera_parameters
 from sportslabkit.camera.videoreader import VideoReader
-from sportslabkit.types.types import _pathlike
+from sportslabkit.types.types import PathLike
 from sportslabkit.utils import logger
 
 
 class Camera(VideoReader):
     def __init__(
         self,
-        video_path: _pathlike,
+        video_path: PathLike,
         threaded: bool = False,
         queue_size: int = 10,
-        keypoint_xml: Optional[str] = None,
-        x_range: Optional[Sequence[float]] = (0, 105),
-        y_range: Optional[Sequence[float]] = (0, 68),
-        camera_matrix: Optional[ArrayLike] = None,
-        camera_matrix_path: Optional[str] = None,
-        distortion_coefficients: Optional[str] = None,
-        distortion_coefficients_path: Optional[str] = None,
-        calibration_video_path: Optional[str] = None,
+        keypoint_xml: str | None = None,
+        x_range: Sequence[float] | None = (0, 105),
+        y_range: Sequence[float] | None = (0, 68),
+        camera_matrix: ArrayLike | None = None,
+        camera_matrix_path: str | None = None,
+        distortion_coefficients: str | None = None,
+        distortion_coefficients_path: str | None = None,
+        calibration_video_path: str | None = None,
         calibration_method: str = "zhang",
         label: str = "",
         verbose: int = 0,
@@ -272,7 +264,7 @@ class Camera(VideoReader):
         return 255
 
     @property
-    def keypoint_map(self) -> Dict[Tuple[int, int], Tuple[int, int]]:
+    def keypoint_map(self) -> dict[tuple[int, int], tuple[int, int]]:
         """Get dictionary of pitch keypoints in pitch space to pixel space.
 
         Returns:
@@ -308,7 +300,7 @@ class Camera(VideoReader):
         return H
 
 
-def read_pitch_keypoints(xmlfile: str, annot_type: str) -> Tuple[NDArray[np.float64], NDArray[np.float64]]:
+def read_pitch_keypoints(xmlfile: str, annot_type: str) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
     """Read pitch keypoints from xml file.
 
     Args:
@@ -352,7 +344,7 @@ def read_pitch_keypoints(xmlfile: str, annot_type: str) -> Tuple[NDArray[np.floa
     return src, dst
 
 
-def load_cameras(camera_info: List[Mapping]) -> List[Camera]:
+def load_cameras(camera_info: list[Mapping]) -> list[Camera]:
     """Load cameras from a list of dictionaries containing camera information.
 
     Args:

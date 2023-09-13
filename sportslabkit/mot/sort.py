@@ -1,5 +1,3 @@
-from typing import Optional
-
 from sportslabkit.logger import logger
 from sportslabkit.matching import SimpleMatchingFunction
 from sportslabkit.metrics import IoUCMM
@@ -20,9 +18,10 @@ class SORTTracker(MultiObjectTracker):
         motion_model,
         matching_fn: SimpleMatchingFunction = SimpleMatchingFunction(metric=IoUCMM(use_pred_box=True), gate=1.0),
         window_size: int = 1,
-        step_size: Optional[int] = None,
+        step_size: int | None = None,
         max_staleness: int = 5,
         min_length: int = 5,
+        callbacks=None,
     ):
         """
         Initializes the SORT Tracker.
@@ -38,6 +37,7 @@ class SORTTracker(MultiObjectTracker):
             step_size=step_size,
             max_staleness=max_staleness,
             min_length=min_length,
+            callbacks=callbacks,
         )
 
         self.detection_model = detection_model

@@ -1,5 +1,3 @@
-from typing import Union
-
 from pandas import DataFrame
 from pandas._typing import FilePath, WriteBuffer
 
@@ -7,7 +5,7 @@ from pandas._typing import FilePath, WriteBuffer
 class BaseSLKDataFrame(DataFrame):
     def save_dataframe(
         self,
-        path_or_buf: Union[FilePath, WriteBuffer[bytes], WriteBuffer[str]],
+        path_or_buf: FilePath | WriteBuffer[bytes] | WriteBuffer[str],
     ) -> None:
         """Save a dataframe to a file.
 

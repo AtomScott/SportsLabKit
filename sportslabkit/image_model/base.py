@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Iterable, List, Sequence, Union
+from collections.abc import Iterable, Sequence
 
 import numpy as np
 import torch
@@ -53,7 +53,7 @@ class BaseImageModel(ABC):
         embeddings = self._check_and_fix_outputs(results)
         return embeddings
 
-    def _check_and_fix_inputs(self, inputs) -> List[np.ndarray]:
+    def _check_and_fix_inputs(self, inputs) -> list[np.ndarray]:
         """Check input type and shape.
 
         Acceptable input types are numpy.ndarray, torch.Tensor, pathlib Path, string file, PIL Image, or a list of any of these. All inputs will be converted to a list of numpy arrays.
@@ -116,7 +116,7 @@ class BaseImageModel(ABC):
         """
         raise NotImplementedError
 
-    def embed_detections(self, detections: Sequence[Detection], image: Union[Image.Image, np.ndarray]) -> np.ndarray:
+    def embed_detections(self, detections: Sequence[Detection], image: Image.Image | np.ndarray) -> np.ndarray:
         if isinstance(detections, Detections):
             detections = detections.to_list()
 

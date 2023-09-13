@@ -1,5 +1,3 @@
-from typing import Optional
-
 from sportslabkit.logger import logger
 from sportslabkit.matching import MotionVisualMatchingFunction, SimpleMatchingFunction
 from sportslabkit.metrics import CosineCMM, IoUCMM
@@ -27,15 +25,17 @@ class BYTETracker(MultiObjectTracker):
         ),
         detection_score_threshold=0.6,
         window_size: int = 1,
-        step_size: Optional[int] = None,
+        step_size: int | None = None,
         max_staleness: int = 5,
         min_length: int = 5,
+        callbacks=None,
     ):
         super().__init__(
             window_size=window_size,
             step_size=step_size,
             max_staleness=max_staleness,
             min_length=min_length,
+            callbacks=callbacks,
         )
         self.detection_model = detection_model
         self.image_model = image_model

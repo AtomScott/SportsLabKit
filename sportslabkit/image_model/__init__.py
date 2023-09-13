@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
-from typing import List, Optional, Sequence, Tuple, Union
+from typing import List, Optional, Tuple, Union
+from collections.abc import Sequence
 
 import numpy as np
 import pytorch_lightning as pl

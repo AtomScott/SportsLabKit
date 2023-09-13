@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Tuple, Type, Union
+from typing import Any
 
 import numpy as np
 
@@ -13,9 +13,9 @@ class BaseMotionModel(ABC):
     Derived classes should implement the update, and predict methods. MotionModels are procedural and stateless. The state of tracklet is managed by the Tracklet class. The tracklet must have the required observations and states for the motion model to work. If the tracklet doesn't have the required observations or states, the motion model will raise an error and tell the user which observations or states are missing.
     """
 
-    hparam_search_space: Dict[str, Type] = {}
-    required_observation_types: List[str] = NotImplemented
-    required_state_types: List[str] = NotImplemented
+    hparam_search_space: dict[str, type] = {}
+    required_observation_types: list[str] = NotImplemented
+    required_state_types: list[str] = NotImplemented
 
     def __init__(self, is_multi_target=False):
         """Initialize the MotionModel."""
@@ -49,7 +49,7 @@ class BaseMotionModel(ABC):
         tracklet.update_states(new_states)
         return prediction
 
-    def _multi_target_call(self, tracklets: List[Tracklet]) -> List[Any]:
+    def _multi_target_call(self, tracklets: list[Tracklet]) -> list[Any]:
         """Call the motion model to update its state and return the prediction for multiple targets.
 
         Args:
@@ -80,9 +80,9 @@ class BaseMotionModel(ABC):
     @abstractmethod
     def predict(
         self,
-        observations: Union[float, np.ndarray],
-        states: Union[float, np.ndarray, None],
-    ) -> Tuple[Union[float, np.ndarray, None], Union[float, np.ndarray]]:
+        observations: float | np.ndarray,
+        states: float | np.ndarray | None,
+    ) -> tuple[float | np.ndarray | None, float | np.ndarray]:
         """Compute the next internal state and prediction based on the current observation and internal state.
 
         Args:
@@ -95,7 +95,7 @@ class BaseMotionModel(ABC):
         pass
 
     @classmethod
-    def from_config(cls: Type["BaseMotionModel"], config: Dict) -> "BaseMotionModel":
+    def from_config(cls: type["BaseMotionModel"], config: dict) -> "BaseMotionModel":
         """Initialize a motion model instance from a configuration dictionary.
 
         Args:

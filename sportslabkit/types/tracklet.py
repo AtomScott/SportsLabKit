@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import uuid
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import pandas as pd
 
@@ -58,8 +58,8 @@ class Tracklet:
         self.global_step: int = 0
         self.staleness: int = 0
         self.max_staleness: int = max_staleness
-        self._observations: Dict[str, List[Any]] = {}
-        self._states: Dict[str, Any] = {}
+        self._observations: dict[str, list[Any]] = {}
+        self._states: dict[str, Any] = {}
 
     def __len__(self) -> int:
         assert self.check_observation_lengths(), "Observation lengths are inconsistent"
@@ -95,7 +95,7 @@ class Tracklet:
         if name not in self._observations:
             self._observations[name] = []
 
-    def register_observation_types(self, names: List[str]) -> None:
+    def register_observation_types(self, names: list[str]) -> None:
         """Register a new observation type.
 
         Args:
@@ -104,11 +104,11 @@ class Tracklet:
         for name in names:
             self.register_observation_type(name)
 
-    def update_observations(self, observations: Dict[str, Any], global_step: Optional[int] = None) -> None:
+    def update_observations(self, observations: dict[str, Any], global_step: int | None = None) -> None:
         for name, value in observations.items():
             self.update_observation(name, value)
 
-    def update_observation(self, name: str, value: Any, global_step: Optional[int] = None) -> None:
+    def update_observation(self, name: str, value: Any, global_step: int | None = None) -> None:
         if name in self._observations:
             self._observations[name].append(value)
         else:
@@ -123,7 +123,7 @@ class Tracklet:
         if name not in self._states:
             self._states[name] = None
 
-    def register_state_types(self, names: List[str]) -> None:
+    def register_state_types(self, names: list[str]) -> None:
         """Register a new state type.
 
         Args:
@@ -132,7 +132,7 @@ class Tracklet:
         for name in names:
             self.register_state_type(name)
 
-    def get_observation(self, name: Optional[str] = None) -> Optional[Any]:
+    def get_observation(self, name: str | None = None) -> Any | None:
         """Get the most recent value of an observation type.
 
         Args:
@@ -147,7 +147,7 @@ class Tracklet:
             return self._observations[name][-1]
         return None
 
-    def get_observations(self, name: Optional[str] = None) -> Optional[Any]:
+    def get_observations(self, name: str | None = None) -> Any | None:
         """Get all values of an observation type.
 
         Args:
@@ -163,7 +163,7 @@ class Tracklet:
         else:
             raise ValueError(f"Observation type '{name}' not registered")
 
-    def get_state(self, name: Optional[str] = None) -> Optional[Any]:
+    def get_state(self, name: str | None = None) -> Any | None:
         """Get the most recent value of a state type.
 
         Args:
@@ -178,7 +178,7 @@ class Tracklet:
             return self._states[name]
         return None
 
-    def get_states(self, name: Optional[str] = None) -> Optional[Any]:
+    def get_states(self, name: str | None = None) -> Any | None:
         """Get all values of a state type.
 
         Args:
@@ -194,7 +194,7 @@ class Tracklet:
         else:
             raise ValueError(f"State type '{name}' not registered")
 
-    def update_states(self, states: Dict[str, Any], global_step: Optional[int] = None) -> None:
+    def update_states(self, states: dict[str, Any], global_step: int | None = None) -> None:
         """Update multiple states with new values.
 
         Args:
@@ -235,7 +235,7 @@ class Tracklet:
         else:
             raise ValueError(f"Observation type '{name}' not registered")
 
-    def increment_counter(self, global_step: Optional[int] = None) -> None:
+    def increment_counter(self, global_step: int | None = None) -> None:
         """Increment the step counters, steps_alive and global_step. If global_step is provided, it will be used instead of incrementing the global_step counter."""
         self.steps_alive += 1
         if global_step is not None:
@@ -342,7 +342,7 @@ class Tracklet:
         print(message)
 
     @property
-    def states(self) -> Dict[str, Any]:
+    def states(self) -> dict[str, Any]:
         """Get the current state of the tracker.
 
         Returns:
