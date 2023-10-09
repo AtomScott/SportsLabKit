@@ -113,9 +113,9 @@ Updated from the [original](https://github.com/avijit9/awesome-computer-vision-i
 
 ## Datasets Available
 
-[1] Volleyball Dataset [[Link]](https://github.com/mostafa-saad/deep-activity-rec)
-[2] SoccerTrack Dataset [[Link]](https://www.kaggle.com/datasets/atomscott/soccertrack)
-[3] TeamTrack Dataset [[Link]](https://www.kaggle.com/datasets/atomscott/teamtrack)
+- Volleyball Dataset [[Link]](https://github.com/mostafa-saad/deep-activity-rec)
+- SoccerTrack Dataset [[Link]](https://www.kaggle.com/datasets/atomscott/soccertrack)
+- TeamTrack Dataset [[Link]](https://www.kaggle.com/datasets/atomscott/teamtrack)
 
 
 ## Credits
