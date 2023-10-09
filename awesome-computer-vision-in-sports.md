@@ -1,5 +1,7 @@
-[![Awesome](https://cdn.rawgit.com/sindresorhus/awesome/d7305f38d29fed78fa85652e3a63e154dd8e8829/media/badge.svg)](https://github.com/sindresorhus/awesome)
-# awesome-computer-vision-in-sports 
+# Awesome Computer Vision in Sports
+
+[![Awesome](https://cdn.rawgit.com/sindresorhus/awesome/d7305f38d29fed78fa85652e3a63e154dd8e8829/media/badge.svg)](https://github.com/sindresorhus/awesome) [![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FAtomScott%2FSportsLabKit%2Fblob%2Fdevelop%2Fawesome-computer-vision-in-sports.md&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false)](https://hits.seeyoufarm.com)
+
 Updated from the [original](https://github.com/avijit9/awesome-computer-vision-in-sports/blob/master/README.md#awesome-computer-vision-in-sports). See [below for full credits](#Credits).
 
 ## Papers by the year of publications
@@ -8,6 +10,7 @@ Updated from the [original](https://github.com/avijit9/awesome-computer-vision-i
 
 - SoccerNet 2022 Challenges Results, ACM MMSports'22 [[Paper]](https://arxiv.org/abs/2210.02365)
 - DeepSportradar-v1: Computer Vision Dataset for Sports Understanding with High Quality Annotations, ACM MMSports'22 [[Paper]](https://arxiv.org/abs/2208.08190)
+- SoccerTrack: A Dataset and Tracking Algorithm for Soccer with Fish-eye and Drone Videos CVPRW'22 [[Paper]](https://openaccess.thecvf.com/content/CVPR2022W/CVSports/papers/Scott_SoccerTrack_A_Dataset_and_Tracking_Algorithm_for_Soccer_With_Fish-Eye_CVPRW_2022_paper.pdf)
 
 ### 2021
 
@@ -111,6 +114,8 @@ Updated from the [original](https://github.com/avijit9/awesome-computer-vision-i
 ## Datasets Available
 
 [1] Volleyball Dataset [[Link]](https://github.com/mostafa-saad/deep-activity-rec)
+[2] SoccerTrack Dataset [[Link]](https://www.kaggle.com/datasets/atomscott/soccertrack)
+[3] TeamTrack Dataset [[Link]](https://www.kaggle.com/datasets/atomscott/teamtrack)
 
 
 ## Credits
