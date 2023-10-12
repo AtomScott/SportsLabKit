@@ -77,6 +77,33 @@ class LineBasedCalibrator(BaseCalibrationModel):
         H, _ = cv2.findHomography(ordered_src, ordered_dst, method=0)
         return H
 
+    def find_quadrilateral(self, image):
+        """Find the quadrilateral in the given image.
+
+        Parameters:
+        - image: numpy array
+            The source image.
+
+        Returns:
+        - numpy array
+            The quadrilateral in the image.
+        """
+
+        contour = self._get_largest_contour(image)
+        quadrilateral = self._approximate_contour(contour)
+        return self.order_points(quadrilateral)
+
+    def order_points(self, pts):
+        """Order the points in clockwise order starting from top-left."""
+        centroid = np.mean(pts, axis=0)
+
+        # Compute the angles relative to the centroid
+        angles = np.arctan2(pts[:, 1] - centroid[1], pts[:, 0] - centroid[0])
+
+        # Sort the points based on the angles
+        ordered_pts = pts[np.argsort(angles)]
+        return ordered_pts
+
     def forward(self, image):
         """Calculate the homography matrix for the given image.
 
