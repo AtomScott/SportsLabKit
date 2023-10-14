@@ -13,7 +13,7 @@
 
   <br>
 
-  [![Documentation Status](https://readthedocs.org/projects/sportslabkit/badge/?version=latest)](https://soccertrack.readthedocs.io/en/latest/?badge=latest) 
+  [![Documentation Status](https://readthedocs.org/projects/sportslabkit/badge/?version=latest)](https://sportslabkit.readthedocs.io/en/latest/?badge=latest) 
   [![Kaggle](https://kaggle.com/static/images/open-in-kaggle.svg)](https://www.kaggle.com/datasets/atomscott/soccertrack)
   [![PWC](https://img.shields.io/badge/%7C-Papers%20with%20Code-lightblue)](https://paperswithcode.com/dataset/soccertrack-dataset)
   [![dm](https://img.shields.io/pypi/dm/sportslabkit)](https://pypi.org/project/sportslabkit/)
