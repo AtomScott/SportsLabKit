@@ -19,7 +19,7 @@ build:
       - cp -r ./notebooks ./docs/notebooks
       - sed 's#./docs/_static#./_static#g' ./README.md > ./docs/README.md
       - sed 's#./docs/_static#./_static#g' ./contributing.md > ./docs/contributing.md
-      -	sed 's|./docs/_static|./_static|g' ../awesome-computer-vision-in-sports.md > ./awesome-computer-vision-in-sports.md
+      -	sed 's#./docs/_static|./_static#g' ./awesome-computer-vision-in-sports.md > ./docs/awesome-computer-vision-in-sports.md
 
 # Build documentation in the docs/ directory with Sphinx
 sphinx:
