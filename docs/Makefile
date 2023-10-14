@@ -52,6 +52,7 @@ html:
 
 	sed 's|./docs/_static|./_static|g' ../README.md > ./README.md
 	sed 's|./docs/_static|./_static|g' ../contributing.md > ./contributing.md
+	sed 's|./docs/_static|./_static|g' ../awesome-computer-vision-in-sports.md > ./awesome-computer-vision-in-sports.md
 
 	$(CONDA_ACTIVATE) sportslabkit-docs
 	export JUPYTER_PATH=/opt/homebrew/share/jupyter:$JUPYTER_PATH; python -m $(SPHINXBUILD) -T -E -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
