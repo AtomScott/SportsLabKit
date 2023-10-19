@@ -49,10 +49,11 @@ class TeamTracker(MultiObjectTracker):
         self.first_matching_fn = first_matching_fn
         self.second_matching_fn = second_matching_fn
         self.detection_score_threshold = detection_score_threshold
+        self.homographies = []
 
     def predict_single_tracklet_motion(self, tracklet):
         # x = self.tracklet_to_points(tracklet, H)
-        y = self.motion_model(tracklet).squeeze(0).numpy()
+        y = self.motion_model(tracklet).squeeze().numpy()
         return y
 
     def predict_multi_tracklet_motion(self, tracklets):
@@ -101,8 +102,19 @@ class TeamTracker(MultiObjectTracker):
 
         # calculate 2d pitch coordinates
         H = self.calibration_model(current_frame)
+        self.homographies.append(H)
+
+        dets_ids_to_remove = []
         for i, det in enumerate(detections):
             det.pt = self.detection_to_points(det, H)
+
+            # remove detections that are outside the pitch
+            # add other sports
+            if det.pt[0] < 0 or det.pt[0] > 105 or det.pt[1] < 0 or det.pt[1] > 68:
+                dets_ids_to_remove.append(i)
+
+        for i in sorted(dets_ids_to_remove, reverse=True):
+            del detections[i]
 
         ##############################
         # Motion prediction
@@ -187,9 +199,7 @@ class TeamTracker(MultiObjectTracker):
         ##############################
 
         # Second association between unassigned tracklets and low confidence detections
-        matches_second, cost_matrix_second = self.second_matching_fn(
-            unassigned_tracklets, low_confidence_detections, True
-        )
+        matches_second, cost_matrix_second = self.second_matching_fn(unassigned_tracklets, low_confidence_detections, True)
 
         # [Second] assigned tracklets: update
         for match in matches_second:
