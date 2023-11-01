@@ -2,7 +2,7 @@ import inspect
 
 from sportslabkit.calibration_model.base import BaseCalibrationModel
 from sportslabkit.calibration_model.dummy import DummyCalibrationModel
-from sportslabkit.calibration_model.fld import LineBasedCalibrator
+from sportslabkit.calibration_model.fld import SimpleContourCalibrator, FLDCalibrator
 from sportslabkit.logger import logger
 
 

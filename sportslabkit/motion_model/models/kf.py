@@ -1,6 +1,7 @@
 from typing import Any
 
 import numpy as np
+import torch
 from filterpy.kalman import predict, update
 from numpy import ndarray
 
@@ -138,4 +139,5 @@ class KalmanFilter(BaseMotionModel):
                 states["H"],
             )
         pred = new_states["x"][:4]
+        pred = torch.tensor(pred).unsqueeze(0)
         return pred, new_states
