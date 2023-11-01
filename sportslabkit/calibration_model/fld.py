@@ -52,6 +52,10 @@ class SimpleContourCalibrator(BaseCalibrationModel):
     def _approximate_hull(self, contour):
         hull = cv2.convexHull(contour)
         return hull
+    
+    def _get_first_point(self, hull):
+        sorted_hull = sorted(hull, key=lambda x:x[0][0]*x[0][0] + x[0][1]*x[0][1])
+        return sorted_hull[0][0]
 
     def _farthest_point_from(self, reference_point, point_list):
         """Find the point in 'point_list' that is farthest from 'reference_point'."""
@@ -66,7 +70,7 @@ class SimpleContourCalibrator(BaseCalibrationModel):
 
     def _approximate_quad(self, hull):
         """Approximate a convex hull to a quadrilateral by considering most distant points."""
-        first_point = hull[0][0]
+        first_point = self._get_first_point(hull)
         second_point = self._farthest_point_from(first_point, hull)
 
         max_distance = 0
