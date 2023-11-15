@@ -331,22 +331,20 @@ class CoordinatesDataFrame(BaseSLKDataFrame, pd.DataFrame):
             fig, ax = plt.subplots()
 
             pitch_length = 54
-            pitch_width = 20
+            pitch_width = 22
             end_line_left = 10
             end_line_right = 44
 
-            rect = patches.Rectangle((0, 0), pitch_length, pitch_width, edgecolor='white', lw=3, fill=False)
+            rect = patches.Rectangle((0, 0), pitch_length, pitch_width, edgecolor='#606060', lw=1.5, fill=False)
             ax.add_patch(rect)
 
-            line1 = Line2D([end_line_left, end_line_left], [0, pitch_width], color='white', lw=1)
+            line1 = Line2D([end_line_left, end_line_left], [0, pitch_width], color='#606060', lw=1.5)
             ax.add_line(line1)
 
-            line2 = Line2D([end_line_right, end_line_right], [0, pitch_width], color='white', lw=1)
+            line2 = Line2D([end_line_right, end_line_right], [0, pitch_width], color='#606060', lw=1.5)
             ax.add_line(line2)
 
             ax.set_aspect('equal')
-            ax.set_xlim(0, pitch_length)
-            ax.set_ylim(0, pitch_width)
             ax.axis('off')
 
         ax.plot(
@@ -476,22 +474,20 @@ class CoordinatesDataFrame(BaseSLKDataFrame, pd.DataFrame):
             fig, ax = plt.subplots()
 
             pitch_length = 54
-            pitch_width = 20
+            pitch_width = 22
             end_line_left = 10
             end_line_right = 44
 
-            rect = patches.Rectangle((0, 0), pitch_length, pitch_width, edgecolor='white', lw=3, fill=False)
+            rect = patches.Rectangle((0, 0), pitch_length, pitch_width, edgecolor='#606060', lw=1.5, fill=False)
             ax.add_patch(rect)
 
-            line1 = Line2D([end_line_left, end_line_left], [0, pitch_width], color='white', lw=1)
+            line1 = Line2D([end_line_left, end_line_left], [0, pitch_width], color='#606060', lw=1.5)
             ax.add_line(line1)
 
-            line2 = Line2D([end_line_right, end_line_right], [0, pitch_width], color='white', lw=1)
+            line2 = Line2D([end_line_right, end_line_right], [0, pitch_width], color='#606060', lw=1.5)
             ax.add_line(line2)
 
             ax.set_aspect('equal')
-            ax.set_xlim(0, pitch_length)
-            ax.set_ylim(0, pitch_width)
             ax.axis('off')
 
         ball, *_ = ax.plot([], [], **_ball_kwargs)
