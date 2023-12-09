@@ -5,8 +5,9 @@ import sys
 from collections.abc import Iterable, Mapping
 from typing import Any
 
-import __main__ as main
 from loguru import logger
+
+import __main__ as main
 
 
 class LoggerMixin:
