@@ -6,9 +6,12 @@ from collections.abc import Iterable, Mapping
 from typing import Any
 
 import cv2
+import matplotlib.patches as patches
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from matplotlib.animation import FuncAnimation
+from matplotlib.lines import Line2D
 from mplsoccer import Pitch
 from numpy.typing import ArrayLike, NDArray
 
@@ -244,6 +247,7 @@ class CoordinatesDataFrame(BaseSLKDataFrame, pd.DataFrame):
         home_kwargs: dict[str, Any] | None = None,
         away_kwargs: dict[str, Any] | None = None,
         save_kwargs: dict[str, Any] | None = None,
+        sports: str = "soccer"
     ):
         """Visualize a single frame.
 
@@ -262,6 +266,7 @@ class CoordinatesDataFrame(BaseSLKDataFrame, pd.DataFrame):
             home_kwargs: Keyword arguments specifically for the home team markers.
             away_kwargs: Keyword arguments specifically for the away team markers.
             save_kwargs: Keyword arguments for the save function.
+            sports: Name of sports. Defaults to "soccer".
 
         Note:
             `marker_kwargs` will be used for all markers but will be overwritten by `ball_kwargs`, `home_kwargs` and `away_kwargs`. All keyword arguments are passed to `plt.plot`. `save_kwargs` are passed to `plt.savefig`.
@@ -309,16 +314,38 @@ class CoordinatesDataFrame(BaseSLKDataFrame, pd.DataFrame):
         df_ball = _df[ball_key]
         df_home = _df[home_key]
         df_away = _df[away_key]
-        pitch = Pitch(
-            pitch_color="black",
-            line_color=(0.3, 0.3, 0.3),
-            pitch_type="custom",
-            pitch_length=105,
-            pitch_width=68,
-            label=False,
-        )
+        if sports == "soccer":
+            pitch = Pitch(
+                pitch_color="black",
+                line_color=(0.3, 0.3, 0.3),
+                pitch_type="custom",
+                pitch_length=105,
+                pitch_width=68,
+                label=False,
+            )
 
-        fig, ax = pitch.draw(figsize=(8, 5.2))
+            fig, ax = pitch.draw(figsize=(8, 5.2))
+
+        elif sports == "ultimate_3on3":
+            plt.style.use('dark_background')
+            fig, ax = plt.subplots()
+
+            pitch_length = 54
+            pitch_width = 22
+            end_line_left = 10
+            end_line_right = 44
+
+            rect = patches.Rectangle((0, 0), pitch_length, pitch_width, edgecolor='#606060', lw=1.5, fill=False)
+            ax.add_patch(rect)
+
+            line1 = Line2D([end_line_left, end_line_left], [0, pitch_width], color='#606060', lw=1.5)
+            ax.add_line(line1)
+
+            line2 = Line2D([end_line_right, end_line_right], [0, pitch_width], color='#606060', lw=1.5)
+            ax.add_line(line2)
+
+            ax.set_aspect('equal')
+            ax.axis('off')
 
         ax.plot(
             df_ball.loc[:, (slice(None), "x")],
@@ -350,6 +377,7 @@ class CoordinatesDataFrame(BaseSLKDataFrame, pd.DataFrame):
         home_kwargs: dict[str, Any] | None = None,
         away_kwargs: dict[str, Any] | None = None,
         save_kwargs: dict[str, Any] | None = None,
+        sports: str = "soccer",
     ):
         """Visualize multiple frames using matplotlib.animation.FuncAnimation.
 
@@ -370,6 +398,7 @@ class CoordinatesDataFrame(BaseSLKDataFrame, pd.DataFrame):
             home_kwargs: Keyword arguments specifically for the home team markers.
             away_kwargs: Keyword arguments specifically for the away team markers.
             save_kwargs: Keyword arguments for the save function.
+            sports: Name of sports. Defaults to "soccer".
 
         Note:
             `marker_kwargs` will be used for all markers but will be overwritten by `ball_kwargs`, `home_kwargs` and `away_kwargs`. All keyword arguments are passed to `plt.plot`. `save_kwargs` are passed to `FuncAnimation.save`.
@@ -428,16 +457,38 @@ class CoordinatesDataFrame(BaseSLKDataFrame, pd.DataFrame):
         df_ball = _df[ball_key]
         df_home = _df[home_key]
         df_away = _df[away_key]
-        pitch = Pitch(
-            pitch_color="black",
-            line_color=(0.3, 0.3, 0.3),
-            pitch_type="custom",
-            pitch_length=105,
-            pitch_width=68,
-            label=False,
-        )
+        if sports == "soccer":
+            pitch = Pitch(
+                pitch_color="black",
+                line_color=(0.3, 0.3, 0.3),
+                pitch_type="custom",
+                pitch_length=105,
+                pitch_width=68,
+                label=False,
+            )
 
-        fig, ax = pitch.draw(figsize=(8, 5.2))
+            fig, ax = pitch.draw(figsize=(8, 5.2))
+
+        elif sports == "ultimate_3on3":
+            plt.style.use('dark_background')
+            fig, ax = plt.subplots()
+
+            pitch_length = 54
+            pitch_width = 22
+            end_line_left = 10
+            end_line_right = 44
+
+            rect = patches.Rectangle((0, 0), pitch_length, pitch_width, edgecolor='#606060', lw=1.5, fill=False)
+            ax.add_patch(rect)
+
+            line1 = Line2D([end_line_left, end_line_left], [0, pitch_width], color='#606060', lw=1.5)
+            ax.add_line(line1)
+
+            line2 = Line2D([end_line_right, end_line_right], [0, pitch_width], color='#606060', lw=1.5)
+            ax.add_line(line2)
+
+            ax.set_aspect('equal')
+            ax.axis('off')
 
         ball, *_ = ax.plot([], [], **_ball_kwargs)
         away, *_ = ax.plot([], [], **_away_kwargs)
